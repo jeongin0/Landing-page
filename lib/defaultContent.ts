@@ -3,6 +3,7 @@ import { DEFAULT_SECTIONS } from "./schema";
 
 // 새 프로젝트 생성 시 기본값 (샘플: 휴대용 텀블러)
 export const defaultStoreContent = (): StoreContent => ({
+  style: "classic",
   theme: {
     primary: "#111827",
     bg: "#ffffff",
@@ -16,6 +17,8 @@ export const defaultStoreContent = (): StoreContent => ({
   },
   hero: {
     badge: "신제품 출시",
+    badgeBg: "#11182714",
+    badgeText: "#111827",
     title: "하루 종일 온도를 지키는\n스테인리스 텀블러",
     subtitle:
       "6시간 보온, 12시간 보냉. 한 손에 잡히는 350ml 사이즈로 출근길부터 퇴근길까지.",

@@ -8,7 +8,7 @@ const plans = [
     key: "free" as const,
     name: "Free",
     price: "0원",
-    features: ["프로젝트 1개", "클릭 편집 · AI 카피", "HTML 내보내기 (워터마크)"],
+    features: ["프로젝트 3개", "클릭 편집 · AI 카피", "HTML 내보내기 (워터마크)"],
   },
   {
     key: "pro" as const,

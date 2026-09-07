@@ -1,7 +1,7 @@
 import type { StoreContent } from "./schema";
 import { defaultStoreContent } from "./defaultContent";
 
-export type PresetId = "store" | "course" | "local";
+export type PresetId = "classic" | "spotlight" | "editorial";
 
 export const PRESETS: {
   id: PresetId;
@@ -10,17 +10,23 @@ export const PRESETS: {
   make: () => StoreContent;
 }[] = [
   {
-    id: "store",
-    label: "스토어 상품 상세",
-    desc: "스마트스토어·쿠팡 단일상품 상세페이지",
-    make: () => defaultStoreContent(),
-  },
-  {
-    id: "course",
-    label: "강의 · 전자책",
-    desc: "온라인 강의, PDF/전자책 판매 페이지",
+    id: "classic",
+    label: "클래식",
+    desc: "텍스트·이미지 좌우 배치 · 카드형 강점. 제품 판매용 상세페이지에 무난.",
     make: () => {
       const c = defaultStoreContent();
+      c.style = "classic";
+      return c;
+    },
+  },
+  {
+    id: "spotlight",
+    label: "스포트라이트",
+    desc: "큰 이미지 + 중앙 정렬 · 아이콘 원형. 강의·브랜드·앱 소개에 어울림.",
+    make: () => {
+      const c = defaultStoreContent();
+      c.style = "spotlight";
+      c.theme.primary = "#4f46e5";
       c.sections = [
         { type: "hero", enabled: true },
         { type: "highlights", enabled: true },
@@ -32,27 +38,30 @@ export const PRESETS: {
       ];
       c.cta.text = "지금 수강 신청";
       c.hero = {
+        ...c.hero,
         badge: "3기 모집",
+        badgeBg: "#4f46e514",
+        badgeText: "#4f46e5",
         title: "비전공자도 4주 만에\n첫 랜딩페이지 완성",
         subtitle:
           "매주 라이브 강의 + 과제 피드백. 수강 후 바로 포트폴리오 1개가 남습니다.",
         image:
-          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&q=80",
+          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1400&q=80",
       };
       c.highlights = [
         { icon: "🎥", title: "라이브 강의 4주", desc: "녹화본 평생 제공. 놓쳐도 다시 보기." },
         { icon: "✍️", title: "과제 첨삭", desc: "매주 제출 → 1:1 피드백으로 실력 확인." },
-        { icon: "💬", title: "커뮤니티", desc: "수강생 전용 채널에서 질문·취업 정보 공유." },
+        { icon: "💬", title: "커뮤니티", desc: "수강생 전용 채널에서 질문·정보 공유." },
       ];
       c.detail = {
         heading: "커리큘럼",
         body: "1주차: HTML/CSS 기초와 레이아웃\n2주차: 반응형과 컴포넌트\n3주차: 실전 랜딩페이지 제작\n4주차: 배포와 포트폴리오 정리",
         image:
-          "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80",
+          "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1400&q=80",
       };
       c.reviews = [
         { name: "수강생 A", text: "4주 만에 제 사업 랜딩페이지를 직접 만들었어요.", rating: 5 },
-        { name: "수강생 B", text: "과제 피드백이 정말 꼼꼼합니다. 강추.", rating: 5 },
+        { name: "수강생 B", text: "과제 피드백이 정말 꼼꼼합니다.", rating: 5 },
         { name: "수강생 C", text: "비전공자인데 따라갈 만했어요.", rating: 4 },
       ];
       c.pricing = { price: "149,000원", compareAt: "220,000원", note: "3기 얼리버드 · 환불 규정 별도" };
@@ -65,11 +74,13 @@ export const PRESETS: {
     },
   },
   {
-    id: "local",
-    label: "로컬 서비스",
-    desc: "학원·병원·카페·공방 등 지역 사업",
+    id: "editorial",
+    label: "에디토리얼",
+    desc: "세로로 흐르는 매거진형 · 번호 매긴 강점. 서비스·정보 안내에 적합.",
     make: () => {
       const c = defaultStoreContent();
+      c.style = "editorial";
+      c.theme.primary = "#0f766e";
       c.sections = [
         { type: "hero", enabled: true },
         { type: "highlights", enabled: true },
@@ -80,13 +91,15 @@ export const PRESETS: {
         { type: "pricing", enabled: false },
       ];
       c.cta.text = "상담 예약하기";
-      c.theme.primary = "#0f766e";
       c.hero = {
+        ...c.hero,
         badge: "신규 오픈",
+        badgeBg: "#0f766e14",
+        badgeText: "#0f766e",
         title: "동네에서 가장 친절한\n1:1 맞춤 요가 스튜디오",
         subtitle: "첫 방문 무료 체험. 소수 정예 수업으로 자세 하나하나 봐드립니다.",
         image:
-          "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1200&q=80",
+          "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1600&q=80",
       };
       c.highlights = [
         { icon: "🧘", title: "소수 정예", desc: "회당 최대 6명. 개인별 자세 교정." },
@@ -97,7 +110,7 @@ export const PRESETS: {
         heading: "이용 안내",
         body: "운영시간: 평일 06:00–22:00 / 주말 09:00–18:00\n주소: 서울시 OO구 OO로 00\n주차: 건물 지하 2시간 무료\n문의: 010-0000-0000",
         image:
-          "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=1200&q=80",
+          "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=1600&q=80",
       };
       c.reviews = [
         { name: "김**", text: "선생님이 자세를 계속 봐주셔서 확실히 달라요.", rating: 5 },

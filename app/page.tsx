@@ -96,7 +96,7 @@ export default function LandingPage() {
         {/* CTA */}
         <section className="border-t border-gray-100 py-16 text-center">
           <h2 className="text-2xl font-extrabold">지금 하나 만들어보세요</h2>
-          <p className="mt-2 text-sm text-gray-500">무료 플랜으로 프로젝트 1개까지 무료</p>
+          <p className="mt-2 text-sm text-gray-500">무료 플랜으로 프로젝트 3개까지 무료</p>
           <Link
             href="/projects"
             className="mt-6 inline-block rounded-lg bg-gray-900 px-8 py-3 font-semibold text-white"

@@ -2,7 +2,12 @@
 // 헤더/푸터/네비는 호스트 사이트가 제공. 우리는 본문만.
 // 이 구조가 곧 DB의 projects.content (jsonb) 컬럼에 그대로 들어갑니다.
 
-export type Highlight = { icon: string; title: string; desc: string };
+export type Highlight = {
+  icon: string; // 이모지 (iconImage 없을 때 표시)
+  iconImage?: string; // 아이콘 이미지 URL (있으면 우선)
+  title: string;
+  desc: string;
+};
 export type Spec = { label: string; value: string };
 export type Review = { name: string; text: string; rating: number };
 export type Faq = { q: string; a: string };
@@ -40,14 +45,24 @@ export const DEFAULT_SECTIONS: SectionRef[] = [
 
 export type WidthPreset = "narrow" | "normal" | "wide" | "full" | "custom";
 
-export const WIDTH_PX: Record<Exclude<WidthPreset, "custom">, number | null> = {
+export const WIDTH_PX: Record<Exclude<WidthPreset, "custom">, number> = {
   narrow: 720,
   normal: 960,
-  wide: 1200,
-  full: null, // 100%
+  wide: 1280,
+  full: 1920,
+};
+
+// 레이아웃 스타일 — 템플릿마다 시각적으로 다르게
+export type LayoutStyle = "classic" | "spotlight" | "editorial";
+
+export const LAYOUT_STYLE_LABELS: Record<LayoutStyle, string> = {
+  classic: "클래식 (텍스트·이미지 좌우 배치)",
+  spotlight: "스포트라이트 (큰 이미지 + 중앙 정렬)",
+  editorial: "에디토리얼 (세로로 흐르는 매거진형)",
 };
 
 export type StoreContent = {
+  style: LayoutStyle;
   theme: {
     primary: string; // 버튼/포인트 색
     bg: string; // 배경색
@@ -64,6 +79,8 @@ export type StoreContent = {
   };
   hero: {
     badge: string;
+    badgeBg: string; // 라벨 배경색
+    badgeText: string; // 라벨 글자색
     title: string;
     subtitle: string;
     image: string;
@@ -84,14 +101,16 @@ export type StoreContent = {
   faq: Faq[];
 };
 
-// 예전 데이터(sections/cta 없음) 보정
+// 예전 데이터 보정 (없는 필드 채우기)
 export function normalizeContent(c: unknown): StoreContent {
   const raw = (c || {}) as Record<string, unknown> & Partial<StoreContent>;
   const legacyBrand = (raw as { brand?: { ctaText?: string; ctaHref?: string } })
     .brand;
   const legacyHero = (raw as { hero?: { ctaText?: string } }).hero;
+  const primary = raw.theme?.primary || "#111827";
   return {
     ...(raw as StoreContent),
+    style: raw.style || "classic",
     layout: raw.layout || { width: "normal", customPx: 960 },
     sections:
       Array.isArray(raw.sections) && raw.sections.length
@@ -100,6 +119,14 @@ export function normalizeContent(c: unknown): StoreContent {
     cta: raw.cta || {
       text: legacyBrand?.ctaText || legacyHero?.ctaText || "지금 구매하기",
       href: legacyBrand?.ctaHref || "#pricing",
+    },
+    hero: {
+      badge: raw.hero?.badge ?? "",
+      badgeBg: raw.hero?.badgeBg || primary + "1a",
+      badgeText: raw.hero?.badgeText || primary,
+      title: raw.hero?.title ?? "",
+      subtitle: raw.hero?.subtitle ?? "",
+      image: raw.hero?.image ?? "",
     },
   };
 }

@@ -15,7 +15,8 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const { isPaid } = usePlan();
-  const atFreeLimit = !isPaid && projects.length >= 1;
+  const FREE_MAX = 3;
+  const atFreeLimit = !isPaid && projects.length >= FREE_MAX;
 
   useEffect(() => {
     listProjects()
@@ -27,7 +28,7 @@ export default function ProjectsPage() {
   const handleCreate = async (presetId: string) => {
     if (busy) return;
     if (atFreeLimit) {
-      if (confirm("무료 플랜은 프로젝트 1개까지예요. 요금제 페이지로 갈까요?"))
+      if (confirm(`무료 플랜은 프로젝트 ${FREE_MAX}개까지예요. 요금제 페이지로 갈까요?`))
         router.push("/pricing");
       return;
     }
@@ -71,7 +72,7 @@ export default function ProjectsPage() {
 
         {atFreeLimit && (
           <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
-            무료 플랜은 프로젝트 1개까지예요.{" "}
+            무료 플랜은 프로젝트 {FREE_MAX}개까지예요.{" "}
             <Link href="/pricing" className="font-semibold underline">
               Pro로 업그레이드
             </Link>{" "}

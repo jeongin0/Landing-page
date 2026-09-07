@@ -13,6 +13,12 @@ import AuthWidget from "@/components/AuthWidget";
 import ImageField from "@/components/ImageField";
 import { usePlan } from "@/lib/usePlan";
 
+// <input type=color> 는 6자리 hex만 받음 (#RRGGBBAA -> #RRGGBB)
+const hexOnly = (v: string) => {
+  const m = /^#?([0-9a-fA-F]{6})/.exec(v || "");
+  return m ? "#" + m[1] : "#000000";
+};
+
 export default function EditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [project, setProject] = useState<Project | null>(null);
@@ -250,6 +256,56 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
         {editing && (
           <aside className="w-64 shrink-0 space-y-5 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4 text-sm">
             <div>
+              <h3 className="mb-2 font-bold text-gray-700">레이아웃 스타일</h3>
+              <select
+                value={project.content.style}
+                onChange={(e) =>
+                  update({ ...project.content, style: e.target.value as StoreContent["style"] })
+                }
+                className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+              >
+                <option value="classic">클래식 (좌우 배치)</option>
+                <option value="spotlight">스포트라이트 (큰 이미지·중앙)</option>
+                <option value="editorial">에디토리얼 (매거진형)</option>
+              </select>
+            </div>
+
+            <div>
+              <h3 className="mb-2 font-bold text-gray-700">라벨 (뱃지) 색</h3>
+              <label className="mb-2 flex items-center justify-between">
+                <span className="text-gray-600">배경</span>
+                <input type="color" value={hexOnly(project.content.hero.badgeBg)}
+                  onChange={(e) => update({ ...project.content, hero: { ...project.content.hero, badgeBg: e.target.value } })}
+                  className="h-7 w-12 rounded border border-gray-300" />
+              </label>
+              <label className="flex items-center justify-between">
+                <span className="text-gray-600">글자</span>
+                <input type="color" value={hexOnly(project.content.hero.badgeText)}
+                  onChange={(e) => update({ ...project.content, hero: { ...project.content.hero, badgeText: e.target.value } })}
+                  className="h-7 w-12 rounded border border-gray-300" />
+              </label>
+            </div>
+
+            <div>
+              <h3 className="mb-2 font-bold text-gray-700">강점 아이콘 이미지</h3>
+              {project.content.highlights.map((h, i) => (
+                <div key={i} className="mb-2">
+                  <div className="mb-1 text-xs text-gray-500">{i + 1}. {h.title || "강점"}</div>
+                  <ImageField
+                    value={h.iconImage || ""}
+                    projectId={project.id}
+                    onChange={(url) => {
+                      const highlights = [...project.content.highlights];
+                      highlights[i] = { ...h, iconImage: url || undefined };
+                      update({ ...project.content, highlights });
+                    }}
+                  />
+                </div>
+              ))}
+              <p className="text-xs text-gray-400">비우면 이모지 사용 (페이지에서 클릭해 수정)</p>
+            </div>
+
+            <div>
               <h3 className="mb-2 font-bold text-gray-700">섹션 (순서 · 표시)</h3>
               <div className="space-y-1">
                 {project.content.sections.map((s, i) => (
@@ -388,7 +444,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           ) : (
             <div
               ref={previewRef}
-              className="mx-auto w-full max-w-[1280px] overflow-hidden rounded-lg bg-white shadow-xl"
+              className="mx-auto w-full max-w-[1920px] overflow-hidden rounded-lg bg-white shadow-xl"
             >
               <StoreProduct content={project.content} onChange={update} editing={editing} />
             </div>
@@ -410,9 +466,9 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
       {/* 이미지 캡처 전용 (화면 밖, 고정 1280px) */}
       <div
         aria-hidden
-        style={{ position: "absolute", left: -99999, top: 0, width: 1280 }}
+        style={{ position: "absolute", left: -99999, top: 0, width: 1920 }}
       >
-        <div ref={captureRef} style={{ width: 1280 }}>
+        <div ref={captureRef} style={{ width: 1920 }}>
           <StoreProduct content={project.content} editing={false} />
         </div>
       </div>
