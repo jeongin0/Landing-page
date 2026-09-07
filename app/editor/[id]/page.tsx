@@ -55,22 +55,27 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const publicUrl =
     typeof window !== "undefined" ? `${location.origin}/p/${id}` : "";
 
-  const togglePublish = async () => {
+  const handleShare = async () => {
     if (!project || pubBusy) return;
     setPubBusy(true);
-    const next = !project.published;
     try {
-      await setPublished(id, next);
-      setProject({ ...project, published: next });
-      if (next) {
-        await navigator.clipboard?.writeText(publicUrl).catch(() => {});
-        alert("게시됐어요! 주소가 복사되었습니다:\n" + publicUrl);
+      if (!project.published) {
+        await setPublished(id, true);
+        setProject({ ...project, published: true });
       }
+      await navigator.clipboard?.writeText(publicUrl).catch(() => {});
+      alert("공유 링크가 복사되었습니다:\n" + publicUrl);
     } catch (e) {
       alert("실패: " + (e instanceof Error ? e.message : ""));
     } finally {
       setPubBusy(false);
     }
+  };
+
+  const makePrivate = async () => {
+    if (!project) return;
+    await setPublished(id, false);
+    setProject({ ...project, published: false });
   };
 
   const [imgBusy, setImgBusy] = useState(false);
@@ -185,23 +190,21 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
             </div>
           </details>
           {project.published && (
-            <a
-              href={publicUrl}
-              target="_blank"
-              className="text-xs text-blue-600 underline"
-            >
-              게시됨 ↗
-            </a>
+            <>
+              <a href={publicUrl} target="_blank" className="text-xs text-blue-600 underline">
+                링크 ↗
+              </a>
+              <button onClick={makePrivate} className="text-xs text-gray-400 hover:underline">
+                비공개
+              </button>
+            </>
           )}
           <button
-            onClick={togglePublish}
+            onClick={handleShare}
             disabled={pubBusy}
-            className={
-              "rounded-lg px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-40 " +
-              (project.published ? "bg-gray-500" : "bg-gray-900")
-            }
+            className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
           >
-            {pubBusy ? "…" : project.published ? "게시 취소" : "게시하기"}
+            {pubBusy ? "…" : "공유"}
           </button>
         </div>
       </div>
@@ -259,11 +262,11 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           </aside>
         )}
 
-        {/* 미리보기 */}
-        <div className="flex-1 overflow-y-auto bg-gray-100">
+        {/* 미리보기 — 실제 페이지 전체 폭 */}
+        <div className="flex-1 overflow-y-auto bg-gray-100 py-6">
           <div
             ref={previewRef}
-            className="mx-auto my-6 max-w-5xl overflow-hidden rounded-xl bg-white shadow-xl"
+            className="mx-auto w-full max-w-[1280px] overflow-hidden rounded-lg bg-white shadow-xl"
           >
             <StoreProduct content={project.content} onChange={update} editing={editing} />
           </div>
