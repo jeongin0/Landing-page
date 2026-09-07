@@ -23,7 +23,10 @@ export async function POST(req: Request) {
       : process.env.LEMONSQUEEZY_VARIANT_PRO;
   if (!variantId) return new NextResponse("상품 설정 오류", { status: 500 });
 
-  const origin = req.headers.get("origin") || "";
+  const origin =
+    req.headers.get("origin") ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    new URL(req.url).origin;
 
   const res = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
     method: "POST",

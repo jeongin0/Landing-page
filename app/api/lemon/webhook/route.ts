@@ -57,16 +57,15 @@ export async function POST(req: Request) {
   }
 
   if (plan) {
-    await admin
-      .from("profiles")
-      .update({
-        plan,
-        current_period_end: periodEnd,
-        ls_subscription_id: subId,
-        ls_customer_id: String(attr.customer_id ?? "") || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", userId);
+    // 프로필 행이 없을 수도 있으므로 upsert
+    await admin.from("profiles").upsert({
+      id: userId,
+      plan,
+      current_period_end: periodEnd,
+      ls_subscription_id: subId,
+      ls_customer_id: String(attr.customer_id ?? "") || null,
+      updated_at: new Date().toISOString(),
+    });
   }
 
   return NextResponse.json({ ok: true, event, plan });
