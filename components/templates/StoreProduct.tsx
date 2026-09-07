@@ -72,14 +72,14 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
           style={{ aspectRatio: "16/9" }} />
         {badge}
         {heroTitle}
-        <div className="mx-auto max-w-2xl">{heroSub}</div>
+        {heroSub}
         <div className="mt-8">{ctaBtn(true)}</div>
       </section>
     ) : style === "editorial" ? (
       <section className={wrap + " py-14"} style={wrapStyle}>
         {badge}
         {heroTitle}
-        <div className="max-w-2xl">{heroSub}</div>
+        {heroSub}
         <div className="mt-6">{ctaBtn()}</div>
         <img src={c.hero.image} alt="" className="mt-10 w-full rounded-2xl object-cover shadow-lg"
           style={{ aspectRatio: "21/9" }} />
@@ -181,11 +181,9 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
           onChange={(v) => set({ detail: { ...c.detail, heading: v } })} />
         <img src={c.detail.image} alt="" className="my-8 w-full rounded-2xl object-cover shadow-lg"
           style={{ aspectRatio: "16/9" }} />
-        <div className="mx-auto max-w-2xl">
-          <Editable as="p" multiline editing={editing} className="opacity-80"
-            value={c.detail.body}
-            onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
-        </div>
+        <Editable as="p" multiline editing={editing} className="opacity-80"
+          value={c.detail.body}
+          onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
       </section>
     ) : (
       <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"} style={wrapStyle}>
@@ -204,7 +202,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
 
   const specs = (
     <section className={wrap + " py-10"} style={wrapStyle}>
-      <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-black/5">
+      <div className="overflow-hidden rounded-2xl border border-black/5">
         {c.specs.map((s, i) => (
           <div key={i} className="flex justify-between border-b border-black/5 px-5 py-3 text-sm last:border-0">
             <Editable as="span" editing={editing} className="font-semibold" value={s.label}
@@ -252,7 +250,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
 
   const pricing = (
     <section id="pricing" className={wrap + " py-14 text-center"} style={wrapStyle}>
-      <div className="mx-auto max-w-xl rounded-3xl border border-black/5 p-10 shadow-sm">
+      <div className="rounded-3xl border border-black/5 p-10 shadow-sm">
         <div className="flex items-end justify-center gap-3">
           <Editable as="span" editing={editing} className="text-4xl font-extrabold" value={c.pricing.price}
             onChange={(v) => set({ pricing: { ...c.pricing, price: v } })} />
@@ -269,7 +267,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
   const faq = (
     <section className={wrap + " py-10"} style={wrapStyle}>
       <h2 className={`mb-6 text-2xl font-extrabold ${headingFont}`}>자주 묻는 질문</h2>
-      <div className="mx-auto max-w-2xl space-y-4">
+      <div className="space-y-4">
         {c.faq.map((f, i) => (
           <div key={i} className="rounded-xl border border-black/5 p-5">
             <Editable as="div" editing={editing} className="font-semibold" value={f.q}

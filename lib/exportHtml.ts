@@ -71,7 +71,7 @@ export function exportHtml(c: StoreContent, watermark = false): string {
 </section>`,
 
     specs: () => `<section style="${wrap}padding:40px 20px">
-  <div style="max-width:640px;margin:0 auto;border:1px solid rgba(0,0,0,.06);border-radius:16px;overflow:hidden">${c.specs
+  <div style="border:1px solid rgba(0,0,0,.06);border-radius:16px;overflow:hidden">${c.specs
     .map(
       (s, i) => `<div style="display:flex;justify-content:space-between;padding:12px 20px;font-size:14px;${
         i < c.specs.length - 1 ? "border-bottom:1px solid rgba(0,0,0,.06)" : ""
@@ -94,7 +94,7 @@ export function exportHtml(c: StoreContent, watermark = false): string {
 </section>`,
 
     pricing: () => `<section id="pricing" style="${wrap}padding:56px 20px;text-align:center">
-  <div style="max-width:560px;margin:0 auto;border:1px solid rgba(0,0,0,.06);border-radius:24px;padding:40px">
+  <div style="border:1px solid rgba(0,0,0,.06);border-radius:24px;padding:40px">
     <div style="display:flex;align-items:flex-end;justify-content:center;gap:12px">
       <span style="font-size:36px;font-weight:800">${esc(c.pricing.price)}</span>
       <span style="font-size:18px;text-decoration:line-through;opacity:.4">${esc(c.pricing.compareAt)}</span>
@@ -106,7 +106,7 @@ export function exportHtml(c: StoreContent, watermark = false): string {
 
     faq: () => `<section style="${wrap}padding:40px 20px">
   <h2 style="font-size:24px;font-weight:800;margin:0 0 24px">자주 묻는 질문</h2>
-  <div style="max-width:640px;margin:0 auto">${c.faq
+  <div>${c.faq
     .map(
       (f) => `<div style="border:1px solid rgba(0,0,0,.06);border-radius:12px;padding:20px;margin-bottom:16px">
       <div style="font-weight:700">${esc(f.q)}</div>
