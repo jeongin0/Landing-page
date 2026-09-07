@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { krAuthError } from "@/lib/authError";
 
 const DUP_MSG = "이미 가입된 이메일입니다. 로그인해 주세요.";
 
@@ -26,7 +27,10 @@ function LoginInner() {
     try {
       if (mode === "login") {
         const { error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          setMsg({ kind: "error", text: krAuthError(error) });
+          return;
+        }
         router.push(next);
         router.refresh();
         return;
@@ -35,11 +39,8 @@ function LoginInner() {
       // 가입
       const { data, error } = await sb.auth.signUp({ email, password });
       if (error) {
-        if (/regist|already|exist/i.test(error.message)) {
-          setMsg({ kind: "error", text: DUP_MSG });
-          return;
-        }
-        throw error;
+        setMsg({ kind: "error", text: krAuthError(error) });
+        return;
       }
       // Supabase 는 이메일 중복 시 에러 대신 identities 빈 배열로 응답 (계정 열거 방지)
       if (data.user && (data.user.identities?.length ?? 0) === 0) {
@@ -58,7 +59,7 @@ function LoginInner() {
         text: "확인 메일을 보냈어요. 메일의 링크를 클릭하면 가입이 완료됩니다.",
       });
     } catch (e) {
-      setMsg({ kind: "error", text: "오류: " + (e instanceof Error ? e.message : "") });
+      setMsg({ kind: "error", text: krAuthError(e) });
     } finally {
       setLoading(false);
     }
