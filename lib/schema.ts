@@ -21,7 +21,11 @@ export type SectionType =
   | "pricing"
   | "faq";
 
-export type SectionRef = { type: SectionType; enabled: boolean };
+export type SectionRef = {
+  type: SectionType;
+  enabled: boolean;
+  w?: Exclude<WidthPreset, "custom">; // 섹션별 폭 (없으면 전체 본문 폭 상속)
+};
 
 export const SECTION_LABELS: Record<SectionType, string> = {
   hero: "메인 (제목·이미지)",

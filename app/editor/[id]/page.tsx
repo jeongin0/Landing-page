@@ -72,6 +72,16 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     });
   };
 
+  const setSectionWidth = (index: number, w: string) => {
+    if (!project) return;
+    const arr = project.content.sections.map((s, i) =>
+      i === index
+        ? { ...s, w: w === "inherit" ? undefined : (w as NonNullable<typeof s.w>) }
+        : s,
+    );
+    update({ ...project.content, sections: arr });
+  };
+
   const moveSection = (index: number, dir: -1 | 1) => {
     if (!project) return;
     const arr = [...project.content.sections];
@@ -309,19 +319,34 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
               <h3 className="mb-2 font-bold text-gray-700">섹션 (순서 · 표시)</h3>
               <div className="space-y-1">
                 {project.content.sections.map((s, i) => (
-                  <div key={s.type} className="flex items-center gap-1 rounded border border-gray-200 bg-white px-2 py-1">
-                    <input
-                      type="checkbox"
-                      checked={s.enabled}
-                      onChange={() => toggleSection(s.type)}
-                    />
-                    <span className={"flex-1 " + (s.enabled ? "" : "text-gray-400 line-through")}>
-                      {SECTION_LABELS[s.type]}
-                    </span>
-                    <button onClick={() => moveSection(i, -1)} disabled={i === 0}
-                      className="px-1 text-gray-400 disabled:opacity-30">▲</button>
-                    <button onClick={() => moveSection(i, 1)} disabled={i === project.content.sections.length - 1}
-                      className="px-1 text-gray-400 disabled:opacity-30">▼</button>
+                  <div key={s.type} className="rounded border border-gray-200 bg-white px-2 py-1">
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="checkbox"
+                        checked={s.enabled}
+                        onChange={() => toggleSection(s.type)}
+                      />
+                      <span className={"flex-1 " + (s.enabled ? "" : "text-gray-400 line-through")}>
+                        {SECTION_LABELS[s.type]}
+                      </span>
+                      <button onClick={() => moveSection(i, -1)} disabled={i === 0}
+                        className="px-1 text-gray-400 disabled:opacity-30">▲</button>
+                      <button onClick={() => moveSection(i, 1)} disabled={i === project.content.sections.length - 1}
+                        className="px-1 text-gray-400 disabled:opacity-30">▼</button>
+                    </div>
+                    {s.enabled && (
+                      <select
+                        value={s.w || "inherit"}
+                        onChange={(e) => setSectionWidth(i, e.target.value)}
+                        className="mt-1 w-full rounded border border-gray-200 px-1 py-0.5 text-[11px] text-gray-500"
+                      >
+                        <option value="inherit">폭: 전체 설정 따름</option>
+                        <option value="narrow">폭: 좁게 (720)</option>
+                        <option value="normal">폭: 보통 (960)</option>
+                        <option value="wide">폭: 넓게 (1280)</option>
+                        <option value="full">폭: 최대 (1920)</option>
+                      </select>
+                    )}
                   </div>
                 ))}
               </div>

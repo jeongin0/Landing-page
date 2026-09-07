@@ -20,7 +20,8 @@ export function exportHtml(c: StoreContent, watermark = false): string {
       ? Math.max(320, c.layout.customPx || 960)
       : WIDTH_PX[c.layout.width as Exclude<typeof c.layout.width, "custom">];
 
-  const wrap = `max-width:${maxW}px;margin:0 auto;padding:0 20px;`;
+  const wrap = `padding:0 20px;`;
+  const secMax = (w?: keyof typeof WIDTH_PX) => (w ? WIDTH_PX[w] : maxW);
   const card = `border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.04);`;
   const btn = (big = false) =>
     `<a href="${esc(c.cta.href || "#")}" style="display:inline-block;background:${esc(
@@ -85,9 +86,9 @@ export function exportHtml(c: StoreContent, watermark = false): string {
   <h2 style="text-align:center;font-size:24px;font-weight:800;margin:0 0 24px">고객 후기</h2>
   <div class="lb-grid3">${c.reviews
     .map(
-      (r) => `<div style="${card}">
+      (r) => `<div style="${card}display:flex;flex-direction:column">
       <div style="color:#f59e0b">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
-      <p style="margin:8px 0 0;font-size:14px">${nl2br(r.text)}</p>
+      <p style="margin:8px 0 0;font-size:14px;flex:1">${nl2br(r.text)}</p>
       <div style="margin:12px 0 0;font-size:12px;font-weight:700;opacity:.6">${esc(r.name)}</div></div>`,
     )
     .join("")}</div>
@@ -118,7 +119,10 @@ export function exportHtml(c: StoreContent, watermark = false): string {
 
   const body = c.sections
     .filter((s) => s.enabled)
-    .map((s) => S[s.type]())
+    .map(
+      (s) =>
+        `<div style="max-width:${secMax(s.w)}px;margin:0 auto">${S[s.type]()}</div>`,
+    )
     .join("\n");
 
   const wm = watermark

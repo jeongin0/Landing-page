@@ -19,8 +19,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
     c.layout.width === "custom"
       ? Math.max(320, c.layout.customPx || 960)
       : WIDTH_PX[c.layout.width as Exclude<typeof c.layout.width, "custom">];
-  const wrap = "mx-auto w-full px-5";
-  const wrapStyle = { maxWidth: maxW };
+  const wrap = "w-full px-5";
 
   const headingFont = style === "editorial" ? "font-serif" : "";
   const h1Size =
@@ -67,7 +66,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
   // ── HERO ── 스타일별로 완전히 다르게
   const hero =
     style === "spotlight" ? (
-      <section className={wrap + " py-16 text-center"} style={wrapStyle}>
+      <section className={wrap + " py-16 text-center"}>
         <img src={c.hero.image} alt="" className="mx-auto mb-10 w-full rounded-3xl object-cover shadow-xl"
           style={{ aspectRatio: "16/9" }} />
         {badge}
@@ -76,7 +75,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
         <div className="mt-8">{ctaBtn(true)}</div>
       </section>
     ) : style === "editorial" ? (
-      <section className={wrap + " py-14"} style={wrapStyle}>
+      <section className={wrap + " py-14"}>
         {badge}
         {heroTitle}
         {heroSub}
@@ -85,7 +84,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
           style={{ aspectRatio: "21/9" }} />
       </section>
     ) : (
-      <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"} style={wrapStyle}>
+      <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"}>
         <div>
           {badge}
           {heroTitle}
@@ -129,7 +128,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
 
   const highlights =
     style === "spotlight" ? (
-      <section className={wrap + " py-12"} style={wrapStyle}>
+      <section className={wrap + " py-12"}>
         <div className="grid gap-8 text-center md:grid-cols-3">
           {c.highlights.map((h, i) => (
             <div key={i} className="flex flex-col items-center">
@@ -142,7 +141,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
         </div>
       </section>
     ) : style === "editorial" ? (
-      <section className={wrap + " py-12"} style={wrapStyle}>
+      <section className={wrap + " py-12"}>
         <div className="divide-y divide-black/10">
           {c.highlights.map((h, i) => (
             <div key={i} className="flex gap-5 py-6">
@@ -159,7 +158,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
         </div>
       </section>
     ) : (
-      <section className={wrap + " py-10"} style={wrapStyle}>
+      <section className={wrap + " py-10"}>
         <div className="grid gap-6 md:grid-cols-3">
           {c.highlights.map((h, i) => (
             <div key={i} className="rounded-2xl border border-black/5 p-6 shadow-sm">
@@ -174,7 +173,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
 
   const detail =
     style === "spotlight" || style === "editorial" ? (
-      <section className={wrap + " py-14"} style={wrapStyle}>
+      <section className={wrap + " py-14"}>
         <Editable as="h2" editing={editing}
           className={`text-center text-2xl font-extrabold ${headingFont}`}
           value={c.detail.heading}
@@ -186,7 +185,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
           onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
       </section>
     ) : (
-      <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"} style={wrapStyle}>
+      <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"}>
         <img src={c.detail.image} alt="" className="w-full rounded-2xl object-cover shadow-lg"
           style={{ aspectRatio: "4/3" }} />
         <div>
@@ -201,7 +200,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
     );
 
   const specs = (
-    <section className={wrap + " py-10"} style={wrapStyle}>
+    <section className={wrap + " py-10"}>
       <div className="overflow-hidden rounded-2xl border border-black/5">
         {c.specs.map((s, i) => (
           <div key={i} className="flex justify-between border-b border-black/5 px-5 py-3 text-sm last:border-0">
@@ -224,13 +223,13 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
   );
 
   const reviews = (
-    <section className={wrap + " py-10"} style={wrapStyle}>
+    <section className={wrap + " py-10"}>
       <h2 className={`mb-6 text-center text-2xl font-extrabold ${headingFont}`}>고객 후기</h2>
       <div className="grid gap-6 md:grid-cols-3">
         {c.reviews.map((r, i) => (
-          <div key={i} className="rounded-2xl border border-black/5 p-6 shadow-sm">
+          <div key={i} className="flex flex-col rounded-2xl border border-black/5 p-6 shadow-sm">
             <div className="text-amber-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</div>
-            <Editable as="p" multiline editing={editing} className="mt-2 text-sm" value={r.text}
+            <Editable as="p" multiline editing={editing} className="mt-2 flex-1 text-sm" value={r.text}
               onChange={(v) => {
                 const reviews = [...c.reviews];
                 reviews[i] = { ...r, text: v };
@@ -249,7 +248,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
   );
 
   const pricing = (
-    <section id="pricing" className={wrap + " py-14 text-center"} style={wrapStyle}>
+    <section id="pricing" className={wrap + " py-14 text-center"}>
       <div className="rounded-3xl border border-black/5 p-10 shadow-sm">
         <div className="flex items-end justify-center gap-3">
           <Editable as="span" editing={editing} className="text-4xl font-extrabold" value={c.pricing.price}
@@ -265,7 +264,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
   );
 
   const faq = (
-    <section className={wrap + " py-10"} style={wrapStyle}>
+    <section className={wrap + " py-10"}>
       <h2 className={`mb-6 text-2xl font-extrabold ${headingFont}`}>자주 묻는 질문</h2>
       <div className="space-y-4">
         {c.faq.map((f, i) => (
@@ -294,9 +293,16 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
 
   return (
     <div style={{ background: c.theme.bg, color: c.theme.text }}>
-      {c.sections.filter((s) => s.enabled).map((s) => (
-        <div key={s.type}>{map[s.type]}</div>
-      ))}
+      {c.sections
+        .filter((s) => s.enabled)
+        .map((s, i) => (
+          <div
+            key={s.type + i}
+            style={{ maxWidth: s.w ? WIDTH_PX[s.w] : maxW, margin: "0 auto" }}
+          >
+            {map[s.type]}
+          </div>
+        ))}
     </div>
   );
 }
