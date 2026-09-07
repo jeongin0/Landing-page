@@ -106,7 +106,12 @@ export default function LandingPage() {
         </section>
 
         <footer className="border-t border-gray-100 py-8 text-center text-xs text-gray-400">
-          © 2026 랜딩페이지 빌더
+          <div className="flex justify-center gap-4">
+            <Link href="/legal/terms" className="hover:underline">이용약관</Link>
+            <Link href="/legal/privacy" className="hover:underline">개인정보처리방침</Link>
+            <Link href="/legal/refund" className="hover:underline">환불정책</Link>
+          </div>
+          <p className="mt-3">© 2026 랜딩페이지 빌더</p>
         </footer>
       </main>
     </>

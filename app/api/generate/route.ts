@@ -1,5 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+
+// 월 사용량 한도 (30일 롤링)
+const MONTHLY_LIMIT: Record<string, number> = {
+  free: 10,
+  pro: 200,
+  lifetime: 200,
+};
 
 // 상품 정보 -> 랜딩페이지 카피(JSON) 생성
 export async function POST(req: Request) {
@@ -8,6 +16,39 @@ export async function POST(req: Request) {
     return new NextResponse(
       "서버에 ANTHROPIC_API_KEY가 설정되지 않았습니다. .env.local 파일에 키를 넣고 서버를 재시작하세요.",
       { status: 500 },
+    );
+  }
+
+  // ── 인증 + 사용량 확인 ─────────────────────────────
+  const token = (req.headers.get("authorization") || "").replace("Bearer ", "");
+  const sb = supabaseAdmin();
+  const { data: userData } = await sb.auth.getUser(token);
+  const user = userData.user;
+  if (!user || user.is_anonymous) {
+    return new NextResponse("AI 생성은 로그인 후 이용할 수 있습니다.", { status: 401 });
+  }
+
+  const { data: profile } = await sb
+    .from("profiles")
+    .select("plan")
+    .eq("id", user.id)
+    .maybeSingle();
+  const plan = profile?.plan ?? "free";
+  const limit = MONTHLY_LIMIT[plan] ?? MONTHLY_LIMIT.free;
+
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { count } = await sb
+    .from("ai_generations")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .gte("created_at", since);
+
+  if ((count ?? 0) >= limit) {
+    return new NextResponse(
+      plan === "free"
+        ? `무료 플랜은 30일에 ${limit}회까지 생성할 수 있습니다. 업그레이드하면 늘어납니다.`
+        : `이번 주기 생성 한도(${limit}회)에 도달했습니다.`,
+      { status: 429 },
     );
   }
 
@@ -46,7 +87,7 @@ ${features || "(입력 없음)"}
 
   try {
     const msg = await client.messages.create({
-      model: "claude-opus-5", // 비용을 낮추려면 "claude-sonnet-5" 로 변경 가능
+      model: "claude-sonnet-5",
       max_tokens: 4000,
       messages: [{ role: "user", content: prompt }],
     });
@@ -58,6 +99,10 @@ ${features || "(입력 없음)"}
 
     const jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
     const parsed = JSON.parse(jsonStr);
+
+    // 성공한 생성만 사용량으로 기록
+    await sb.from("ai_generations").insert({ user_id: user.id });
+
     return NextResponse.json(parsed);
   } catch (e) {
     console.error(e);

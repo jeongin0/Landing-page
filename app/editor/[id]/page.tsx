@@ -12,6 +12,7 @@ import GenerateModal from "@/components/GenerateModal";
 import AuthWidget from "@/components/AuthWidget";
 import ImageField from "@/components/ImageField";
 import { usePlan } from "@/lib/usePlan";
+import { supabaseBrowser } from "@/lib/supabase/client";
 
 // <input type=color> 는 6자리 hex만 받음 (#RRGGBBAA -> #RRGGBB)
 const hexOnly = (v: string) => {
@@ -157,10 +158,15 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
 
   const handleExport = async () => {
     if (!project) return;
+    const { data: sess } = await supabaseBrowser().auth.getSession();
+    const token = sess.session?.access_token;
     const res = await fetch("/api/export", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: project.content, paid: isPaid }),
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ content: project.content }),
     });
     const html = await res.text();
     const blob = new Blob([html], { type: "text/html" });

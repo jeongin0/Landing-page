@@ -104,6 +104,15 @@ function LoginInner() {
         >
           {loading ? "처리 중…" : mode === "login" ? "로그인" : "가입하기"}
         </button>
+
+        {mode === "signup" && (
+          <p className="mt-3 text-center text-[11px] leading-relaxed text-gray-400">
+            가입하면{" "}
+            <Link href="/legal/terms" className="underline">이용약관</Link> 및{" "}
+            <Link href="/legal/privacy" className="underline">개인정보처리방침</Link>
+            에 동의하는 것으로 간주됩니다.
+          </p>
+        )}
       </div>
 
       <Link href="/" className="mt-4 text-center text-xs text-gray-400 hover:underline">

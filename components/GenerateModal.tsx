@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { StoreContent } from "@/lib/schema";
+import { supabaseBrowser } from "@/lib/supabase/client";
 
 type Props = {
   onClose: () => void;
@@ -21,9 +22,14 @@ export default function GenerateModal({ onClose, onApply, current }: Props) {
     setLoading(true);
     setError(null);
     try {
+      const { data: sess } = await supabaseBrowser().auth.getSession();
+      const token = sess.session?.access_token;
       const res = await fetch("/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ product, features, audience, tone }),
       });
       if (!res.ok) {

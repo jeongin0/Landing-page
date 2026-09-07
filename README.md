@@ -43,12 +43,28 @@ app/api/generate/route.ts        Claude 호출
 app/api/export/route.ts          HTML 내보내기
 ```
 
-## 다음 (v2 — 판매 구조)
+## 완료 (v2~v7)
 
-- [ ] Supabase 연결: `storage.ts` 를 DB 호출로 교체
-- [ ] 로그인 (Supabase Auth)
-- [ ] 이미지 업로드 (Supabase Storage) — 지금은 URL 입력만
-- [ ] LemonSqueezy 결제 + 요금제별 권한 (free / pro / lifetime)
-- [ ] 배포(publish) 기능 — 서브도메인에 정적 페이지 올리기
-- [ ] 템플릿 2~3종 추가 (SaaS, 로컬 서비스)
-- [ ] 이 툴 자체의 홍보 랜딩페이지
+- [x] Supabase 연결 (storage.ts / auth / 익명세션)
+- [x] 로그인 · 요금제 (free / pro / lifetime)
+- [x] LemonSqueezy 결제 + webhook
+- [x] 게시(publish) + 이미지 내보내기(PNG/JPEG/WEBP)
+- [x] 프리셋 3종 (클래식 / 스포트라이트 / 에디토리얼)
+- [x] 홍보 랜딩페이지
+- [x] 내보내기 워터마크 = 서버에서 요금제 검증 (클라 값 신뢰 안 함)
+- [x] AI 생성 = 로그인 필수 + 30일 사용량 한도(free 10 / paid 200) + sonnet
+- [x] 법적 페이지 (/legal/terms · privacy · refund)
+
+## 상태
+
+인증 · 결제 · 요금제별 권한 · 게시 · 내보내기 · AI 생성 한도 · 법적 페이지까지
+**실제 판매 사이트와 동일하게 동작**한다. 커스텀 도메인만 연결하면 그대로 상용 서비스로 운영 가능
+(도메인은 브랜딩 · 메일 도달률용이며 기능 제약 요소가 아님).
+
+## 판매 전 남은 것
+
+- [ ] **커스텀 SMTP 연결** — Brevo 무료(300통/일, 도메인 불필요). Supabase 기본 메일은 시간당 제한으로 가입 막힘. (대시보드 작업)
+- [ ] `supabase/schema_v5_ai_usage.sql` 실행 (ai_generations 테이블)
+- [ ] `app/legal/data.ts` 의 `operator` 값 교체 (개인 운영이라 사업자번호 불필요)
+- [ ] 이미지 업로드 UI (Storage 버킷·`lib/upload.ts` 는 준비됨)
+- [ ] 결제 → 권한 반영 E2E 1회 검증
