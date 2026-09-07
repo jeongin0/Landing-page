@@ -38,11 +38,24 @@ export const DEFAULT_SECTIONS: SectionRef[] = [
   { type: "faq", enabled: true },
 ];
 
+export type WidthPreset = "narrow" | "normal" | "wide" | "full" | "custom";
+
+export const WIDTH_PX: Record<Exclude<WidthPreset, "custom">, number | null> = {
+  narrow: 720,
+  normal: 960,
+  wide: 1200,
+  full: null, // 100%
+};
+
 export type StoreContent = {
   theme: {
     primary: string; // 버튼/포인트 색
     bg: string; // 배경색
     text: string; // 본문 글자색
+  };
+  layout: {
+    width: WidthPreset;
+    customPx: number; // width === "custom" 일 때만 사용
   };
   sections: SectionRef[]; // 섹션 순서 + 표시 여부
   cta: {
@@ -79,6 +92,7 @@ export function normalizeContent(c: unknown): StoreContent {
   const legacyHero = (raw as { hero?: { ctaText?: string } }).hero;
   return {
     ...(raw as StoreContent),
+    layout: raw.layout || { width: "normal", customPx: 960 },
     sections:
       Array.isArray(raw.sections) && raw.sections.length
         ? (raw.sections as SectionRef[])

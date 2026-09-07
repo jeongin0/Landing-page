@@ -1,4 +1,5 @@
 import type { StoreContent, SectionType } from "./schema";
+import { WIDTH_PX } from "./schema";
 
 const esc = (s: string) =>
   String(s ?? "")
@@ -12,6 +13,13 @@ const nl2br = (s: string) => esc(s).replace(/\r?\n/g, "<br/>");
 // StoreContent -> 독립 실행 HTML (본문 블록, Tailwind CDN 포함)
 export function exportHtml(c: StoreContent, watermark = false): string {
   const t = c.theme;
+  const maxW =
+    c.layout.width === "custom"
+      ? Math.max(320, c.layout.customPx || 960)
+      : WIDTH_PX[c.layout.width as Exclude<typeof c.layout.width, "custom">];
+  const W = maxW ? `max-width:${maxW}px;` : "";
+  const wrap = (extra = "") =>
+    `margin-left:auto;margin-right:auto;width:100%;padding-left:20px;padding-right:20px;${W}${extra}`;
   const btn = (extra = "") =>
     `<a href="${esc(c.cta.href || "#")}" style="display:inline-block;background:${esc(
       t.primary,
@@ -24,7 +32,7 @@ export function exportHtml(c: StoreContent, watermark = false): string {
     : "";
 
   const S: Record<SectionType, () => string> = {
-    hero: () => `<section class="mx-auto grid max-w-5xl items-center gap-10 px-5 py-14 md:grid-cols-2">
+    hero: () => `<section class="grid items-center gap-10 py-14 md:grid-cols-2" style="${wrap()}">
   <div>
     ${
       c.hero.badge
@@ -40,7 +48,7 @@ export function exportHtml(c: StoreContent, watermark = false): string {
   <img src="${esc(c.hero.image)}" alt="" class="w-full rounded-2xl object-cover shadow-lg" style="aspect-ratio:4/3"/>
 </section>`,
 
-    highlights: () => `<section class="mx-auto max-w-5xl px-5 py-10"><div class="grid gap-6 md:grid-cols-3">${c.highlights
+    highlights: () => `<section class="py-10" style="${wrap()}"><div class="grid gap-6 md:grid-cols-3">${c.highlights
       .map(
         (h) => `<div class="rounded-2xl border border-black/5 p-6 shadow-sm">
       <div class="text-3xl">${esc(h.icon)}</div>
@@ -49,7 +57,7 @@ export function exportHtml(c: StoreContent, watermark = false): string {
       )
       .join("")}</div></section>`,
 
-    detail: () => `<section class="mx-auto grid max-w-5xl items-center gap-10 px-5 py-14 md:grid-cols-2">
+    detail: () => `<section class="grid items-center gap-10 py-14 md:grid-cols-2" style="${wrap()}">
   <img src="${esc(c.detail.image)}" alt="" class="w-full rounded-2xl object-cover shadow-lg" style="aspect-ratio:4/3"/>
   <div>
     <h2 class="text-2xl font-extrabold">${esc(c.detail.heading)}</h2>
@@ -57,14 +65,14 @@ export function exportHtml(c: StoreContent, watermark = false): string {
   </div>
 </section>`,
 
-    specs: () => `<section class="mx-auto max-w-3xl px-5 py-10"><div class="overflow-hidden rounded-2xl border border-black/5">${c.specs
+    specs: () => `<section class="py-10" style="${wrap()}"><div class="overflow-hidden rounded-2xl border border-black/5">${c.specs
       .map(
         (s) => `<div class="flex justify-between border-b border-black/5 px-5 py-3 text-sm last:border-0">
       <span class="font-semibold">${esc(s.label)}</span><span class="opacity-75">${esc(s.value)}</span></div>`,
       )
       .join("")}</div></section>`,
 
-    reviews: () => `<section class="mx-auto max-w-5xl px-5 py-10">
+    reviews: () => `<section class="py-10" style="${wrap()}">
   <h2 class="mb-6 text-center text-2xl font-extrabold">고객 후기</h2>
   <div class="grid gap-6 md:grid-cols-3">${c.reviews
     .map(
@@ -75,7 +83,7 @@ export function exportHtml(c: StoreContent, watermark = false): string {
     )
     .join("")}</div></section>`,
 
-    pricing: () => `<section id="pricing" class="mx-auto max-w-3xl px-5 py-14 text-center">
+    pricing: () => `<section id="pricing" class="py-14 text-center" style="${wrap()}">
   <div class="rounded-3xl border border-black/5 p-10 shadow-sm">
     <div class="flex items-end justify-center gap-3">
       <span class="text-4xl font-extrabold">${esc(c.pricing.price)}</span>
@@ -86,7 +94,7 @@ export function exportHtml(c: StoreContent, watermark = false): string {
   </div>
 </section>`,
 
-    faq: () => `<section class="mx-auto max-w-3xl px-5 py-10">
+    faq: () => `<section class="py-10" style="${wrap()}">
   <h2 class="mb-6 text-2xl font-extrabold">자주 묻는 질문</h2>
   <div class="space-y-4">${c.faq
     .map(

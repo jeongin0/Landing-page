@@ -1,6 +1,7 @@
 "use client";
 
 import type { StoreContent, SectionType } from "@/lib/schema";
+import { WIDTH_PX } from "@/lib/schema";
 import Editable from "@/components/Editable";
 
 type Props = {
@@ -12,6 +13,14 @@ type Props = {
 export default function StoreProduct({ content, onChange, editing }: Props) {
   const c = content;
   const set = (patch: Partial<StoreContent>) => onChange?.({ ...c, ...patch });
+
+  // 모든 섹션이 공유하는 본문 폭
+  const maxW =
+    c.layout.width === "custom"
+      ? Math.max(320, c.layout.customPx || 960)
+      : WIDTH_PX[c.layout.width as Exclude<typeof c.layout.width, "custom">];
+  const wrap = "mx-auto w-full px-5";
+  const wrapStyle = maxW ? { maxWidth: maxW } : undefined;
 
   const ctaBtn = (extra?: string) => (
     <a
@@ -32,7 +41,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
 
   const sections: Record<SectionType, React.ReactNode> = {
     hero: (
-      <section className="mx-auto grid max-w-5xl items-center gap-10 px-5 py-14 md:grid-cols-2">
+      <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"} style={wrapStyle}>
         <div>
           {c.hero.badge && (
             <span
@@ -59,7 +68,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
     ),
 
     highlights: (
-      <section className="mx-auto max-w-5xl px-5 py-10">
+      <section className={wrap + " py-10"} style={wrapStyle}>
         <div className="grid gap-6 md:grid-cols-3">
           {c.highlights.map((h, i) => (
             <div key={i} className="rounded-2xl border border-black/5 p-6 shadow-sm">
@@ -88,7 +97,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
     ),
 
     detail: (
-      <section className="mx-auto grid max-w-5xl items-center gap-10 px-5 py-14 md:grid-cols-2">
+      <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"} style={wrapStyle}>
         <img src={c.detail.image} alt="" className="w-full rounded-2xl object-cover shadow-lg"
           style={{ aspectRatio: "4/3" }} />
         <div>
@@ -101,7 +110,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
     ),
 
     specs: (
-      <section className="mx-auto max-w-3xl px-5 py-10">
+      <section className={wrap + " py-10"} style={wrapStyle}>
         <div className="overflow-hidden rounded-2xl border border-black/5">
           {c.specs.map((s, i) => (
             <div key={i} className="flex justify-between border-b border-black/5 px-5 py-3 text-sm last:border-0">
@@ -124,7 +133,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
     ),
 
     reviews: (
-      <section className="mx-auto max-w-5xl px-5 py-10">
+      <section className={wrap + " py-10"} style={wrapStyle}>
         <h2 className="mb-6 text-center text-2xl font-extrabold">고객 후기</h2>
         <div className="grid gap-6 md:grid-cols-3">
           {c.reviews.map((r, i) => (
@@ -149,7 +158,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
     ),
 
     pricing: (
-      <section id="pricing" className="mx-auto max-w-3xl px-5 py-14 text-center">
+      <section id="pricing" className={wrap + " py-14 text-center"} style={wrapStyle}>
         <div className="rounded-3xl border border-black/5 p-10 shadow-sm">
           <div className="flex items-end justify-center gap-3">
             <Editable as="span" editing={editing} className="text-4xl font-extrabold" value={c.pricing.price}
@@ -165,7 +174,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
     ),
 
     faq: (
-      <section className="mx-auto max-w-3xl px-5 py-10">
+      <section className={wrap + " py-10"} style={wrapStyle}>
         <h2 className="mb-6 text-2xl font-extrabold">자주 묻는 질문</h2>
         <div className="space-y-4">
           {c.faq.map((f, i) => (

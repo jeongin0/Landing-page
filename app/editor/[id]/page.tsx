@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getProject, saveProject, setPublished } from "@/lib/storage";
 import type { Project, StoreContent, SectionType } from "@/lib/schema";
 import { SECTION_LABELS } from "@/lib/schema";
+import type { WidthPreset } from "@/lib/schema";
 import { exportHtml } from "@/lib/exportHtml";
 import StoreProduct from "@/components/templates/StoreProduct";
 import GenerateModal from "@/components/GenerateModal";
@@ -268,6 +269,46 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div>
+              <h3 className="mb-2 font-bold text-gray-700">본문 폭</h3>
+              <select
+                value={project.content.layout.width}
+                onChange={(e) =>
+                  update({
+                    ...project.content,
+                    layout: {
+                      ...project.content.layout,
+                      width: e.target.value as WidthPreset,
+                    },
+                  })
+                }
+                className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+              >
+                <option value="narrow">좁게 (720px)</option>
+                <option value="normal">보통 (960px)</option>
+                <option value="wide">넓게 (1200px)</option>
+                <option value="full">전체 (100%)</option>
+                <option value="custom">직접 지정</option>
+              </select>
+              {project.content.layout.width === "custom" && (
+                <input
+                  type="number"
+                  value={project.content.layout.customPx}
+                  onChange={(e) =>
+                    update({
+                      ...project.content,
+                      layout: {
+                        ...project.content.layout,
+                        customPx: Number(e.target.value) || 960,
+                      },
+                    })
+                  }
+                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                  placeholder="px"
+                />
+              )}
             </div>
 
             <div>

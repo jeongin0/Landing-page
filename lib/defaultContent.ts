@@ -8,6 +8,7 @@ export const defaultStoreContent = (): StoreContent => ({
     bg: "#ffffff",
     text: "#1f2937",
   },
+  layout: { width: "normal", customPx: 960 },
   sections: DEFAULT_SECTIONS.map((s) => ({ ...s })),
   cta: {
     text: "지금 구매하기",
