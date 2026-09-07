@@ -36,7 +36,7 @@ export default function PrivacyPage() {
         <li>Supabase — 데이터베이스·인증·파일 저장 (국외)</li>
         <li>Vercel — 서비스 호스팅 (국외)</li>
         <li>{BIZ.paymentProcessor} — 결제 처리 (국외)</li>
-        <li>Anthropic — AI 카피 생성 시 입력한 상품 정보 전송 (국외)</li>
+        <li>Google (Gemini API) — AI 카피 생성 시 입력한 상품 정보 전송 (국외)</li>
       </ul>
 
       <h2>5. 이용자의 권리</h2>

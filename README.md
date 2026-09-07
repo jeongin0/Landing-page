@@ -10,13 +10,13 @@ npm run dev
 
 http://localhost:3000
 
-## AI 카피 생성 켜기
+## AI 카피 생성 켜기 (Google Gemini — 무료)
 
-1. `.env.local.example` 를 `.env.local` 로 복사
-2. https://console.anthropic.com/settings/keys 에서 키 발급 후 붙여넣기
-3. `npm run dev` 재시작
+1. https://aistudio.google.com/apikey 에서 API 키 발급 (카드 등록 불필요)
+2. `.env.local` 에 `GEMINI_API_KEY=발급받은키` 추가
+3. `npm run dev` 재시작 / 배포 시 Vercel 환경변수에도 추가
 
-키가 없어도 편집/저장/내보내기는 전부 동작함 (AI 버튼만 비활성).
+키가 없어도 편집/저장/내보내기는 전부 동작함 (AI 생성만 에러).
 
 ## 현재 되는 것 (v1)
 

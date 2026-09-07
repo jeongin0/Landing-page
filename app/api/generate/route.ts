@@ -1,4 +1,3 @@
-import Anthropic from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
@@ -9,12 +8,14 @@ const MONTHLY_LIMIT: Record<string, number> = {
   lifetime: 200,
 };
 
-// 상품 정보 -> 랜딩페이지 카피(JSON) 생성
+const GEMINI_MODEL = "gemini-2.0-flash";
+
+// 상품 정보 -> 랜딩페이지 카피(JSON) 생성 (Google Gemini 무료 등급)
 export async function POST(req: Request) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return new NextResponse(
-      "서버에 ANTHROPIC_API_KEY가 설정되지 않았습니다. .env.local 파일에 키를 넣고 서버를 재시작하세요.",
+      "서버에 GEMINI_API_KEY가 설정되지 않았습니다. https://aistudio.google.com/apikey 에서 키를 발급해 넣으세요.",
       { status: 500 },
     );
   }
@@ -55,8 +56,6 @@ export async function POST(req: Request) {
   const { product, features, audience, tone } = await req.json();
   if (!product) return new NextResponse("상품명이 필요합니다.", { status: 400 });
 
-  const client = new Anthropic({ apiKey });
-
   const prompt = `너는 한국어 랜딩페이지 카피라이터야. 아래 상품 정보로 "스토어 단일상품" 랜딩페이지의 문구를 작성해.
 
 상품명: ${product}
@@ -73,7 +72,7 @@ ${features || "(입력 없음)"}
 - reviews는 3개 (실제 후기처럼 자연스럽게, 이름은 "김**" 형식)
 - faq는 3개
 
-아래 JSON 스키마에 맞춰 **JSON만** 출력해. 다른 말 절대 금지.
+아래 JSON 스키마에 맞춰 JSON만 출력해.
 {
   "cta": { "text": string },
   "hero": { "badge": string, "title": string, "subtitle": string },
@@ -86,17 +85,35 @@ ${features || "(입력 없음)"}
 }`;
 
   try {
-    const msg = await client.messages.create({
-      model: "claude-sonnet-5",
-      max_tokens: 4000,
-      messages: [{ role: "user", content: prompt }],
-    });
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 2048,
+            responseMimeType: "application/json",
+          },
+        }),
+      },
+    );
 
-    const text = msg.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map((b) => b.text)
-      .join("");
+    if (!res.ok) {
+      const err = await res.text();
+      console.error("Gemini error", res.status, err);
+      return new NextResponse("생성 서비스 오류: " + res.status, { status: 502 });
+    }
 
+    const data = await res.json();
+    const text: string =
+      data?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text).join("") ??
+      "";
     const jsonStr = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
     const parsed = JSON.parse(jsonStr);
 
