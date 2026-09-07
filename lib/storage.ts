@@ -1,6 +1,6 @@
-// ── 저장소 레이어 (v2: Supabase) ─────────────────────────────
-// 로그인 전에는 익명 세션(anonymous auth)으로 동작하고,
-// 나중에 이메일 로그인하면 같은 user_id 가 그대로 이어집니다.
+// ── 저장소 레이어 (Supabase) ─────────────────────────────
+// 로그인한 사용자만 프로젝트를 만들고 볼 수 있습니다.
+// 로그인 세션이 없으면 ensureUserId 가 LOGIN_REQUIRED 로 throw 합니다.
 
 import type { Project } from "./schema";
 import { normalizeContent } from "./schema";
@@ -27,14 +27,19 @@ const rowToProject = (r: Row): Project => ({
   updatedAt: r.updated_at,
 });
 
-// 세션이 없으면 익명 세션을 만든다. user_id 를 반환.
+export class LoginRequiredError extends Error {
+  constructor() {
+    super("LOGIN_REQUIRED");
+    this.name = "LoginRequiredError";
+  }
+}
+
+// 로그인 세션의 user_id 반환. 없으면 LoginRequiredError.
 export async function ensureUserId(): Promise<string> {
   const sb = supabaseBrowser();
   const { data } = await sb.auth.getSession();
   if (data.session?.user) return data.session.user.id;
-  const { data: anon, error } = await sb.auth.signInAnonymously();
-  if (error || !anon.user) throw new Error("세션 생성 실패: " + error?.message);
-  return anon.user.id;
+  throw new LoginRequiredError();
 }
 
 export async function listProjects(): Promise<Project[]> {

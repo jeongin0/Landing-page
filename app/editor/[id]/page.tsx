@@ -12,6 +12,7 @@ import GenerateModal from "@/components/GenerateModal";
 import AuthWidget from "@/components/AuthWidget";
 import ImageField from "@/components/ImageField";
 import { usePlan } from "@/lib/usePlan";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 // <input type=color> 는 6자리 hex만 받음 (#RRGGBBAA -> #RRGGBB)
@@ -22,6 +23,7 @@ const hexOnly = (v: string) => {
 
 export default function EditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { checked } = useRequireAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [editing, setEditing] = useState(true);
@@ -34,6 +36,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const { isPaid } = usePlan();
 
   useEffect(() => {
+    if (!checked) return;
     getProject(id)
       .then((p) => {
         if (!p) setNotFound(true);
@@ -43,7 +46,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
         console.error(e);
         setNotFound(true);
       });
-  }, [id]);
+  }, [id, checked]);
 
   // 변경 시 0.6초 후 자동 저장
   const update = (content: StoreContent) => {

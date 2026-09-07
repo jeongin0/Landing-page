@@ -32,31 +32,26 @@ function LoginInner() {
         return;
       }
 
-      // 가입: 익명 세션이면 그 계정을 이메일 계정으로 승격 (작업 유지)
-      const { data: sess } = await sb.auth.getSession();
-      if (sess.session?.user?.is_anonymous) {
-        const { error } = await sb.auth.updateUser({ email, password });
-        if (error) {
-          if (/regist|already|exist/i.test(error.message)) {
-            setMsg({ kind: "error", text: DUP_MSG });
-            return;
-          }
-          throw error;
-        }
-      } else {
-        const { data, error } = await sb.auth.signUp({ email, password });
-        if (error) {
-          if (/regist|already|exist/i.test(error.message)) {
-            setMsg({ kind: "error", text: DUP_MSG });
-            return;
-          }
-          throw error;
-        }
-        // Supabase 는 이메일 중복 시 에러 대신 identities 빈 배열로 응답 (계정 열거 방지)
-        if (data.user && (data.user.identities?.length ?? 0) === 0) {
+      // 가입
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) {
+        if (/regist|already|exist/i.test(error.message)) {
           setMsg({ kind: "error", text: DUP_MSG });
           return;
         }
+        throw error;
+      }
+      // Supabase 는 이메일 중복 시 에러 대신 identities 빈 배열로 응답 (계정 열거 방지)
+      if (data.user && (data.user.identities?.length ?? 0) === 0) {
+        setMsg({ kind: "error", text: DUP_MSG });
+        return;
+      }
+
+      // 이메일 확인이 꺼져 있으면 바로 세션이 생김 → 로그인 처리
+      if (data.session) {
+        router.push(next);
+        router.refresh();
+        return;
       }
       setMsg({
         kind: "info",
@@ -121,7 +116,7 @@ function LoginInner() {
 
         {/* 모드에 따라 높이가 바뀌지 않도록 항상 같은 공간 확보 */}
         <div className="mt-2 min-h-[32px] text-xs text-gray-400">
-          {mode === "signup" && "지금 만든 작업이 이 계정에 그대로 연결됩니다."}
+          {mode === "signup" && "이메일이 곧 로그인 아이디가 됩니다."}
         </div>
 
         <div className="min-h-[44px]">

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "./supabase/client";
-import { ensureUserId } from "./storage";
 
 export type Plan = "free" | "pro" | "lifetime";
 
@@ -13,8 +12,14 @@ export function usePlan() {
   useEffect(() => {
     (async () => {
       try {
-        const uid = await ensureUserId();
-        const { data } = await supabaseBrowser()
+        const sb = supabaseBrowser();
+        const { data: sess } = await sb.auth.getSession();
+        const uid = sess.session?.user?.id;
+        if (!uid) {
+          setPlan("free");
+          return;
+        }
+        const { data } = await sb
           .from("profiles")
           .select("plan")
           .eq("id", uid)
@@ -35,7 +40,7 @@ export async function startCheckout(planWanted: "pro" | "lifetime") {
   const sb = supabaseBrowser();
   const { data } = await sb.auth.getSession();
   const token = data.session?.access_token;
-  if (!token || data.session?.user?.is_anonymous) {
+  if (!token) {
     location.href = "/login?next=/pricing";
     return;
   }

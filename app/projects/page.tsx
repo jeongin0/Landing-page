@@ -7,10 +7,12 @@ import { listProjects, createProject, deleteProject } from "@/lib/storage";
 import type { Project } from "@/lib/schema";
 import Header from "@/components/Header";
 import { usePlan } from "@/lib/usePlan";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { PRESETS } from "@/lib/presets";
 
 export default function ProjectsPage() {
   const router = useRouter();
+  const { checked } = useRequireAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -19,11 +21,15 @@ export default function ProjectsPage() {
   const atFreeLimit = !isPaid && projects.length >= FREE_MAX;
 
   useEffect(() => {
+    if (!checked) return;
     listProjects()
       .then(setProjects)
       .catch((e) => console.error(e))
       .finally(() => setLoading(false));
-  }, []);
+  }, [checked]);
+
+  if (!checked)
+    return <p className="p-10 text-center text-sm text-gray-400">불러오는 중…</p>;
 
   const handleCreate = async (presetId: string) => {
     if (busy) return;

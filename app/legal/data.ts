@@ -3,7 +3,7 @@
 // ⚠️ 아래 값만 본인 것으로 교체하세요.
 export const BIZ = {
   service: "랜딩페이지 빌더",
-  operator: "○○○ (운영자명 또는 닉네임)",
+  operator: "박정인",
   email: "wjddls1331@gmail.com",
   updated: "2026-09-07",
   paymentProcessor: "LemonSqueezy (lemonsqueezy.com)",
