@@ -3,6 +3,7 @@
 import type { StoreContent, SectionType } from "@/lib/schema";
 import { WIDTH_PX } from "@/lib/schema";
 import Editable from "@/components/Editable";
+import ResizableImage from "@/components/ResizableImage";
 
 type Props = {
   content: StoreContent;
@@ -63,12 +64,36 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
       onChange={(v) => set({ hero: { ...c.hero, subtitle: v } })} />
   );
 
+  const heroImg = (extra: string, aspect: string) => (
+    <div className={extra}>
+      <ResizableImage
+        src={c.hero.image}
+        editing={editing}
+        widthPct={c.hero.imageW ?? 100}
+        aspect={aspect}
+        imgClassName="w-full rounded-2xl object-cover shadow-lg"
+        onResize={(p) => set({ hero: { ...c.hero, imageW: p } })}
+      />
+    </div>
+  );
+  const detailImg = (extra: string, aspect: string) => (
+    <div className={extra}>
+      <ResizableImage
+        src={c.detail.image}
+        editing={editing}
+        widthPct={c.detail.imageW ?? 100}
+        aspect={aspect}
+        imgClassName="w-full rounded-2xl object-cover shadow-lg"
+        onResize={(p) => set({ detail: { ...c.detail, imageW: p } })}
+      />
+    </div>
+  );
+
   // ── HERO ── 스타일별로 완전히 다르게
   const hero =
     style === "spotlight" ? (
       <section className={wrap + " py-16 text-center"}>
-        <img src={c.hero.image} alt="" className="mx-auto mb-10 w-full rounded-3xl object-cover shadow-xl"
-          style={{ aspectRatio: "16/9" }} />
+        {heroImg("mb-10", "16/9")}
         {badge}
         {heroTitle}
         {heroSub}
@@ -80,8 +105,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
         {heroTitle}
         {heroSub}
         <div className="mt-6">{ctaBtn()}</div>
-        <img src={c.hero.image} alt="" className="mt-10 w-full rounded-2xl object-cover shadow-lg"
-          style={{ aspectRatio: "21/9" }} />
+        {heroImg("mt-10", "21/9")}
       </section>
     ) : (
       <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"}>
@@ -91,8 +115,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
           {heroSub}
           <div className="mt-6">{ctaBtn()}</div>
         </div>
-        <img src={c.hero.image} alt="" className="w-full rounded-2xl object-cover shadow-lg"
-          style={{ aspectRatio: "4/3" }} />
+        {heroImg("", "4/3")}
       </section>
     );
 
@@ -178,16 +201,14 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
           className={`text-center text-2xl font-extrabold ${headingFont}`}
           value={c.detail.heading}
           onChange={(v) => set({ detail: { ...c.detail, heading: v } })} />
-        <img src={c.detail.image} alt="" className="my-8 w-full rounded-2xl object-cover shadow-lg"
-          style={{ aspectRatio: "16/9" }} />
+        {detailImg("my-8", "16/9")}
         <Editable as="p" multiline editing={editing} className="opacity-80"
           value={c.detail.body}
           onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
       </section>
     ) : (
       <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"}>
-        <img src={c.detail.image} alt="" className="w-full rounded-2xl object-cover shadow-lg"
-          style={{ aspectRatio: "4/3" }} />
+        {detailImg("", "4/3")}
         <div>
           <Editable as="h2" editing={editing} className={"text-2xl font-extrabold " + headingFont}
             value={c.detail.heading}

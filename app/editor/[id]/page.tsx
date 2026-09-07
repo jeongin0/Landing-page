@@ -448,6 +448,26 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   })
                 }
               />
+              <label className="mt-1 flex items-center gap-2 text-gray-500">
+                <span className="w-8 shrink-0">크기</span>
+                <input
+                  type="range"
+                  min={20}
+                  max={100}
+                  value={project.content.hero.imageW ?? 100}
+                  onChange={(e) =>
+                    update({
+                      ...project.content,
+                      hero: { ...project.content.hero, imageW: Number(e.target.value) },
+                    })
+                  }
+                  className="flex-1"
+                />
+                <span className="w-9 shrink-0 text-right tabular-nums">
+                  {project.content.hero.imageW ?? 100}%
+                </span>
+              </label>
+
               <label className="mb-1 mt-3 block text-gray-600">상세 이미지</label>
               <ImageField
                 value={project.content.detail.image}
@@ -459,6 +479,25 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   })
                 }
               />
+              <label className="mt-1 flex items-center gap-2 text-gray-500">
+                <span className="w-8 shrink-0">크기</span>
+                <input
+                  type="range"
+                  min={20}
+                  max={100}
+                  value={project.content.detail.imageW ?? 100}
+                  onChange={(e) =>
+                    update({
+                      ...project.content,
+                      detail: { ...project.content.detail, imageW: Number(e.target.value) },
+                    })
+                  }
+                  className="flex-1"
+                />
+                <span className="w-9 shrink-0 text-right tabular-nums">
+                  {project.content.detail.imageW ?? 100}%
+                </span>
+              </label>
             </div>
 
             <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-800">
