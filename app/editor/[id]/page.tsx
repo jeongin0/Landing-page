@@ -19,6 +19,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const captureRef = useRef<HTMLDivElement>(null);
   const { isPaid } = usePlan();
 
   useEffect(() => {
@@ -80,15 +81,22 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
 
   const [imgBusy, setImgBusy] = useState(false);
   const handleImage = async (fmt: "png" | "jpeg" | "webp") => {
-    if (!previewRef.current || imgBusy) return;
+    if (!captureRef.current || imgBusy) return;
     setImgBusy(true);
-    const wasEditing = editing;
-    setEditing(false);
     try {
-      await new Promise((r) => setTimeout(r, 150)); // 편집 UI 사라질 시간
+      await new Promise((r) => setTimeout(r, 300)); // 캡처용 렌더 + 이미지 로드 대기
       const lib = await import("html-to-image");
-      const node = previewRef.current;
-      const opts = { cacheBust: true, pixelRatio: 2, backgroundColor: "#ffffff" };
+      const node = captureRef.current;
+      const w = node.scrollWidth;
+      const h = node.scrollHeight;
+      const opts = {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: "#ffffff",
+        width: w,
+        height: h,
+        style: { margin: "0", transform: "none" },
+      };
       let dataUrl: string;
       if (fmt === "png") dataUrl = await lib.toPng(node, opts);
       else if (fmt === "jpeg")
@@ -104,7 +112,6 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     } catch (e) {
       alert("이미지 저장 실패: " + (e instanceof Error ? e.message : ""));
     } finally {
-      setEditing(wasEditing);
       setImgBusy(false);
     }
   };
@@ -283,6 +290,16 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           current={project.content}
         />
       )}
+
+      {/* 이미지 캡처 전용 (화면 밖, 고정 1280px) */}
+      <div
+        aria-hidden
+        style={{ position: "absolute", left: -99999, top: 0, width: 1280 }}
+      >
+        <div ref={captureRef} style={{ width: 1280 }}>
+          <StoreProduct content={project.content} editing={false} />
+        </div>
+      </div>
     </div>
   );
 }
