@@ -62,7 +62,6 @@ export default function LandingPage() {
               요금제 보기
             </Link>
           </div>
-          <p className="mt-3 text-xs text-gray-400">가입 없이 바로 만들어볼 수 있어요</p>
         </section>
 
         {/* 기능 */}
