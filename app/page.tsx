@@ -94,7 +94,7 @@ export default function LandingPage() {
         </section>
 
         {/* CTA */}
-        <section className="border-t border-gray-100 py-16 text-center">
+        <section className="border-t border-gray-100 bg-gray-50 py-16 text-center">
           <h2 className="text-2xl font-extrabold">지금 하나 만들어보세요</h2>
           <p className="mt-2 text-sm text-gray-500">무료 플랜으로 프로젝트 3개까지 무료</p>
           <Link
