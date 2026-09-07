@@ -34,15 +34,14 @@ ${features || "(입력 없음)"}
 
 아래 JSON 스키마에 맞춰 **JSON만** 출력해. 다른 말 절대 금지.
 {
-  "brand": { "name": string, "ctaText": string },
-  "hero": { "badge": string, "title": string, "subtitle": string, "ctaText": string },
+  "cta": { "text": string },
+  "hero": { "badge": string, "title": string, "subtitle": string },
   "highlights": [{ "icon": string(이모지 1개), "title": string, "desc": string }],
   "detail": { "heading": string, "body": string },
   "specs": [{ "label": string, "value": string }],
   "reviews": [{ "name": string, "text": string, "rating": number(4 또는 5) }],
-  "pricing": { "price": string, "compareAt": string, "note": string, "ctaText": string },
-  "faq": [{ "q": string, "a": string }],
-  "footer": { "text": string }
+  "pricing": { "price": string, "compareAt": string, "note": string },
+  "faq": [{ "q": string, "a": string }]
 }`;
 
   try {

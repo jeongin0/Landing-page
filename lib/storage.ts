@@ -3,6 +3,7 @@
 // 나중에 이메일 로그인하면 같은 user_id 가 그대로 이어집니다.
 
 import type { Project } from "./schema";
+import { normalizeContent } from "./schema";
 import { defaultStoreContent } from "./defaultContent";
 import { supabaseBrowser } from "./supabase/client";
 
@@ -20,7 +21,7 @@ const rowToProject = (r: Row): Project => ({
   id: r.id,
   title: r.title,
   templateId: "store-01",
-  content: r.content,
+  content: normalizeContent(r.content),
   published: !!r.published,
   createdAt: r.created_at,
   updatedAt: r.updated_at,

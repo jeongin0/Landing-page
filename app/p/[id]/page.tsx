@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import type { StoreContent } from "@/lib/schema";
+import { normalizeContent } from "@/lib/schema";
 import StoreProduct from "@/components/templates/StoreProduct";
 
 export const revalidate = 60; // 게시 페이지는 60초 캐시
@@ -21,7 +21,11 @@ async function getPublished(id: string) {
     .eq("id", id)
     .eq("published", true)
     .maybeSingle();
-  return data as { title: string; content: StoreContent } | null;
+  if (!data) return null;
+  return {
+    title: data.title as string,
+    content: normalizeContent(data.content),
+  };
 }
 
 export async function generateMetadata({
@@ -31,7 +35,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const p = await getPublished(id);
-  return { title: p?.content?.brand?.name || p?.title || "랜딩페이지" };
+  return {
+    title: p?.content?.hero?.title?.split("\n")[0] || p?.title || "상세페이지",
+  };
 }
 
 export default async function PublishedPage({

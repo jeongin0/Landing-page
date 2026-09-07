@@ -31,13 +31,15 @@ export default function GenerateModal({ onClose, onApply, current }: Props) {
         throw new Error(t || "생성 실패");
       }
       const partial = (await res.json()) as Partial<StoreContent>;
-      // 텍스트만 교체, 테마/이미지는 유지
+      // 텍스트만 교체, 테마/이미지/섹션 구성은 유지
       onApply({
         ...current,
         ...partial,
         theme: current.theme,
+        sections: current.sections,
         hero: { ...current.hero, ...(partial.hero || {}), image: current.hero.image },
         detail: { ...current.detail, ...(partial.detail || {}), image: current.detail.image },
+        cta: { ...current.cta, ...(partial.cta || {}) },
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "오류가 발생했습니다");
