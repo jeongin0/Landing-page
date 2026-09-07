@@ -2,7 +2,7 @@
 
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { getProject, saveProject } from "@/lib/storage";
+import { getProject, saveProject, setPublished } from "@/lib/storage";
 import type { Project, StoreContent } from "@/lib/schema";
 import StoreProduct from "@/components/templates/StoreProduct";
 import GenerateModal from "@/components/GenerateModal";
@@ -18,6 +18,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const [showGenerate, setShowGenerate] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const { isPaid } = usePlan();
 
   useEffect(() => {
@@ -48,6 +49,59 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const patchTheme = (k: keyof StoreContent["theme"], v: string) => {
     if (!project) return;
     update({ ...project.content, theme: { ...project.content.theme, [k]: v } });
+  };
+
+  const [pubBusy, setPubBusy] = useState(false);
+  const publicUrl =
+    typeof window !== "undefined" ? `${location.origin}/p/${id}` : "";
+
+  const togglePublish = async () => {
+    if (!project || pubBusy) return;
+    setPubBusy(true);
+    const next = !project.published;
+    try {
+      await setPublished(id, next);
+      setProject({ ...project, published: next });
+      if (next) {
+        await navigator.clipboard?.writeText(publicUrl).catch(() => {});
+        alert("게시됐어요! 주소가 복사되었습니다:\n" + publicUrl);
+      }
+    } catch (e) {
+      alert("실패: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setPubBusy(false);
+    }
+  };
+
+  const [imgBusy, setImgBusy] = useState(false);
+  const handleImage = async (fmt: "png" | "jpeg" | "webp") => {
+    if (!previewRef.current || imgBusy) return;
+    setImgBusy(true);
+    const wasEditing = editing;
+    setEditing(false);
+    try {
+      await new Promise((r) => setTimeout(r, 150)); // 편집 UI 사라질 시간
+      const lib = await import("html-to-image");
+      const node = previewRef.current;
+      const opts = { cacheBust: true, pixelRatio: 2, backgroundColor: "#ffffff" };
+      let dataUrl: string;
+      if (fmt === "png") dataUrl = await lib.toPng(node, opts);
+      else if (fmt === "jpeg")
+        dataUrl = await lib.toJpeg(node, { ...opts, quality: 0.95 });
+      else {
+        const canvas = await lib.toCanvas(node, opts);
+        dataUrl = canvas.toDataURL("image/webp", 0.95);
+      }
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `${project?.title || "landing"}.${fmt}`;
+      a.click();
+    } catch (e) {
+      alert("이미지 저장 실패: " + (e instanceof Error ? e.message : ""));
+    } finally {
+      setEditing(wasEditing);
+      setImgBusy(false);
+    }
   };
 
   const handleExport = async () => {
@@ -111,11 +165,43 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           >
             {editing ? "미리보기" : "편집하기"}
           </button>
+          <details className="relative">
+            <summary className="cursor-pointer list-none rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-semibold">
+              {imgBusy ? "저장 중…" : "내보내기 ▾"}
+            </summary>
+            <div className="absolute right-0 z-20 mt-1 w-40 rounded-lg border border-gray-200 bg-white p-1 text-sm shadow-lg">
+              <button onClick={handleExport} className="block w-full rounded px-3 py-1.5 text-left hover:bg-gray-100">
+                HTML 파일
+              </button>
+              <button onClick={() => handleImage("png")} className="block w-full rounded px-3 py-1.5 text-left hover:bg-gray-100">
+                PNG 이미지
+              </button>
+              <button onClick={() => handleImage("jpeg")} className="block w-full rounded px-3 py-1.5 text-left hover:bg-gray-100">
+                JPEG 이미지
+              </button>
+              <button onClick={() => handleImage("webp")} className="block w-full rounded px-3 py-1.5 text-left hover:bg-gray-100">
+                WEBP 이미지
+              </button>
+            </div>
+          </details>
+          {project.published && (
+            <a
+              href={publicUrl}
+              target="_blank"
+              className="text-xs text-blue-600 underline"
+            >
+              게시됨 ↗
+            </a>
+          )}
           <button
-            onClick={handleExport}
-            className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white"
+            onClick={togglePublish}
+            disabled={pubBusy}
+            className={
+              "rounded-lg px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-40 " +
+              (project.published ? "bg-gray-500" : "bg-gray-900")
+            }
           >
-            HTML 내보내기
+            {pubBusy ? "…" : project.published ? "게시 취소" : "게시하기"}
           </button>
         </div>
       </div>
@@ -175,7 +261,10 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
 
         {/* 미리보기 */}
         <div className="flex-1 overflow-y-auto bg-gray-100">
-          <div className="mx-auto my-6 max-w-5xl overflow-hidden rounded-xl bg-white shadow-xl">
+          <div
+            ref={previewRef}
+            className="mx-auto my-6 max-w-5xl overflow-hidden rounded-xl bg-white shadow-xl"
+          >
             <StoreProduct content={project.content} onChange={update} editing={editing} />
           </div>
         </div>

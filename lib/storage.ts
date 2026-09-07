@@ -11,6 +11,7 @@ type Row = {
   title: string;
   template_id: string;
   content: Project["content"];
+  published: boolean | null;
   created_at: string;
   updated_at: string;
 };
@@ -20,6 +21,7 @@ const rowToProject = (r: Row): Project => ({
   title: r.title,
   templateId: "store-01",
   content: r.content,
+  published: !!r.published,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
 });
@@ -73,6 +75,13 @@ export async function deleteProject(id: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function setPublished(id: string, published: boolean): Promise<void> {
+  const sb = supabaseBrowser();
+  await ensureUserId();
+  const { error } = await sb.from("projects").update({ published }).eq("id", id);
+  if (error) throw error;
+}
+
 export async function createProject(title: string): Promise<Project> {
   const sb = supabaseBrowser();
   const userId = await ensureUserId();
@@ -82,6 +91,7 @@ export async function createProject(title: string): Promise<Project> {
     title: title.trim() || "제목 없는 페이지",
     templateId: "store-01",
     content: defaultStoreContent(),
+    published: false,
     createdAt: now,
     updatedAt: now,
   };

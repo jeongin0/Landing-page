@@ -5,13 +5,13 @@ import Editable from "@/components/Editable";
 
 type Props = {
   content: StoreContent;
-  onChange: (next: StoreContent) => void;
+  onChange?: (next: StoreContent) => void;
   editing: boolean;
 };
 
 export default function StoreProduct({ content, onChange, editing }: Props) {
   const c = content;
-  const set = (patch: Partial<StoreContent>) => onChange({ ...c, ...patch });
+  const set = (patch: Partial<StoreContent>) => onChange?.({ ...c, ...patch });
 
   return (
     <div style={{ background: c.theme.bg, color: c.theme.text }} className="min-h-full">

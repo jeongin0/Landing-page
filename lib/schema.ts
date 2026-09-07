@@ -49,6 +49,7 @@ export type Project = {
   title: string;
   templateId: "store-01";
   content: StoreContent;
+  published: boolean;
   createdAt: string;
   updatedAt: string;
 };
