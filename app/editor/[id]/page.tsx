@@ -6,6 +6,8 @@ import { getProject, saveProject } from "@/lib/storage";
 import type { Project, StoreContent } from "@/lib/schema";
 import StoreProduct from "@/components/templates/StoreProduct";
 import GenerateModal from "@/components/GenerateModal";
+import AuthWidget from "@/components/AuthWidget";
+import ImageField from "@/components/ImageField";
 
 export default function EditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -86,6 +88,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           {savedAt && <span className="text-xs text-gray-400">저장됨 {savedAt}</span>}
         </div>
         <div className="flex items-center gap-2">
+          <AuthWidget />
           <button
             onClick={() => setShowGenerate(true)}
             className="rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-semibold text-white"
@@ -129,32 +132,29 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
             </div>
 
             <div>
-              <h3 className="mb-2 font-bold text-gray-700">이미지 주소</h3>
+              <h3 className="mb-2 font-bold text-gray-700">이미지</h3>
               <label className="mb-1 block text-gray-600">히어로 이미지</label>
-              <input
+              <ImageField
                 value={project.content.hero.image}
-                onChange={(e) =>
+                projectId={project.id}
+                onChange={(url) =>
                   update({
                     ...project.content,
-                    hero: { ...project.content.hero, image: e.target.value },
+                    hero: { ...project.content.hero, image: url },
                   })
                 }
-                className="mb-3 w-full rounded border border-gray-300 px-2 py-1 text-xs"
               />
-              <label className="mb-1 block text-gray-600">상세 이미지</label>
-              <input
+              <label className="mb-1 mt-3 block text-gray-600">상세 이미지</label>
+              <ImageField
                 value={project.content.detail.image}
-                onChange={(e) =>
+                projectId={project.id}
+                onChange={(url) =>
                   update({
                     ...project.content,
-                    detail: { ...project.content.detail, image: e.target.value },
+                    detail: { ...project.content.detail, image: url },
                   })
                 }
-                className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
               />
-              <p className="mt-2 text-xs text-gray-400">
-                이미지 파일 업로드는 다음 버전(클라우드 저장)에서 지원됩니다. 지금은 URL을 넣어주세요.
-              </p>
             </div>
 
             <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-800">

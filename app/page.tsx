@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { listProjects, createProject, deleteProject } from "@/lib/storage";
 import type { Project } from "@/lib/schema";
+import AuthWidget from "@/components/AuthWidget";
 
 export default function Home() {
   const router = useRouter();
@@ -40,10 +41,15 @@ export default function Home() {
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-12">
-      <h1 className="text-2xl font-extrabold">랜딩페이지 빌더</h1>
-      <p className="mt-1 text-sm text-gray-500">
-        스토어 단일상품 템플릿 · 텍스트/이미지/색상을 클릭해서 수정하세요.
-      </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold">랜딩페이지 빌더</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            스토어 단일상품 템플릿 · 텍스트/이미지/색상을 클릭해서 수정하세요.
+          </p>
+        </div>
+        <AuthWidget />
+      </div>
 
       <div className="mt-8 flex gap-2">
         <input
