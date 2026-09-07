@@ -1,66 +1,81 @@
-// ── 저장소 레이어 (v1: localStorage) ──────────────────────────────
-// v2에서 이 파일의 함수 본문만 Supabase 호출로 교체하면 됩니다.
-// 나머지 코드(에디터, 렌더러)는 이 인터페이스만 사용합니다.
+// ── 저장소 레이어 (v2: Supabase) ─────────────────────────────
+// 로그인 전에는 익명 세션(anonymous auth)으로 동작하고,
+// 나중에 이메일 로그인하면 같은 user_id 가 그대로 이어집니다.
 
 import type { Project } from "./schema";
 import { defaultStoreContent } from "./defaultContent";
+import { supabaseBrowser } from "./supabase/client";
 
-const INDEX_KEY = "lpb:index";
-const projectKey = (id: string) => `lpb:project:${id}`;
+type Row = {
+  id: string;
+  title: string;
+  template_id: string;
+  content: Project["content"];
+  created_at: string;
+  updated_at: string;
+};
 
-function readIndex(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(INDEX_KEY) || "[]");
-  } catch {
-    return [];
-  }
+const rowToProject = (r: Row): Project => ({
+  id: r.id,
+  title: r.title,
+  templateId: "store-01",
+  content: r.content,
+  createdAt: r.created_at,
+  updatedAt: r.updated_at,
+});
+
+// 세션이 없으면 익명 세션을 만든다. user_id 를 반환.
+export async function ensureUserId(): Promise<string> {
+  const sb = supabaseBrowser();
+  const { data } = await sb.auth.getSession();
+  if (data.session?.user) return data.session.user.id;
+  const { data: anon, error } = await sb.auth.signInAnonymously();
+  if (error || !anon.user) throw new Error("세션 생성 실패: " + error?.message);
+  return anon.user.id;
 }
 
-function writeIndex(ids: string[]) {
-  try {
-    localStorage.setItem(INDEX_KEY, JSON.stringify(ids));
-  } catch {
-    /* 저장 실패는 조용히 무시 (시크릿 모드 등) */
-  }
+export async function listProjects(): Promise<Project[]> {
+  const sb = supabaseBrowser();
+  await ensureUserId();
+  const { data, error } = await sb
+    .from("projects")
+    .select("*")
+    .order("updated_at", { ascending: false });
+  if (error) throw error;
+  return (data as Row[]).map(rowToProject);
 }
 
-export function listProjects(): Project[] {
-  return readIndex()
-    .map((id) => getProject(id))
-    .filter((p): p is Project => p !== null)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+export async function getProject(id: string): Promise<Project | null> {
+  const sb = supabaseBrowser();
+  await ensureUserId();
+  const { data, error } = await sb.from("projects").select("*").eq("id", id).maybeSingle();
+  if (error) throw error;
+  return data ? rowToProject(data as Row) : null;
 }
 
-export function getProject(id: string): Project | null {
-  try {
-    const raw = localStorage.getItem(projectKey(id));
-    return raw ? (JSON.parse(raw) as Project) : null;
-  } catch {
-    return null;
-  }
+export async function saveProject(project: Project): Promise<void> {
+  const sb = supabaseBrowser();
+  const userId = await ensureUserId();
+  const { error } = await sb.from("projects").upsert({
+    id: project.id,
+    user_id: userId,
+    title: project.title,
+    template_id: project.templateId,
+    content: project.content,
+  });
+  if (error) throw error;
 }
 
-export function saveProject(project: Project): void {
-  const next = { ...project, updatedAt: new Date().toISOString() };
-  try {
-    localStorage.setItem(projectKey(next.id), JSON.stringify(next));
-    const ids = readIndex();
-    if (!ids.includes(next.id)) writeIndex([next.id, ...ids]);
-  } catch {
-    /* 무시 */
-  }
+export async function deleteProject(id: string): Promise<void> {
+  const sb = supabaseBrowser();
+  await ensureUserId();
+  const { error } = await sb.from("projects").delete().eq("id", id);
+  if (error) throw error;
 }
 
-export function deleteProject(id: string): void {
-  try {
-    localStorage.removeItem(projectKey(id));
-    writeIndex(readIndex().filter((x) => x !== id));
-  } catch {
-    /* 무시 */
-  }
-}
-
-export function createProject(title: string): Project {
+export async function createProject(title: string): Promise<Project> {
+  const sb = supabaseBrowser();
+  const userId = await ensureUserId();
   const now = new Date().toISOString();
   const project: Project = {
     id: crypto.randomUUID(),
@@ -70,6 +85,13 @@ export function createProject(title: string): Project {
     createdAt: now,
     updatedAt: now,
   };
-  saveProject(project);
+  const { error } = await sb.from("projects").insert({
+    id: project.id,
+    user_id: userId,
+    title: project.title,
+    template_id: project.templateId,
+    content: project.content,
+  });
+  if (error) throw error;
   return project;
 }

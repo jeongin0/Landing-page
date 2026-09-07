@@ -17,9 +17,15 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const p = getProject(id);
-    if (!p) setNotFound(true);
-    else setProject(p);
+    getProject(id)
+      .then((p) => {
+        if (!p) setNotFound(true);
+        else setProject(p);
+      })
+      .catch((e) => {
+        console.error(e);
+        setNotFound(true);
+      });
   }, [id]);
 
   // 변경 시 0.6초 후 자동 저장
@@ -29,8 +35,9 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     setProject(next);
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
-      saveProject(next);
-      setSavedAt(new Date().toLocaleTimeString("ko-KR"));
+      saveProject(next)
+        .then(() => setSavedAt(new Date().toLocaleTimeString("ko-KR")))
+        .catch((e) => setSavedAt("저장 실패: " + (e?.message ?? "")));
     }, 600);
   };
 

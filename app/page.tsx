@@ -10,20 +10,32 @@ export default function Home() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [title, setTitle] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    setProjects(listProjects());
+    listProjects()
+      .then(setProjects)
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false));
   }, []);
 
-  const handleCreate = () => {
-    const p = createProject(title || "새 랜딩페이지");
-    router.push(`/editor/${p.id}`);
+  const handleCreate = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const p = await createProject(title || "새 랜딩페이지");
+      router.push(`/editor/${p.id}`);
+    } catch (e) {
+      alert("생성 실패: " + (e instanceof Error ? e.message : ""));
+      setBusy(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("이 프로젝트를 삭제할까요?")) return;
-    deleteProject(id);
-    setProjects(listProjects());
+    await deleteProject(id);
+    setProjects(await listProjects());
   };
 
   return (
@@ -43,14 +55,18 @@ export default function Home() {
         />
         <button
           onClick={handleCreate}
-          className="rounded-lg bg-gray-900 px-5 py-2 text-sm font-semibold text-white"
+          disabled={busy}
+          className="rounded-lg bg-gray-900 px-5 py-2 text-sm font-semibold text-white disabled:opacity-40"
         >
-          새로 만들기
+          {busy ? "생성 중…" : "새로 만들기"}
         </button>
       </div>
 
       <div className="mt-8 space-y-2">
-        {projects.length === 0 && (
+        {loading && (
+          <p className="p-8 text-center text-sm text-gray-400">불러오는 중…</p>
+        )}
+        {!loading && projects.length === 0 && (
           <p className="rounded-lg border border-dashed border-gray-300 p-8 text-center text-sm text-gray-400">
             아직 프로젝트가 없습니다. 위에서 하나 만들어보세요.
           </p>
