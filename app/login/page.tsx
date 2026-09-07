@@ -61,7 +61,7 @@ function LoginInner() {
             onClick={() => setMode("signup")}
             className={mode === "signup" ? "text-gray-900" : "text-gray-400"}
           >
-            가입
+            회원가입
           </button>
           <button
             onClick={() => setMode("login")}

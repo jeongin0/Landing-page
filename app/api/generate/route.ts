@@ -8,7 +8,7 @@ const MONTHLY_LIMIT: Record<string, number> = {
   lifetime: 200,
 };
 
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-3.6-flash";
 
 // 상품 정보 -> 랜딩페이지 카피(JSON) 생성 (Google Gemini 무료 등급)
 export async function POST(req: Request) {
@@ -68,6 +68,7 @@ ${features || "(입력 없음)"}
 - 과장/허위 표현 금지, 근거 없는 최상급 표현 자제
 - 짧고 구체적으로. 히어로 제목은 20자 내외
 - highlights는 정확히 3개
+- icon 필드는 반드시 이모지 문자 1개 (예: 🎧, ⚡, 🔋). 영문 아이콘 이름 금지
 - specs는 3~5개
 - reviews는 3개 (실제 후기처럼 자연스럽게, 이름은 "김**" 형식)
 - faq는 3개
@@ -84,30 +85,44 @@ ${features || "(입력 없음)"}
   "faq": [{ "q": string, "a": string }]
 }`;
 
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.8,
-            maxOutputTokens: 2048,
-            responseMimeType: "application/json",
-          },
-        }),
-      },
-    );
+  const body = JSON.stringify({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.8,
+      maxOutputTokens: 8000, // 사고 토큰 + JSON 출력 여유분
+      responseMimeType: "application/json",
+      thinkingConfig: { thinkingLevel: "low" },
+    },
+  });
 
-    if (!res.ok) {
-      const err = await res.text();
-      console.error("Gemini error", res.status, err);
-      return new NextResponse("생성 서비스 오류: " + res.status, { status: 502 });
+  try {
+    // 무료 등급은 간헐적으로 503(과부하) 반환 → 짧게 1회 재시도
+    let res: Response | null = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
+          },
+          body,
+        },
+      );
+      if (res.status !== 503 || attempt === 1) break;
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+
+    if (!res || !res.ok) {
+      const err = res ? await res.text() : "no response";
+      console.error("Gemini error", res?.status, err);
+      return new NextResponse(
+        res?.status === 503
+          ? "AI 생성 서버가 잠시 혼잡합니다. 잠시 후 다시 시도해주세요."
+          : "생성 서비스 오류: " + (res?.status ?? "network"),
+        { status: 502 },
+      );
     }
 
     const data = await res.json();

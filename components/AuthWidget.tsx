@@ -36,7 +36,7 @@ export default function AuthWidget() {
       href="/login"
       className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-semibold text-white"
     >
-      로그인 / 가입
+      로그인 / 회원가입
     </Link>
   );
 }
