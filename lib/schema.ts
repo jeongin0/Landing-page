@@ -107,13 +107,9 @@ export function normalizeContent(c: unknown): StoreContent {
 export type Project = {
   id: string;
   title: string;
-  templateId: "store-01";
+  templateId: string;
   content: StoreContent;
   published: boolean;
   createdAt: string;
   updatedAt: string;
-};
-
-export const TEMPLATE_LABELS: Record<Project["templateId"], string> = {
-  "store-01": "스토어 상세페이지",
 };

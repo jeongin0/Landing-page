@@ -4,7 +4,7 @@
 
 import type { Project } from "./schema";
 import { normalizeContent } from "./schema";
-import { defaultStoreContent } from "./defaultContent";
+import { makePreset } from "./presets";
 import { supabaseBrowser } from "./supabase/client";
 
 type Row = {
@@ -20,7 +20,7 @@ type Row = {
 const rowToProject = (r: Row): Project => ({
   id: r.id,
   title: r.title,
-  templateId: "store-01",
+  templateId: r.template_id || "store",
   content: normalizeContent(r.content),
   published: !!r.published,
   createdAt: r.created_at,
@@ -83,15 +83,18 @@ export async function setPublished(id: string, published: boolean): Promise<void
   if (error) throw error;
 }
 
-export async function createProject(title: string): Promise<Project> {
+export async function createProject(
+  title: string,
+  templateId: string = "store",
+): Promise<Project> {
   const sb = supabaseBrowser();
   const userId = await ensureUserId();
   const now = new Date().toISOString();
   const project: Project = {
     id: crypto.randomUUID(),
     title: title.trim() || "제목 없는 페이지",
-    templateId: "store-01",
-    content: defaultStoreContent(),
+    templateId,
+    content: makePreset(templateId),
     published: false,
     createdAt: now,
     updatedAt: now,

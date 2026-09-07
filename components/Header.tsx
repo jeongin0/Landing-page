@@ -14,6 +14,9 @@ export default function Header() {
           랜딩페이지 빌더
         </Link>
         <div className="flex items-center gap-4">
+          <Link href="/projects" className="text-sm font-semibold text-gray-500 hover:text-gray-900">
+            내 프로젝트
+          </Link>
           <Link href="/pricing" className="text-sm font-semibold text-gray-500 hover:text-gray-900">
             요금제
           </Link>

@@ -9,7 +9,7 @@ function LoginInner() {
   const router = useRouter();
   const params = useSearchParams();
   const initialMode = params.get("mode") === "login" ? "login" : "signup";
-  const next = params.get("next") || "/";
+  const next = params.get("next") || "/projects";
 
   const [mode, setMode] = useState<"signup" | "login">(initialMode);
   const [email, setEmail] = useState("");
