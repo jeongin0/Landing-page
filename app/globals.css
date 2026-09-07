@@ -16,4 +16,7 @@ body {
   background: #f3f4f6;
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  /* 한국어: 단어/어절 중간에서 줄바꿈되지 않도록 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }

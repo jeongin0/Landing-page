@@ -137,7 +137,7 @@ export function exportHtml(c: StoreContent, watermark = false): string {
 <title>${esc(c.hero.title.split("\n")[0] || "상세페이지")}</title>
 <style>
   *{box-sizing:border-box}
-  body{margin:0;background:${esc(t.bg)};color:${esc(t.text)};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.5}
+  body{margin:0;background:${esc(t.bg)};color:${esc(t.text)};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.5;word-break:keep-all;overflow-wrap:break-word}
   img{max-width:100%;display:block}
   .lb-grid3{display:grid;gap:24px}
   .lb-hero{display:block}
