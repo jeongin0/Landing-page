@@ -8,6 +8,7 @@ import StoreProduct from "@/components/templates/StoreProduct";
 import GenerateModal from "@/components/GenerateModal";
 import AuthWidget from "@/components/AuthWidget";
 import ImageField from "@/components/ImageField";
+import { usePlan } from "@/lib/usePlan";
 
 export default function EditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -17,6 +18,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const [showGenerate, setShowGenerate] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { isPaid } = usePlan();
 
   useEffect(() => {
     getProject(id)
@@ -53,7 +55,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     const res = await fetch("/api/export", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: project.content }),
+      body: JSON.stringify({ content: project.content, paid: isPaid }),
     });
     const html = await res.text();
     const blob = new Blob([html], { type: "text/html" });
@@ -88,6 +90,14 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           {savedAt && <span className="text-xs text-gray-400">저장됨 {savedAt}</span>}
         </div>
         <div className="flex items-center gap-2">
+          {!isPaid && (
+            <Link
+              href="/pricing"
+              className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-800"
+            >
+              업그레이드
+            </Link>
+          )}
           <AuthWidget />
           <button
             onClick={() => setShowGenerate(true)}

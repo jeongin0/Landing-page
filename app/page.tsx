@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { listProjects, createProject, deleteProject } from "@/lib/storage";
 import type { Project } from "@/lib/schema";
 import Header from "@/components/Header";
+import { usePlan } from "@/lib/usePlan";
 
 export default function Home() {
   const router = useRouter();
@@ -13,6 +14,8 @@ export default function Home() {
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const { isPaid } = usePlan();
+  const atFreeLimit = !isPaid && projects.length >= 1;
 
   useEffect(() => {
     listProjects()
@@ -23,6 +26,11 @@ export default function Home() {
 
   const handleCreate = async () => {
     if (busy) return;
+    if (atFreeLimit) {
+      if (confirm("무료 플랜은 프로젝트 1개까지예요. 요금제 페이지로 갈까요?"))
+        router.push("/pricing");
+      return;
+    }
     setBusy(true);
     try {
       const p = await createProject(title || "새 랜딩페이지");
@@ -64,6 +72,16 @@ export default function Home() {
           {busy ? "생성 중…" : "새로 만들기"}
         </button>
       </div>
+
+      {atFreeLimit && (
+        <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
+          무료 플랜은 프로젝트 1개까지예요.{" "}
+          <Link href="/pricing" className="font-semibold underline">
+            Pro로 업그레이드
+          </Link>{" "}
+          하면 무제한 + 워터마크가 사라집니다.
+        </div>
+      )}
 
       <div className="mt-8 space-y-2">
         {loading && (

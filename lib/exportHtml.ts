@@ -10,7 +10,10 @@ const esc = (s: string) =>
 const nl2br = (s: string) => esc(s).replace(/\r?\n/g, "<br/>");
 
 // StoreContent -> 독립 실행 HTML (Tailwind CDN 포함)
-export function exportHtml(c: StoreContent): string {
+export function exportHtml(c: StoreContent, watermark = false): string {
+  const wm = watermark
+    ? `<a href="https://landing-page-jeongin2.vercel.app" target="_blank" style="position:fixed;bottom:12px;right:12px;background:#111827;color:#fff;font:600 12px system-ui;padding:6px 10px;border-radius:9999px;text-decoration:none;z-index:9999">랜딩페이지 빌더로 제작</a>`
+    : "";
   const t = c.theme;
   const btn = `display:inline-block;background:${esc(t.primary)};color:#fff;font-weight:700;border-radius:.5rem;padding:.9rem 2rem;text-decoration:none`;
 
@@ -112,6 +115,7 @@ export function exportHtml(c: StoreContent): string {
 </section>
 
 <footer class="border-t border-black/5 px-5 py-10 text-center text-xs opacity-60">${nl2br(c.footer.text)}</footer>
+${wm}
 </body>
 </html>`;
 }
