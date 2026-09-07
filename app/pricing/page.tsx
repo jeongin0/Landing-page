@@ -21,8 +21,8 @@ const plans = [
     key: "lifetime" as const,
     name: "Lifetime",
     price: "1회 결제",
-    features: ["Pro 전체 기능", "평생 이용", "추가 비용 없음"],
-    cta: "평생 구매",
+    features: ["Pro 전체 기능", "1년 이용"],
+    cta: "1년 구매",
   },
 ];
 

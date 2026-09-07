@@ -43,28 +43,43 @@ app/api/generate/route.ts        Claude 호출
 app/api/export/route.ts          HTML 내보내기
 ```
 
-## 완료 (v2~v7)
+## 완료
 
-- [x] Supabase 연결 (storage.ts / auth / 익명세션)
-- [x] 로그인 · 요금제 (free / pro / lifetime)
+- [x] Supabase 연결 · 로그인 (익명세션 제거, 로그인 필수)
+- [x] 요금제 free / pro / lifetime + 요금제별 권한
 - [x] LemonSqueezy 결제 + webhook
-- [x] 게시(publish) + 이미지 내보내기(PNG/JPEG/WEBP)
+- [x] 게시(publish) + 이미지 내보내기(PNG/JPEG/WEBP) + HTML 내보내기
 - [x] 프리셋 3종 (클래식 / 스포트라이트 / 에디토리얼)
-- [x] 홍보 랜딩페이지
-- [x] 내보내기 워터마크 = 서버에서 요금제 검증 (클라 값 신뢰 안 함)
-- [x] AI 생성 = 로그인 필수 + 30일 사용량 한도(free 10 / paid 200) + sonnet
-- [x] 법적 페이지 (/legal/terms · privacy · refund)
+- [x] 홍보 랜딩페이지 + 법적 페이지 (/legal/terms · privacy · refund)
+- [x] 내보내기 워터마크 = 서버에서 요금제 검증
+- [x] AI 생성 (Google Gemini 무료) = 로그인 필수 + 30일 사용량 한도(free 10 / paid 200)
+- [x] 이미지 크기 조절 (드래그 + 슬라이더)
+- [x] 인증 에러 메시지 한국어화
+- [x] GEMINI_API_KEY (Vercel + 로컬), schema_v5 적용, Storage 버킷 생성
 
-## 상태
+## 판매 전 체크리스트
 
-인증 · 결제 · 요금제별 권한 · 게시 · 내보내기 · AI 생성 한도 · 법적 페이지까지
-**실제 판매 사이트와 동일하게 동작**한다. 커스텀 도메인만 연결하면 그대로 상용 서비스로 운영 가능
-(도메인은 브랜딩 · 메일 도달률용이며 기능 제약 요소가 아님).
+### Supabase 대시보드
+- [ ] Authentication → Providers → Email → **"Allow new users to sign up" ON** (가입 열기)
+- [ ] Confirm email OFF 유지 (또는 나중에 Brevo SMTP 연결 후 ON)
+- [ ] Authentication → Providers → **Anonymous sign-ins OFF** (권장)
+- [ ] Authentication → URL Configuration → Site URL / Redirect URLs = 배포 도메인
 
-## 판매 전 남은 것
+### LemonSqueezy
+- [ ] Store currency = USD, Pro / Lifetime 가격 확인
+- [ ] 두 상품 상태 = Published (draft 아님)
+- [ ] Settings → Webhooks → URL = `https://<배포도메인>/api/lemon/webhook`, 시크릿이 `LEMONSQUEEZY_WEBHOOK_SECRET` 와 일치, 이벤트 `order_created` 등 체크
+- [ ] 테스트 모드로 Pro 1건 결제 → profiles.plan 이 pro 로 바뀌는지 확인
 
-- [ ] **커스텀 SMTP 연결** — Brevo 무료(300통/일, 도메인 불필요). Supabase 기본 메일은 시간당 제한으로 가입 막힘. (대시보드 작업)
-- [ ] `supabase/schema_v5_ai_usage.sql` 실행 (ai_generations 테이블)
-- [ ] `app/legal/data.ts` 의 `operator` 값 교체 (개인 운영이라 사업자번호 불필요)
-- [ ] 이미지 업로드 UI (Storage 버킷·`lib/upload.ts` 는 준비됨)
-- [ ] 결제 → 권한 반영 E2E 1회 검증
+### 최종 E2E (배포 도메인에서)
+- [ ] 가입 → 로그인 → 프로젝트 생성 → 편집 → 자동저장
+- [ ] AI 카피 생성 1회 성공
+- [ ] 게시 → `/p/<id>` 공개 확인
+- [ ] HTML 내보내기 (무료=워터마크 / Pro=워터마크 없음)
+- [ ] 이미지 업로드 (파일 올리기)
+
+### 나중 (선택)
+- [ ] 커스텀 도메인 연결
+- [ ] Brevo SMTP → 이메일 인증 다시 켜기
+- [ ] 요금제 페이지에 실제 금액 표기
+- [ ] 이미지 업로드시 기존 URL 정리 / 용량 관리
