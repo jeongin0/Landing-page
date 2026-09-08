@@ -2,26 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-const SEEN_KEY = "lb-intro-seen-v1";
-
 export default function IntroPopup() {
   const [open, setOpen] = useState(false);
 
-  // 첫 방문에만 자동으로 열기
+  // index 페이지에 들어올 때마다 노출 (닫기는 ✕ 로만)
   useEffect(() => {
-    try {
-      if (!localStorage.getItem(SEEN_KEY)) setOpen(true);
-    } catch {
-      /* 프라이빗 모드 등 – 무시 */
-    }
+    setOpen(true);
   }, []);
-
-  const close = () => {
-    setOpen(false);
-    try {
-      localStorage.setItem(SEEN_KEY, "1");
-    } catch {}
-  };
 
   return (
     <>
@@ -37,13 +24,12 @@ export default function IntroPopup() {
       {!open ? null : (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-          onClick={close}
+          style={{ backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }}
         >
           <div
             role="dialog"
             aria-modal="true"
             aria-label="사이트 소개"
-            onClick={(e) => e.stopPropagation()}
             className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-xl"
             style={{ wordBreak: "keep-all" }}
           >
@@ -53,7 +39,7 @@ export default function IntroPopup() {
               </span>
               <button
                 type="button"
-                onClick={close}
+                onClick={() => setOpen(false)}
                 aria-label="닫기"
                 className="text-gray-400 hover:text-gray-900"
               >
