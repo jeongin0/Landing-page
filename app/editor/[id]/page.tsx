@@ -526,6 +526,31 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                             projectId={project.id}
                             onChange={(url) => updateSection(i, { bgImage: url || undefined })}
                           />
+                          {s.bgImage && (
+                            <div className="mt-1 flex items-center gap-2">
+                              <select
+                                value={s.bgFit || "cover"}
+                                onChange={(e) => updateSection(i, { bgFit: e.target.value as SectionRef["bgFit"] })}
+                                className="rounded border border-gray-200 px-1 py-0.5"
+                              >
+                                <option value="cover">채우기(잘림)</option>
+                                <option value="contain">원본 비율(안잘림)</option>
+                              </select>
+                              <label className="flex items-center gap-1">
+                                <input
+                                  type="checkbox"
+                                  checked={!!s.bgFixed}
+                                  onChange={(e) => updateSection(i, { bgFixed: e.target.checked || undefined })}
+                                />
+                                고정
+                              </label>
+                            </div>
+                          )}
+                          {s.bgImage && s.bgFit !== "contain" && (
+                            <p className="mt-0.5 text-[10px] text-gray-400">
+                              배경 이미지 위에는 위 배경색이 반투명 오버레이로 깔립니다.
+                            </p>
+                          )}
                         </div>
                         {s.type === "block" && (
                           <select

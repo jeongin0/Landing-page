@@ -60,11 +60,12 @@ export default function IntroPopup() {
               <div className="mt-5 space-y-2 text-sm leading-relaxed text-gray-600">
                 <p>
                   상품 정보 입력 → AI 카피 생성 → 클릭 편집 → HTML·이미지 내보내기로
-                  스토어 상세페이지 본문을 만드는 툴입니다.
+                  스토어 상세페이지를 만드는 툴입니다.
                 </p>
                 <p>
-                  Next.js(App Router)로 만들었고, 로그인·구독 결제·게시까지 실제
-                  서비스 흐름을 구현했습니다.
+                  Next.js(App Router)로 만들었고, 로그인 · 구독 결제(월/연) ·
+                  요금제별 기능 제한 · 결제 웹훅까지 <b>수익화 흐름을 처음부터 끝까지</b>{" "}
+                  직접 구현했습니다.
                 </p>
                 <p>AI를 활용해 기획부터 구현까지 진행했습니다.</p>
               </div>

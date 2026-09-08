@@ -32,7 +32,7 @@ export type SectionMode = "split" | "text" | "image";
 export const SECTION_MODE_LABELS: Record<SectionMode, string> = {
   split: "이미지 + 텍스트",
   text: "텍스트만",
-  image: "통이미지",
+  image: "통이미지 (원본 비율)",
 };
 export const clampMode = (v: unknown): SectionMode | undefined =>
   v === "split" || v === "text" || v === "image" ? v : undefined;
@@ -64,6 +64,7 @@ export type FreeBlock = {
   mode: SectionMode; // split / text / image
   align?: "left" | "center";
   imageAspect?: number;
+  imageW?: number;
 };
 
 export type SectionRef = {
@@ -72,6 +73,8 @@ export type SectionRef = {
   w?: Exclude<WidthPreset, "custom">; // 섹션별 폭 (없으면 전체 본문 폭 상속)
   bg?: string; // 섹션 배경색 (hex). 없으면 페이지 기본 배경
   bgImage?: string; // 섹션 배경 이미지 URL
+  bgFit?: "cover" | "contain"; // 배경 이미지 채우기 방식 (기본 cover)
+  bgFixed?: boolean; // 배경 고정(parallax 느낌)
   pad?: "tight" | "normal" | "loose"; // 상하 여백
   key?: string; // 자유 블록 식별용 (여러 개일 때)
   block?: FreeBlock; // type === "block" 일 때 내용
