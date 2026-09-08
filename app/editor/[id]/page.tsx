@@ -310,19 +310,6 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   </select>
                 </label>
               ))}
-              <label className="mt-1 flex items-center gap-2 text-gray-600">
-                <input
-                  type="checkbox"
-                  checked={!project.content.cta.hidden}
-                  onChange={(e) =>
-                    update({
-                      ...project.content,
-                      cta: { ...project.content.cta, hidden: !e.target.checked },
-                    })
-                  }
-                />
-                구매 버튼 표시
-              </label>
             </div>
 
             <div>
@@ -466,19 +453,36 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
 
             <div>
               <h3 className="mb-2 font-bold text-gray-700">구매 버튼</h3>
-              <label className="mb-1 block text-gray-600">링크 주소 (구매/신청 페이지)</label>
-              <input
-                value={project.content.cta.href}
-                onChange={(e) =>
-                  update({
-                    ...project.content,
-                    cta: { ...project.content.cta, href: e.target.value },
-                  })
-                }
-                placeholder="https://smartstore.naver.com/..."
-                className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
-              />
-              <p className="mt-1 text-xs text-gray-400">버튼 문구는 페이지에서 직접 클릭해 수정</p>
+              <label className="mb-2 flex items-center gap-2 text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={!project.content.cta.hidden}
+                  onChange={(e) =>
+                    update({
+                      ...project.content,
+                      cta: { ...project.content.cta, hidden: !e.target.checked },
+                    })
+                  }
+                />
+                버튼 표시 (끄면 히어로·가격 섹션 버튼이 사라짐)
+              </label>
+              {!project.content.cta.hidden && (
+                <>
+                  <label className="mb-1 block text-gray-600">링크 주소 (구매/신청 페이지)</label>
+                  <input
+                    value={project.content.cta.href}
+                    onChange={(e) =>
+                      update({
+                        ...project.content,
+                        cta: { ...project.content.cta, href: e.target.value },
+                      })
+                    }
+                    placeholder="https://smartstore.naver.com/..."
+                    className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
+                  />
+                  <p className="mt-1 text-xs text-gray-400">버튼 문구는 페이지에서 직접 클릭해 수정</p>
+                </>
+              )}
             </div>
 
             <div>
