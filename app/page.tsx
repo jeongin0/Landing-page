@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import UpgradedBanner from "@/components/UpgradedBanner";
+import IntroPopup from "@/components/IntroPopup";
 
 const features = [
   {
@@ -39,6 +40,7 @@ export default function LandingPage() {
       <Suspense fallback={null}>
         <UpgradedBanner />
       </Suspense>
+      <IntroPopup />
       <Header />
       <main>
         {/* 히어로 */}

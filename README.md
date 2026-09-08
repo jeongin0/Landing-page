@@ -5,7 +5,28 @@
 **라이브 데모:** https://landing-page-jeongin2.vercel.app
 **소스:** https://github.com/jeongin0/Landing-page (앱은 `landing-builder/` 하위)
 
-> 결제는 LemonSqueezy 테스트 모드. 결제창에 뜨는 테스트 카드(`4242 4242 4242 4242`, 미래 만료일, 아무 CVC)로 Pro/Lifetime 결제 흐름을 그대로 체험할 수 있음.
+> 결제는 LemonSqueezy 테스트 모드. 결제창에 뜨는 테스트 카드(`4242 4242 4242 4242`, 미래 만료일, 아무 CVC)로 구독 결제 흐름을 그대로 체험할 수 있음.
+
+## 사용 서비스 / 스택
+
+| 역할 | 서비스 | 비고 |
+|---|---|---|
+| 프레임워크 | **Next.js (App Router)** + React + TypeScript + Tailwind CSS | |
+| 배포 / 호스팅 | **Vercel** | `git push` → 자동 빌드·배포. 환경변수도 Vercel에서 관리 |
+| 인증 | **Supabase Auth** | 이메일 회원가입/로그인 (익명세션 없음) |
+| 데이터베이스 | **Supabase (Postgres)** | `projects`(편집 콘텐츠 jsonb), `profiles`(요금제), `payments`, `ai_generations` |
+| 파일 저장 | **Supabase Storage** | 사용자가 올리는 이미지 |
+| 결제 | **LemonSqueezy** | Pro 월 구독 / 연간 구독. LemonSqueezy가 판매자(Merchant of Record)로 세금·영수증 처리 |
+| 결제 웹훅 | **LemonSqueezy Webhooks** → `POST /api/lemon/webhook` | `order_created`·`subscription_created`·`subscription_updated`·`subscription_cancelled`·`subscription_expired` 수신 → 서명(HMAC-SHA256) 검증 → `profiles.plan` 갱신 |
+| AI 카피 생성 | **Google Gemini API** (`gemini-3.6-flash`) | `POST /api/generate`, Pro 이상 전용 + 30일 200회 한도 |
+| 웹폰트 | **Google Fonts** | 사용자가 고른 한글 폰트만 동적 로드 |
+| 이미지 내보내기 | `html-to-image` (클라이언트) | PNG / JPEG / WEBP |
+
+### 결제 흐름 요약
+1. 사용자가 요금제 페이지에서 구독 선택 → `POST /api/lemon/checkout` 이 LemonSqueezy 결제창 URL 생성 (`custom_data`에 `user_id`, `plan` 실어보냄)
+2. 결제 완료 → LemonSqueezy가 `redirect_url`(`/?upgraded=1`)로 복귀 + 웹훅 전송
+3. `/api/lemon/webhook` 이 서명 검증 후 `payments` 기록 + `profiles.plan`을 `pro` / `lifetime` 로 갱신
+4. 앱은 `profiles.plan`을 읽어 기능 게이팅 (AI 생성·이미지 크기 조절·프로젝트 개수)
 
 ## 실행
 
