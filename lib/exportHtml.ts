@@ -160,8 +160,8 @@ export function exportHtml(c: StoreContent): string {
   .lb-hero-text{margin-top:24px}
   @media(min-width:768px){
     .lb-grid3{grid-template-columns:repeat(3,1fr)}
-    .lb-grid-h{grid-template-columns:repeat(${c.highlightsCols ?? 3},1fr)}
-    .lb-grid-r{grid-template-columns:repeat(${c.reviewsCols ?? 3},1fr)}
+    .lb-grid-h{grid-template-columns:repeat(${Math.max(1, c.highlights.length)},1fr)}
+    .lb-grid-r{grid-template-columns:repeat(${Math.max(1, c.reviews.length)},1fr)}
     .lb-hero{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
     .lb-hero-main{grid-template-columns:${100 - (c.hero.splitPct ?? 50)}fr ${c.hero.splitPct ?? 50}fr}
     .lb-detail-main{grid-template-columns:${c.detail.splitPct ?? 50}fr ${100 - (c.detail.splitPct ?? 50)}fr}

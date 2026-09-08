@@ -64,6 +64,19 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     update({ ...project.content, theme: { ...project.content.theme, [k]: v } });
   };
 
+  // 강점/후기 항목 개수를 n개로 맞춤 (늘리면 빈 항목 추가, 줄이면 뒤에서 잘라냄)
+  const BLANK = {
+    highlights: { icon: "✨", title: "새 강점", desc: "설명을 입력하세요." },
+    reviews: { name: "고객", text: "후기를 입력하세요.", rating: 5 },
+  } as const;
+  const resizeItems = (key: "highlights" | "reviews", n: number) => {
+    const arr = project!.content[key] as Array<
+      StoreContent["highlights"][number] | StoreContent["reviews"][number]
+    >;
+    if (n <= arr.length) return arr.slice(0, n);
+    return [...arr, ...Array.from({ length: n - arr.length }, () => ({ ...BLANK[key] }))];
+  };
+
   const toggleSection = (type: SectionType) => {
     if (!project) return;
     update({
@@ -385,26 +398,30 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
             </div>
 
             <div>
-              <h3 className="mb-2 font-bold text-gray-700">그리드 열 개수</h3>
+              <h3 className="mb-2 font-bold text-gray-700">항목 개수</h3>
               {([
-                ["highlightsCols", "강점"],
-                ["reviewsCols", "후기"],
+                ["highlights", "강점"],
+                ["reviews", "후기"],
               ] as const).map(([key, label]) => (
                 <label key={key} className="mb-2 flex items-center justify-between text-gray-600">
                   <span>{label}</span>
                   <select
-                    value={project.content[key] ?? 3}
+                    value={Math.min(4, Math.max(2, project.content[key].length))}
                     onChange={(e) =>
-                      update({ ...project.content, [key]: Number(e.target.value) })
+                      update({
+                        ...project.content,
+                        [key]: resizeItems(key, Number(e.target.value)),
+                      })
                     }
                     className="rounded border border-gray-300 px-2 py-1 text-xs"
                   >
-                    <option value={2}>2열</option>
-                    <option value={3}>3열</option>
-                    <option value={4}>4열</option>
+                    <option value={2}>2개</option>
+                    <option value={3}>3개</option>
+                    <option value={4}>4개</option>
                   </select>
                 </label>
               ))}
+              <p className="text-[11px] text-gray-400">개수를 늘리면 빈 항목이 추가돼요.</p>
             </div>
 
             <div>
@@ -598,7 +615,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
         )}
 
         {/* 미리보기 (PC 전용) */}
-        <div className="flex-1 overflow-y-auto bg-gray-100 py-6">
+        <div className="flex-1 overflow-y-auto bg-gray-100 p-6">
           <div
             ref={previewRef}
             className="mx-auto w-full max-w-[1920px] overflow-hidden rounded-lg bg-white shadow-xl"

@@ -69,11 +69,11 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
       />
     ) : null;
 
-  // 그리드 열 개수 → 정적 Tailwind 클래스 (동적 문자열은 Tailwind 가 못 잡음)
-  const gridColsClass = (n?: number) =>
-    n === 2 ? "md:grid-cols-2" : n === 4 ? "md:grid-cols-4" : "md:grid-cols-3";
-  const hCols = gridColsClass(c.highlightsCols);
-  const rCols = gridColsClass(c.reviewsCols);
+  // 그리드 열 개수 = 실제 항목 개수 (정적 Tailwind 클래스, 동적 문자열은 Tailwind 가 못 잡음)
+  const gridColsClass = (n: number) =>
+    n <= 2 ? "md:grid-cols-2" : n >= 4 ? "md:grid-cols-4" : "md:grid-cols-3";
+  const hCols = gridColsClass(c.highlights.length);
+  const rCols = gridColsClass(c.reviews.length);
 
   const maxW =
     c.layout.width === "custom"
@@ -90,8 +90,8 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
         : "text-3xl md:text-4xl";
 
   const ctaBtn = (big = false, cls = "mt-6") =>
-    c.cta.hidden && !editing ? null : (
-      <div className={cls} style={c.cta.hidden ? { opacity: 0.4 } : undefined}>
+    c.cta.hidden ? null : (
+      <div className={cls}>
         <a
           href={c.cta.href || "#"}
           className={
@@ -103,9 +103,6 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
           <Editable as="span" editing={editing} value={c.cta.text}
             onChange={(v) => set({ cta: { ...c.cta, text: v } })} />
         </a>
-        {c.cta.hidden && editing && (
-          <span className="ml-2 text-xs text-gray-400">(숨김 — 내보내기에 안 나옴)</span>
-        )}
       </div>
     );
 
