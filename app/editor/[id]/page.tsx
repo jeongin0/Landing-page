@@ -210,7 +210,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
               업그레이드
             </Link>
           )}
-          <AuthWidget />
+          <AuthWidget hideSignOut />
           <button
             onClick={() => {
               if (!isPaid) {
@@ -343,6 +343,29 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div>
+              <h3 className="mb-2 font-bold text-gray-700">그리드 열 개수</h3>
+              {([
+                ["highlightsCols", "강점"],
+                ["reviewsCols", "후기"],
+              ] as const).map(([key, label]) => (
+                <label key={key} className="mb-2 flex items-center justify-between text-gray-600">
+                  <span>{label}</span>
+                  <select
+                    value={project.content[key] ?? 3}
+                    onChange={(e) =>
+                      update({ ...project.content, [key]: Number(e.target.value) })
+                    }
+                    className="rounded border border-gray-300 px-2 py-1 text-xs"
+                  >
+                    <option value={2}>2열</option>
+                    <option value={3}>3열</option>
+                    <option value={4}>4열</option>
+                  </select>
+                </label>
+              ))}
             </div>
 
             <div>

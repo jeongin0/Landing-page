@@ -75,6 +75,12 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
       />
     ) : null;
 
+  // 그리드 열 개수 → 정적 Tailwind 클래스 (동적 문자열은 Tailwind 가 못 잡음)
+  const gridColsClass = (n?: number) =>
+    n === 2 ? "md:grid-cols-2" : n === 4 ? "md:grid-cols-4" : "md:grid-cols-3";
+  const hCols = gridColsClass(c.highlightsCols);
+  const rCols = gridColsClass(c.reviewsCols);
+
   const maxW =
     c.layout.width === "custom"
       ? Math.max(320, c.layout.customPx || 960)
@@ -234,7 +240,7 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
   const highlights =
     style === "spotlight" ? (
       <section className={wrap + " py-12"}>
-        <div className="grid gap-8 text-center md:grid-cols-3">
+        <div className={"grid gap-8 text-center " + hCols}>
           {c.highlights.map((h, i) => (
             <div key={i} className="flex flex-col items-center">
               <div className="grid h-14 w-14 place-items-center rounded-full"
@@ -264,7 +270,7 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
       </section>
     ) : (
       <section className={wrap + " py-10"}>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className={"grid gap-6 " + hCols}>
           {c.highlights.map((h, i) => (
             <div key={i} className="rounded-2xl border border-black/5 p-6 shadow-sm">
               {hIcon(h, 40)}
@@ -337,7 +343,7 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
   const reviews = (
     <section className={wrap + " py-10"}>
       <h2 className={`mb-6 text-center text-2xl font-extrabold ${headingFont}`}>고객 후기</h2>
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className={"grid gap-6 " + rCols}>
         {c.reviews.map((r, i) => (
           <div key={i} className="flex flex-col rounded-2xl border border-black/5 p-6 shadow-sm">
             <div className="text-amber-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</div>

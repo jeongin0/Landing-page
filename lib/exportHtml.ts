@@ -53,7 +53,7 @@ export function exportHtml(c: StoreContent): string {
 </section>`,
 
     highlights: () => `<section style="${wrap}padding:40px 20px">
-  <div class="lb-grid3">${c.highlights
+  <div class="lb-grid3 lb-grid-h">${c.highlights
     .map(
       (h) => `<div style="${card}">
       ${hIcon(h)}
@@ -84,7 +84,7 @@ export function exportHtml(c: StoreContent): string {
 
     reviews: () => `<section style="${wrap}padding:40px 20px">
   <h2 style="text-align:center;font-size:24px;font-weight:800;margin:0 0 24px">고객 후기</h2>
-  <div class="lb-grid3">${c.reviews
+  <div class="lb-grid3 lb-grid-r">${c.reviews
     .map(
       (r) => `<div style="${card}display:flex;flex-direction:column">
       <div style="color:#f59e0b">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
@@ -140,6 +140,8 @@ export function exportHtml(c: StoreContent): string {
   .lb-hero-text{margin-top:24px}
   @media(min-width:768px){
     .lb-grid3{grid-template-columns:repeat(3,1fr)}
+    .lb-grid-h{grid-template-columns:repeat(${c.highlightsCols ?? 3},1fr)}
+    .lb-grid-r{grid-template-columns:repeat(${c.reviewsCols ?? 3},1fr)}
     .lb-hero{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
     .lb-hero-main{grid-template-columns:${100 - (c.hero.splitPct ?? 50)}fr ${c.hero.splitPct ?? 50}fr}
     .lb-detail-main{grid-template-columns:${c.detail.splitPct ?? 50}fr ${100 - (c.detail.splitPct ?? 50)}fr}

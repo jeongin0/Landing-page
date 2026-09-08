@@ -12,7 +12,7 @@ const PLAN_LABEL: Record<string, string> = {
   lifetime: "연간",
 };
 
-export default function AuthWidget() {
+export default function AuthWidget({ hideSignOut = false }: { hideSignOut?: boolean }) {
   const { user, loading, isAnonymous } = useAuth();
   const { plan } = usePlan();
   const router = useRouter();
@@ -37,16 +37,18 @@ export default function AuthWidget() {
           {PLAN_LABEL[plan] ?? "Free"}
         </Link>
         <span className="hidden text-gray-500 sm:inline">{user!.email}</span>
-        <button
-          onClick={async () => {
-            await supabaseBrowser().auth.signOut();
-            router.refresh();
-            location.reload();
-          }}
-          className="rounded-md border border-gray-300 px-2 py-1 text-xs"
-        >
-          로그아웃
-        </button>
+        {!hideSignOut && (
+          <button
+            onClick={async () => {
+              await supabaseBrowser().auth.signOut();
+              router.refresh();
+              location.reload();
+            }}
+            className="rounded-md border border-gray-300 px-2 py-1 text-xs"
+          >
+            로그아웃
+          </button>
+        )}
       </div>
     );
   }

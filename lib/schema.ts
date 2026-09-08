@@ -77,6 +77,8 @@ export type StoreContent = {
     customPx: number; // width === "custom" 일 때만 사용
   };
   sections: SectionRef[]; // 섹션 순서 + 표시 여부
+  highlightsCols?: number; // 강점 열 개수 (2~4). 없으면 3
+  reviewsCols?: number; // 후기 열 개수 (2~4). 없으면 3
   cta: {
     text: string; // 버튼 문구
     href: string; // 버튼 링크
@@ -132,6 +134,13 @@ export const clampSplit = (v: unknown): number | undefined => {
   return Math.max(30, Math.min(75, Math.round(n)));
 };
 
+// 그리드 열 개수 (2~4). 없으면 undefined = 3
+export const clampCols = (v: unknown): number | undefined => {
+  const n = typeof v === "number" ? v : NaN;
+  if (!Number.isFinite(n)) return undefined;
+  return Math.max(2, Math.min(4, Math.round(n)));
+};
+
 // 예전 데이터 보정 (없는 필드 채우기)
 export function normalizeContent(c: unknown): StoreContent {
   const raw = (c || {}) as Record<string, unknown> & Partial<StoreContent>;
@@ -147,6 +156,8 @@ export function normalizeContent(c: unknown): StoreContent {
       Array.isArray(raw.sections) && raw.sections.length
         ? (raw.sections as SectionRef[])
         : DEFAULT_SECTIONS.map((s) => ({ ...s })),
+    highlightsCols: clampCols(raw.highlightsCols),
+    reviewsCols: clampCols(raw.reviewsCols),
     cta: raw.cta || {
       text: legacyBrand?.ctaText || legacyHero?.ctaText || "지금 구매하기",
       href: legacyBrand?.ctaHref || "#pricing",
