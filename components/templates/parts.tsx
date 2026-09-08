@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import type { StoreContent } from "@/lib/schema";
+import type { StoreContent, SectionRef } from "@/lib/schema";
+import { PAD_PX, clampSectionPx, clampPadPx, clampSplitPct } from "@/lib/schema";
 import Editable from "@/components/Editable";
 import ResizableImage from "@/components/ResizableImage";
 
@@ -9,6 +10,7 @@ import ResizableImage from "@/components/ResizableImage";
 export type Ctx = {
   c: StoreContent;
   set: (patch: Partial<StoreContent>) => void;
+  setSection: (idx: number, patch: Partial<SectionRef>) => void;
   editing: boolean;
   canResize: boolean;
   primary: string;
@@ -16,7 +18,6 @@ export type Ctx = {
   onSelectText?: (key: string) => void;
 };
 
-// Editable 에 넘길 폰트/선택 관련 props 묶음
 export const tpOf =
   (ctx: Ctx) =>
   (key: string) => ({
@@ -37,15 +38,150 @@ export function isDarkHex(hex?: string): boolean {
   return 0.299 * r + 0.587 * g + 0.114 * b < 140;
 }
 
-// 8자리 hex 방지 + primary 에 알파 붙이기
 export const alpha = (hex: string, hh: string) => {
   const m = /^#?([0-9a-fA-F]{6})/.exec(hex || "");
   return m ? "#" + m[1] + hh : hex;
 };
 
-// 통이미지(자르지 않음) / 비율고정 이미지 공용 컴포넌트.
-// natural=true → 원본 비율 그대로, 폭만 드래그로 조절.
-// natural=false → ResizableImage(폭·비율 동시 조절).
+export const pad2 = (n: number) => String(n).padStart(2, "0");
+
+// ── 드래그 공용 ─────────────────────────────────────────────
+export function startDrag(
+  e: React.PointerEvent,
+  onMove: (dx: number, dy: number, ev: PointerEvent) => void,
+) {
+  e.preventDefault();
+  e.stopPropagation();
+  const sx = e.clientX;
+  const sy = e.clientY;
+  const mv = (ev: PointerEvent) => onMove(ev.clientX - sx, ev.clientY - sy, ev);
+  const up = () => {
+    window.removeEventListener("pointermove", mv);
+    window.removeEventListener("pointerup", up);
+  };
+  window.addEventListener("pointermove", mv);
+  window.addEventListener("pointerup", up);
+}
+
+const HANDLE =
+  "absolute z-30 touch-none rounded-full border-2 border-white bg-gray-900 shadow-md";
+
+// 섹션 상하 여백 드래그 (섹션 <section> 안에 절대배치)
+export function PadHandles({
+  ctx,
+  idx,
+  s,
+}: {
+  ctx: Ctx;
+  idx: number;
+  s: SectionRef;
+}) {
+  if (!ctx.editing) return null;
+  const base = PAD_PX[s.pad ?? "normal"];
+  const cur = s.padPx ?? base;
+  return (
+    <>
+      <span
+        title="드래그해서 위쪽 여백 조절"
+        onPointerDown={(e) => {
+          const start = cur;
+          startDrag(e, (_dx, dy) =>
+            ctx.setSection(idx, { padPx: clampPadPx(start + dy) }),
+          );
+        }}
+        className={HANDLE + " left-1/2 top-1 h-2.5 w-10 -translate-x-1/2 cursor-ns-resize rounded-sm"}
+      />
+      <span
+        title="드래그해서 아래쪽 여백 조절"
+        onPointerDown={(e) => {
+          const start = cur;
+          startDrag(e, (_dx, dy) =>
+            ctx.setSection(idx, { padPx: clampPadPx(start - dy) }),
+          );
+        }}
+        className={HANDLE + " bottom-1 left-1/2 h-2.5 w-10 -translate-x-1/2 cursor-ns-resize rounded-sm"}
+      />
+    </>
+  );
+}
+
+// 섹션 콘텐츠 폭 드래그 프레임. baseW = 이 레이아웃의 기본 폭.
+export function EditFrame({
+  ctx,
+  idx,
+  s,
+  baseW,
+  className = "",
+  style,
+  children,
+}: {
+  ctx: Ctx;
+  idx: number;
+  s: SectionRef;
+  baseW: number;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const w = s.wPx ?? baseW;
+  return (
+    <div
+      className={"relative mx-auto " + className}
+      style={{ maxWidth: w, ...style }}
+    >
+      {children}
+      {ctx.editing && (
+        <span
+          title="드래그해서 섹션 폭 조절"
+          onPointerDown={(e) => {
+            const start = w;
+            startDrag(e, (dx) =>
+              ctx.setSection(idx, { wPx: clampSectionPx(start + dx * 2) }),
+            );
+          }}
+          className={
+            HANDLE +
+            " right-0 top-1/2 h-12 w-2.5 -translate-y-1/2 translate-x-1/2 cursor-ew-resize rounded-sm"
+          }
+        />
+      )}
+    </div>
+  );
+}
+
+// 이미지 / 텍스트 사이 드래그 구분자 (splitPct 갱신)
+export function SplitDivider({
+  ctx,
+  idx,
+  s,
+}: {
+  ctx: Ctx;
+  idx: number;
+  s: SectionRef;
+}) {
+  if (!ctx.editing) return null;
+  return (
+    <span
+      title="드래그해서 이미지 : 텍스트 비율 조절"
+      onPointerDown={(e) => {
+        const parent = (e.currentTarget as HTMLElement).parentElement;
+        const pw = parent?.getBoundingClientRect().width || 800;
+        const start = s.splitPct ?? 50;
+        startDrag(e, (dx) =>
+          ctx.setSection(idx, {
+            splitPct: clampSplitPct(start + (dx / pw) * 100),
+          }),
+        );
+      }}
+      className={
+        HANDLE +
+        " left-1/2 top-1/2 h-14 w-2.5 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize rounded-sm"
+      }
+    />
+  );
+}
+
+// 통이미지(자르지 않음) / 비율고정 이미지 공용
 export function FlexImage({
   src,
   widthPct,
@@ -83,31 +219,20 @@ export function FlexImage({
     );
   }
 
-  const startDrag = (e: React.PointerEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const base = wrapRef.current?.parentElement;
-    if (!base || !onResize) return;
-    const rect = base.getBoundingClientRect();
-    const move = (ev: PointerEvent) => {
-      const xPct = ((ev.clientX - rect.left) / rect.width) * 100;
-      onResize(Math.max(20, Math.min(100, Math.round(2 * xPct - 100))));
-    };
-    const up = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
-  };
-
   return (
     <div ref={wrapRef} className="relative mx-auto" style={{ width: `${w}%` }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt="" className={"block w-full " + imgClassName} draggable={false} />
-      {editing && canResize && (
+      {editing && canResize && onResize && (
         <span
-          onPointerDown={startDrag}
+          onPointerDown={(e) => {
+            const base = wrapRef.current?.parentElement?.getBoundingClientRect();
+            const start = w;
+            const bw = base?.width || 1;
+            startDrag(e, (dx) =>
+              onResize(Math.max(20, Math.min(100, Math.round(start + (dx / bw) * 200)))),
+            );
+          }}
           title="드래그해서 이미지 폭 조절"
           className="absolute -bottom-2 -right-2 z-10 h-6 w-6 cursor-ew-resize touch-none rounded-full border-2 border-white bg-gray-900 shadow-md"
         />
@@ -116,7 +241,7 @@ export function FlexImage({
   );
 }
 
-// hero / detail 이미지 (schema 의 image / imageW / imageAspect / mode 사용)
+// hero / detail 이미지
 export function SectionImage({
   ctx,
   k,
@@ -150,7 +275,6 @@ export function SectionImage({
   );
 }
 
-// CTA 링크 (문구는 클릭 편집)
 export function CtaLink({
   ctx,
   className,
@@ -180,4 +304,5 @@ export const Stars = ({ className = "" }: { className?: string }) => (
   <div className={"tracking-[0.15em] text-amber-400 " + className}>★★★★★</div>
 );
 
-export const pad2 = (n: number) => String(n).padStart(2, "0");
+// 섹션 상하 여백값 (px)
+export const sectionPad = (s: SectionRef) => s.padPx ?? PAD_PX[s.pad ?? "normal"];

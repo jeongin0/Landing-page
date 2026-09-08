@@ -70,14 +70,36 @@ export type FreeBlock = {
 export type SectionRef = {
   type: SectionType;
   enabled: boolean;
-  w?: Exclude<WidthPreset, "custom">; // 섹션별 폭 (없으면 전체 본문 폭 상속)
+  w?: Exclude<WidthPreset, "custom">; // 섹션별 폭 프리셋 (없으면 전체 본문 폭 상속)
+  wPx?: number; // 섹션별 폭 직접값(px). 드래그로 조절. 있으면 w 보다 우선
   bg?: string; // 섹션 배경색 (hex). 없으면 페이지 기본 배경
   bgImage?: string; // 섹션 배경 이미지 URL
   bgFit?: "cover" | "contain"; // 배경 이미지 채우기 방식 (기본 cover)
   bgFixed?: boolean; // 배경 고정(parallax 느낌)
-  pad?: "tight" | "normal" | "loose"; // 상하 여백
+  pad?: "tight" | "normal" | "loose"; // 상하 여백 프리셋
+  padPx?: number; // 상하 여백 직접값(px). 드래그로 조절. 있으면 pad 보다 우선
+  splitPct?: number; // split 레이아웃에서 이미지 열 비율 % (20~80). 드래그로 조절
   key?: string; // 자유 블록 식별용 (여러 개일 때)
   block?: FreeBlock; // type === "block" 일 때 내용
+};
+
+// 섹션 폭(px) 정규화 (320~1920)
+export const clampSectionPx = (v: unknown): number | undefined => {
+  const n = typeof v === "number" ? v : NaN;
+  if (!Number.isFinite(n)) return undefined;
+  return Math.max(320, Math.min(1920, Math.round(n)));
+};
+// 섹션 상하여백(px) 정규화 (0~240)
+export const clampPadPx = (v: unknown): number | undefined => {
+  const n = typeof v === "number" ? v : NaN;
+  if (!Number.isFinite(n)) return undefined;
+  return Math.max(0, Math.min(240, Math.round(n)));
+};
+// split 비율 % 정규화 (20~80)
+export const clampSplitPct = (v: unknown): number | undefined => {
+  const n = typeof v === "number" ? v : NaN;
+  if (!Number.isFinite(n)) return undefined;
+  return Math.max(20, Math.min(80, Math.round(n)));
 };
 
 export const SECTION_LABELS: Record<SectionType, string> = {
@@ -127,9 +149,9 @@ export const WIDTH_PX: Record<Exclude<WidthPreset, "custom">, number> = {
 export type LayoutStyle = "bold" | "editorial" | "showcase";
 
 export const LAYOUT_STYLE_LABELS: Record<LayoutStyle, string> = {
-  bold: "볼드 커머스 · 컬러블록 + POINT 라벨 + 풀블리드 사진",
-  editorial: "에디토리얼 · 세리프 대형 제목 + 여백 + 헤어라인",
-  showcase: "쇼케이스 · 카드 그리드 + 아이콘칩 + 소프트 섀도우",
+  bold: "스트립 · 풀블리드 밴드 + 텍스트 오버레이 + 하단 고정 구매바",
+  editorial: "레일 · 좌측 고정 인덱스 + 우측 본문 2단 + 세리프",
+  showcase: "벤토 · 카드 그리드 + 상단 필내비 + 겹침 통계카드",
 };
 
 // 예전 style 값 → 새 style 값 매핑 (DB 하위호환)
@@ -244,7 +266,13 @@ function normalizeSections(raw: unknown): SectionRef[] {
       arr.push({ ...d, enabled: false });
     }
   }
-  return arr.map((s) => {
+  return arr.map((raw) => {
+    const s: SectionRef = {
+      ...raw,
+      wPx: clampSectionPx(raw.wPx),
+      padPx: clampPadPx(raw.padPx),
+      splitPct: clampSplitPct(raw.splitPct),
+    };
     if (s.type === "block") {
       return {
         ...s,

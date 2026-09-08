@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-export const alt = "랜딩페이지 빌더 — 상세페이지, 직접 만드세요";
+export const alt = "상세페이지 빌더 — 상세페이지, 직접 만드세요";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -95,7 +95,7 @@ export default async function Image() {
                 color: "#111827",
               }}
             >
-              랜딩페이지 빌더
+              상세페이지 빌더
             </div>
           </div>
           <div style={{ fontSize: 24, fontWeight: 400, color: "#9ca3af" }}>

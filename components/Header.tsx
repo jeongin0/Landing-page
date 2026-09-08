@@ -11,7 +11,7 @@ export default function Header() {
           <span className="grid h-6 w-6 place-items-center rounded-md bg-gray-900 text-xs text-white">
             L
           </span>
-          랜딩페이지 빌더
+          상세페이지 빌더
         </Link>
         <div className="flex items-center gap-4">
           <Link href="/projects" className="text-sm font-semibold text-gray-500 hover:text-gray-900">

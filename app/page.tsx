@@ -28,7 +28,7 @@ const features = [
 ];
 
 const steps = [
-  "템플릿 선택 (스토어 / 강의 / 로컬 서비스)",
+  "템플릿 선택 (스트립 / 레일 / 벤토)",
   "글자·이미지 클릭해서 내 내용으로 교체",
   "필요 없는 섹션 끄고 순서 조정",
   "공유 링크 복사 또는 HTML·이미지로 내보내기",
@@ -117,7 +117,7 @@ export default function LandingPage() {
             <Link href="/legal/privacy" className="hover:underline">개인정보처리방침</Link>
             <Link href="/legal/refund" className="hover:underline">환불정책</Link>
           </div>
-          <p className="mt-3">© 2026 랜딩페이지 빌더</p>
+          <p className="mt-3">© 2026 상세페이지 빌더</p>
         </footer>
       </main>
     </>

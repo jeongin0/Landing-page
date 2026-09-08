@@ -2,7 +2,7 @@
 // 사업자등록번호·통신판매업 신고번호 표시 의무는 LemonSqueezy 측에 있습니다.
 // ⚠️ 아래 값만 본인 것으로 교체하세요.
 export const BIZ = {
-  service: "랜딩페이지 빌더",
+  service: "상세페이지 빌더",
   operator: "박정인",
   email: "wjddls1331@gmail.com",
   updated: "2026-09-07",
