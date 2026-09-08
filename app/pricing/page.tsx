@@ -55,12 +55,10 @@ export default function PricingPage() {
               <div
                 key={p.key}
                 className={
-                  "flex h-full flex-col rounded-2xl border p-6 " +
+                  "flex h-full flex-col rounded-2xl border p-6 transition-colors " +
                   (current
                     ? "border-2 border-violet-600 ring-2 ring-violet-100"
-                    : p.key === "pro"
-                      ? "border-gray-900"
-                      : "border-gray-200")
+                    : "border-gray-200 hover:border-gray-900")
                 }
               >
                 {current && (
