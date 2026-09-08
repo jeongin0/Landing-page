@@ -51,8 +51,10 @@ app/api/export/route.ts          HTML 내보내기
 - [x] 게시(publish) + 이미지 내보내기(PNG/JPEG/WEBP) + HTML 내보내기
 - [x] 프리셋 3종 (클래식 / 스포트라이트 / 에디토리얼)
 - [x] 홍보 랜딩페이지 + 법적 페이지 (/legal/terms · privacy · refund)
-- [x] 내보내기 워터마크 = 서버에서 요금제 검증
-- [x] AI 생성 (Google Gemini 무료) = 로그인 필수 + 30일 사용량 한도(free 10 / paid 200)
+- [x] 내보내기 워터마크 완전 제거 (모든 플랜 동일)
+- [x] AI 카피 생성 = Pro / Lifetime 전용 + 30일 사용량 한도(200회)
+- [x] 이미지 크기 조절 = Pro / Lifetime 전용
+- [x] 헤더에 현재 플랜 뱃지 표시
 - [x] 이미지 크기 조절 (드래그 + 슬라이더)
 - [x] 인증 에러 메시지 한국어화
 - [x] GEMINI_API_KEY (Vercel + 로컬), schema_v5 적용, Storage 버킷 생성
@@ -75,7 +77,9 @@ app/api/export/route.ts          HTML 내보내기
 - [ ] 가입 → 로그인 → 프로젝트 생성 → 편집 → 자동저장
 - [ ] AI 카피 생성 1회 성공
 - [ ] 게시 → `/p/<id>` 공개 확인
-- [ ] HTML 내보내기 (무료=워터마크 / Pro=워터마크 없음)
+- [ ] HTML 내보내기 (모든 플랜 워터마크 없음)
+- [ ] Free 계정: AI 카피 생성 · 이미지 크기 조절 막히는지 확인
+- [ ] Pro 계정: AI 카피 생성 · 이미지 크기 조절 되는지 확인
 - [ ] 이미지 업로드 (파일 올리기)
 
 ### 나중 (선택)

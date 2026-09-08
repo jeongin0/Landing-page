@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-// 월 사용량 한도 (30일 롤링)
+// AI 카피 생성은 Pro / Lifetime 전용. 월 사용량 한도 (30일 롤링)
 const MONTHLY_LIMIT: Record<string, number> = {
-  free: 10,
   pro: 200,
   lifetime: 200,
 };
@@ -35,7 +34,13 @@ export async function POST(req: Request) {
     .eq("id", user.id)
     .maybeSingle();
   const plan = profile?.plan ?? "free";
-  const limit = MONTHLY_LIMIT[plan] ?? MONTHLY_LIMIT.free;
+  if (plan !== "pro" && plan !== "lifetime") {
+    return new NextResponse(
+      "AI 카피 생성은 Pro 이상 플랜에서 이용할 수 있습니다.",
+      { status: 403 },
+    );
+  }
+  const limit = MONTHLY_LIMIT[plan];
 
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const { count } = await sb
@@ -46,9 +51,7 @@ export async function POST(req: Request) {
 
   if ((count ?? 0) >= limit) {
     return new NextResponse(
-      plan === "free"
-        ? `무료 플랜은 30일에 ${limit}회까지 생성할 수 있습니다. 업그레이드하면 늘어납니다.`
-        : `이번 주기 생성 한도(${limit}회)에 도달했습니다.`,
+      `이번 주기 생성 한도(${limit}회)에 도달했습니다.`,
       { status: 429 },
     );
   }

@@ -4,9 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useAuth } from "@/lib/useAuth";
+import { usePlan } from "@/lib/usePlan";
+
+const PLAN_LABEL: Record<string, string> = {
+  free: "Free",
+  pro: "Pro",
+  lifetime: "Lifetime",
+};
 
 export default function AuthWidget() {
   const { user, loading, isAnonymous } = useAuth();
+  const { plan } = usePlan();
   const router = useRouter();
 
   if (loading) return <span className="text-xs text-gray-400">…</span>;
@@ -16,6 +24,18 @@ export default function AuthWidget() {
   if (permanent) {
     return (
       <div className="flex items-center gap-2 text-sm">
+        <Link
+          href="/pricing"
+          className={
+            "rounded-full px-2 py-0.5 text-xs font-semibold " +
+            (plan === "free"
+              ? "bg-gray-100 text-gray-600"
+              : "bg-gray-900 text-white")
+          }
+          title="요금제 보기"
+        >
+          {PLAN_LABEL[plan] ?? "Free"}
+        </Link>
         <span className="hidden text-gray-500 sm:inline">{user!.email}</span>
         <button
           onClick={async () => {

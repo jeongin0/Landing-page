@@ -9,9 +9,11 @@ type Props = {
   content: StoreContent;
   onChange?: (next: StoreContent) => void;
   editing: boolean;
+  /** 이미지 크기 조절 허용 (Pro 이상). 기본 false */
+  canResize?: boolean;
 };
 
-export default function StoreProduct({ content, onChange, editing }: Props) {
+export default function StoreProduct({ content, onChange, editing, canResize = false }: Props) {
   const c = content;
   const set = (patch: Partial<StoreContent>) => onChange?.({ ...c, ...patch });
   const style = c.style || "classic";
@@ -72,7 +74,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
         widthPct={c.hero.imageW ?? 100}
         aspect={aspect}
         imgClassName="w-full rounded-2xl object-cover shadow-lg"
-        onResize={(p) => set({ hero: { ...c.hero, imageW: p } })}
+        onResize={canResize ? (p) => set({ hero: { ...c.hero, imageW: p } }) : undefined}
       />
     </div>
   );
@@ -84,7 +86,7 @@ export default function StoreProduct({ content, onChange, editing }: Props) {
         widthPct={c.detail.imageW ?? 100}
         aspect={aspect}
         imgClassName="w-full rounded-2xl object-cover shadow-lg"
-        onResize={(p) => set({ detail: { ...c.detail, imageW: p } })}
+        onResize={canResize ? (p) => set({ detail: { ...c.detail, imageW: p } }) : undefined}
       />
     </div>
   );

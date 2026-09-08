@@ -214,10 +214,17 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           )}
           <AuthWidget />
           <button
-            onClick={() => setShowGenerate(true)}
+            onClick={() => {
+              if (!isPaid) {
+                alert("AI 카피 생성은 Pro 이상 플랜에서 이용할 수 있습니다.");
+                location.href = "/pricing";
+                return;
+              }
+              setShowGenerate(true);
+            }}
             className="rounded-lg bg-violet-600 px-3 py-1.5 text-sm font-semibold text-white"
           >
-            ✨ AI로 카피 생성
+            ✨ AI로 카피 생성{!isPaid && " (Pro)"}
           </button>
           <button
             onClick={() => setEditing((v) => !v)}
@@ -448,25 +455,32 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   })
                 }
               />
-              <label className="mt-1 flex items-center gap-2 text-gray-500">
-                <span className="w-8 shrink-0">크기</span>
-                <input
-                  type="range"
-                  min={20}
-                  max={100}
-                  value={project.content.hero.imageW ?? 100}
-                  onChange={(e) =>
-                    update({
-                      ...project.content,
-                      hero: { ...project.content.hero, imageW: Number(e.target.value) },
-                    })
-                  }
-                  className="flex-1"
-                />
-                <span className="w-9 shrink-0 text-right tabular-nums">
-                  {project.content.hero.imageW ?? 100}%
-                </span>
-              </label>
+              {isPaid ? (
+                <label className="mt-1 flex items-center gap-2 text-gray-500">
+                  <span className="w-8 shrink-0">크기</span>
+                  <input
+                    type="range"
+                    min={20}
+                    max={100}
+                    value={project.content.hero.imageW ?? 100}
+                    onChange={(e) =>
+                      update({
+                        ...project.content,
+                        hero: { ...project.content.hero, imageW: Number(e.target.value) },
+                      })
+                    }
+                    className="flex-1"
+                  />
+                  <span className="w-9 shrink-0 text-right tabular-nums">
+                    {project.content.hero.imageW ?? 100}%
+                  </span>
+                </label>
+              ) : (
+                <p className="mt-1 text-xs text-gray-400">
+                  이미지 크기 조절은{" "}
+                  <Link href="/pricing" className="underline">Pro</Link> 전용
+                </p>
+              )}
 
               <label className="mb-1 mt-3 block text-gray-600">상세 이미지</label>
               <ImageField
@@ -479,25 +493,32 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   })
                 }
               />
-              <label className="mt-1 flex items-center gap-2 text-gray-500">
-                <span className="w-8 shrink-0">크기</span>
-                <input
-                  type="range"
-                  min={20}
-                  max={100}
-                  value={project.content.detail.imageW ?? 100}
-                  onChange={(e) =>
-                    update({
-                      ...project.content,
-                      detail: { ...project.content.detail, imageW: Number(e.target.value) },
-                    })
-                  }
-                  className="flex-1"
-                />
-                <span className="w-9 shrink-0 text-right tabular-nums">
-                  {project.content.detail.imageW ?? 100}%
-                </span>
-              </label>
+              {isPaid ? (
+                <label className="mt-1 flex items-center gap-2 text-gray-500">
+                  <span className="w-8 shrink-0">크기</span>
+                  <input
+                    type="range"
+                    min={20}
+                    max={100}
+                    value={project.content.detail.imageW ?? 100}
+                    onChange={(e) =>
+                      update({
+                        ...project.content,
+                        detail: { ...project.content.detail, imageW: Number(e.target.value) },
+                      })
+                    }
+                    className="flex-1"
+                  />
+                  <span className="w-9 shrink-0 text-right tabular-nums">
+                    {project.content.detail.imageW ?? 100}%
+                  </span>
+                </label>
+              ) : (
+                <p className="mt-1 text-xs text-gray-400">
+                  이미지 크기 조절은{" "}
+                  <Link href="/pricing" className="underline">Pro</Link> 전용
+                </p>
+              )}
             </div>
 
             <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-800">
@@ -519,7 +540,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
               ref={previewRef}
               className="mx-auto w-full max-w-[1920px] overflow-hidden rounded-lg bg-white shadow-xl"
             >
-              <StoreProduct content={project.content} onChange={update} editing={editing} />
+              <StoreProduct content={project.content} onChange={update} editing={editing} canResize={isPaid} />
             </div>
           )}
         </div>

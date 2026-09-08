@@ -13,7 +13,7 @@ const nl2br = (s: string) => esc(s).replace(/\r?\n/g, "<br/>");
 // StoreContent -> 외부 의존성 0 (Tailwind/JS 없음)의 자체 완결 HTML.
 // 인라인 스타일 기반 + <style> 블록의 media query 로만 반응형.
 // <style> 이 제거돼도 모바일 단일 컬럼으로 정상 표시됨.
-export function exportHtml(c: StoreContent, watermark = false): string {
+export function exportHtml(c: StoreContent): string {
   const t = c.theme;
   const maxW =
     c.layout.width === "custom"
@@ -125,10 +125,6 @@ export function exportHtml(c: StoreContent, watermark = false): string {
     )
     .join("\n");
 
-  const wm = watermark
-    ? `<a href="https://landing-page-jeongin2.vercel.app" target="_blank" style="position:fixed;bottom:12px;right:12px;background:#111827;color:#fff;font:600 12px sans-serif;padding:6px 10px;border-radius:9999px;text-decoration:none;z-index:9999">랜딩페이지 빌더로 제작</a>`
-    : "";
-
   return `<!doctype html>
 <html lang="ko">
 <head>
@@ -151,7 +147,6 @@ export function exportHtml(c: StoreContent, watermark = false): string {
 </head>
 <body>
 ${body}
-${wm}
 </body>
 </html>`;
 }

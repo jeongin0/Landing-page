@@ -82,7 +82,7 @@ export default function ProjectsPage() {
             <Link href="/pricing" className="font-semibold underline">
               Pro로 업그레이드
             </Link>{" "}
-            하면 무제한 + 워터마크가 사라집니다.
+            하면 프로젝트 무제한 + AI 카피 생성 + 이미지 크기 조절을 쓸 수 있어요.
           </div>
         )}
 
