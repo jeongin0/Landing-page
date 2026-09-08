@@ -11,90 +11,117 @@ import {
   sectionPad,
   EditFrame,
   PadHandles,
-  SectionImage,
   FlexImage,
-  CtaLink,
   Stars,
 } from "./parts";
 
 // ════════════════════════════════════════════════════════════
-// STRIP — 풀블리드 세로 스트립. max-width 없음, 섹션 간격 0,
-// 텍스트를 이미지 위에 얹음, 거대 고스트 숫자, 하단 고정 구매바.
-// 카드 · 테두리 · 둥근모서리 전혀 없음.
+// STRIP — 한국형 상세페이지. 긴 통이미지와 컬러 텍스트 밴드가
+// 번갈아 흐름. POINT 라벨, 두꺼운 헤드라인. 구매 버튼 없음.
 // ════════════════════════════════════════════════════════════
 
-const COL = 620; // 본문 텍스트 컬럼 기본 폭
+const COL = 620;
 
 export default function StripLayout({ ctx }: { ctx: Ctx }) {
   const { c, set, editing, primary } = ctx;
   const tp = tpOf(ctx);
-  const heroCtaHidden = c.hero.ctaHidden ?? c.cta.hidden ?? false;
-  const pricingCtaHidden = c.pricing.ctaHidden ?? c.cta.hidden ?? false;
 
-  // 오버레이 텍스트 블록 (이미지 위)
-  const Overlay = ({
-    children,
-    align = "left",
+  const Pill = ({ children, onDark }: { children: React.ReactNode; onDark: boolean }) => (
+    <span
+      className="inline-block rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.22em]"
+      style={
+        onDark
+          ? { background: "#fff", color: "#111" }
+          : { background: primary, color: "#fff" }
+      }
+    >
+      {children}
+    </span>
+  );
+
+  // 긴 통이미지 (자르지 않음, 화면 끝까지)
+  const LongImage = ({
+    src,
+    widthPct,
+    onResize,
   }: {
-    children: React.ReactNode;
-    align?: "left" | "right" | "center";
+    src: string;
+    widthPct?: number;
+    onResize?: (p: number) => void;
   }) => (
-    <div
-      className={
-        "absolute inset-x-0 bottom-0 px-6 pb-10 pt-24 md:px-14 md:pb-14 " +
-        (align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left")
-      }
-      style={{
-        background:
-          "linear-gradient(to top, rgba(0,0,0,.78) 0%, rgba(0,0,0,.35) 45%, rgba(0,0,0,0) 100%)",
-      }}
-    >
-      <div
-        className={
-          "mx-0 max-w-2xl " +
-          (align === "right" ? "ml-auto" : align === "center" ? "mx-auto" : "")
-        }
-      >
-        {children}
-      </div>
-    </div>
+    <FlexImage
+      src={src}
+      widthPct={widthPct}
+      natural
+      editing={editing}
+      canResize={ctx.canResize}
+      imgClassName=""
+      fallbackAspect="1/1"
+      onResize={onResize}
+    />
   );
 
-  const Ghost = ({ n, right }: { n: number; right?: boolean }) => (
-    <div
-      aria-hidden
-      className={
-        "pointer-events-none absolute -top-6 select-none font-black leading-none text-white/15 " +
-        (right ? "-right-3" : "-left-3")
-      }
-      style={{ fontSize: "min(34vw, 260px)" }}
-    >
-      {pad2(n)}
-    </div>
-  );
+  // 컬러 텍스트 밴드
+  const Band = ({
+    s,
+    i,
+    onDark,
+    children,
+    narrow = COL,
+  }: {
+    s: SectionRef;
+    i: number;
+    onDark: boolean;
+    children: React.ReactNode;
+    narrow?: number;
+  }) => {
+    const pad = sectionPad(s);
+    return (
+      <section
+        className="relative"
+        style={{
+          background: s.bg || c.theme.bg || "#ffffff",
+          color: onDark ? "#fff" : undefined,
+          paddingTop: pad,
+          paddingBottom: pad,
+        }}
+      >
+        <EditFrame ctx={ctx} idx={i} s={s} baseW={narrow} className="px-6 text-center">
+          {children}
+        </EditFrame>
+        <PadHandles ctx={ctx} idx={i} s={s} />
+      </section>
+    );
+  };
+
+  const onDarkOf = (s: SectionRef) => isDarkHex(s.bg);
 
   const renderSection = (s: SectionRef, i: number): React.ReactNode => {
+    const onDark = onDarkOf(s);
+
     switch (s.type) {
-      // ── HERO : 풀블리드 이미지 + 하단 오버레이 ──────────────
       case "hero": {
         const txt = (
           <>
             {c.hero.badge && (
-              <Editable
-                as="span"
-                editing={editing}
-                value={c.hero.badge}
-                {...tp("hero.badge")}
-                className="inline-block bg-white px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.2em] text-black"
-                onChange={(v) => set({ hero: { ...c.hero, badge: v } })}
-              />
+              <div className="mb-5">
+                <Editable
+                  as="span"
+                  editing={editing}
+                  value={c.hero.badge}
+                  {...tp("hero.badge")}
+                  className="inline-block rounded-full px-4 py-1.5 text-[11px] font-black uppercase tracking-[0.22em]"
+                  style={onDark ? { background: "#fff", color: "#111" } : { background: primary, color: "#fff" }}
+                  onChange={(v) => set({ hero: { ...c.hero, badge: v } })}
+                />
+              </div>
             )}
             <Editable
               as="h1"
               multiline
               editing={editing}
               {...tp("hero.title")}
-              className="mt-4 text-[34px] font-black leading-[1.05] tracking-tight text-white md:text-[64px]"
+              className="text-[32px] font-black leading-[1.15] tracking-tight md:text-[54px]"
               value={c.hero.title}
               onChange={(v) => set({ hero: { ...c.hero, title: v } })}
             />
@@ -103,123 +130,154 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
               multiline
               editing={editing}
               {...tp("hero.subtitle")}
-              className="mt-4 max-w-xl text-[14px] leading-relaxed text-white/80 md:text-base"
+              className="mx-auto mt-5 max-w-lg text-[14px] leading-relaxed md:text-base"
+              style={{ opacity: onDark ? 0.85 : 0.62 }}
               value={c.hero.subtitle}
               onChange={(v) => set({ hero: { ...c.hero, subtitle: v } })}
             />
           </>
         );
-        if (c.hero.mode === "text") {
-          return (
-            <div className="px-6 py-20 text-center md:py-28" style={{ background: primary }}>
-              <div className="mx-auto max-w-3xl">
-                <div className="text-white">{txt}</div>
-              </div>
-            </div>
-          );
-        }
         if (c.hero.mode === "image")
           return (
-            <SectionImage
-              ctx={ctx}
-              k="hero"
-              natural
-              imgClassName="w-full object-cover"
-              fallbackAspect="3/4"
-            />
+            <section className="relative">
+              <LongImage
+                src={c.hero.image}
+                widthPct={c.hero.imageW}
+                onResize={(p) => set({ hero: { ...c.hero, imageW: p } })}
+              />
+            </section>
+          );
+        if (c.hero.mode === "text")
+          return (
+            <Band s={s} i={i} onDark={onDark} narrow={860}>
+              {txt}
+            </Band>
           );
         return (
-          <div className="relative h-[78vh] min-h-[440px] w-full overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={c.hero.image}
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-              style={{ objectPosition: "center" }}
-              draggable={false}
-            />
-            <Overlay align="left">{txt}</Overlay>
-          </div>
+          <>
+            <Band s={s} i={i} onDark={onDark} narrow={860}>
+              {txt}
+            </Band>
+            <section className="relative">
+              <LongImage
+                src={c.hero.image}
+                widthPct={c.hero.imageW}
+                onResize={(p) => set({ hero: { ...c.hero, imageW: p } })}
+              />
+            </section>
+          </>
         );
       }
 
-      // ── HIGHLIGHTS : 강점마다 풀블리드 밴드 + 고스트 숫자 ────
+      // 강점: [POINT 라벨 + 제목 + 설명 밴드] → [긴 이미지] 반복
       case "highlights":
         return (
-          <div>
+          <>
             {c.highlights.map((h, hi) => {
-              const right = hi % 2 === 1;
+              const bandBg =
+                hi % 2 === 0 ? s.bg || c.theme.bg || "#fff" : alpha(primary, "0f");
+              const d = isDarkHex(bandBg);
+              const pad = sectionPad(s);
               return (
-                <div key={hi} className="relative">
-                  {h.iconImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={h.iconImage}
-                      alt=""
-                      className="h-[62vh] max-h-[560px] min-h-[360px] w-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="h-[52vh] max-h-[460px] min-h-[320px] w-full"
-                      style={{ background: right ? alpha(primary, "e6") : primary }}
-                    />
-                  )}
-                  <Ghost n={hi + 1} right={right} />
-                  <Overlay align={right ? "right" : "left"}>
-                    <div className="text-[11px] font-black uppercase tracking-[0.24em] text-white/70">
-                      Point {pad2(hi + 1)}
+                <div key={hi}>
+                  <section
+                    className="relative"
+                    style={{
+                      background: bandBg,
+                      color: d ? "#fff" : undefined,
+                      paddingTop: pad,
+                      paddingBottom: h.iconImage ? Math.round(pad * 0.55) : pad,
+                    }}
+                  >
+                    <div className="mx-auto max-w-[620px] px-6 text-center">
+                      <Pill onDark={d}>Point {pad2(hi + 1)}</Pill>
+                      <Editable
+                        as="h3"
+                        editing={editing}
+                        {...tp("highlights.title")}
+                        className="mt-4 text-[24px] font-black leading-tight md:text-[34px]"
+                        value={h.title}
+                        onChange={(v) => {
+                          const highlights = [...c.highlights];
+                          highlights[hi] = { ...h, title: v };
+                          set({ highlights });
+                        }}
+                      />
+                      <Editable
+                        as="p"
+                        multiline
+                        editing={editing}
+                        {...tp("highlights.desc")}
+                        className="mx-auto mt-3 max-w-md text-[14px] leading-relaxed md:text-[15px]"
+                        style={{ opacity: d ? 0.85 : 0.66 }}
+                        value={h.desc}
+                        onChange={(v) => {
+                          const highlights = [...c.highlights];
+                          highlights[hi] = { ...h, desc: v };
+                          set({ highlights });
+                        }}
+                      />
                     </div>
-                    <Editable
-                      as="h3"
-                      editing={editing}
-                      {...tp("highlights.title")}
-                      className="mt-2 text-[24px] font-black leading-tight text-white md:text-[38px]"
-                      value={h.title}
-                      onChange={(v) => {
-                        const highlights = [...c.highlights];
-                        highlights[hi] = { ...h, title: v };
-                        set({ highlights });
-                      }}
-                    />
-                    <Editable
-                      as="p"
-                      multiline
-                      editing={editing}
-                      {...tp("highlights.desc")}
-                      className="mt-2 text-[13px] leading-relaxed text-white/80 md:text-[15px]"
-                      value={h.desc}
-                      onChange={(v) => {
-                        const highlights = [...c.highlights];
-                        highlights[hi] = { ...h, desc: v };
-                        set({ highlights });
-                      }}
-                    />
-                  </Overlay>
+                  </section>
+                  {h.iconImage && (
+                    <section className="relative" style={{ background: bandBg }}>
+                      <div className="mx-auto" style={{ maxWidth: 900 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={h.iconImage} alt="" className="block w-full" draggable={false} />
+                      </div>
+                    </section>
+                  )}
                 </div>
               );
             })}
-          </div>
+          </>
         );
 
-      // ── CHECKLIST : 어두운 밴드, 큰 리스트 ────────────────────
+      case "callout":
+        return (
+          <Band s={s} i={i} onDark={onDark} narrow={880}>
+            <Editable
+              as="p"
+              multiline
+              editing={editing}
+              {...tp("callout.text")}
+              className="text-[28px] font-black leading-[1.15] md:text-[44px]"
+              value={c.callout.text}
+              onChange={(v) => set({ callout: { ...c.callout, text: v } })}
+            />
+            {(c.callout.sub || editing) && (
+              <Editable
+                as="p"
+                editing={editing}
+                {...tp("callout.sub")}
+                className="mx-auto mt-5 max-w-md text-sm font-bold uppercase tracking-[0.2em]"
+                style={{ opacity: 0.7 }}
+                value={c.callout.sub}
+                onChange={(v) => set({ callout: { ...c.callout, sub: v } })}
+              />
+            )}
+          </Band>
+        );
+
       case "checklist":
         return (
-          <EditFrame ctx={ctx} idx={i} s={s} baseW={COL} className="px-6">
+          <Band s={s} i={i} onDark={onDark}>
+            <Pill onDark={onDark}>Check</Pill>
             <Editable
               as="h2"
               editing={editing}
               {...tp("checklist.heading")}
-              className="text-[24px] font-black leading-tight md:text-[34px]"
+              className="mt-4 text-[24px] font-black leading-tight md:text-[34px]"
               value={c.checklist.heading}
               onChange={(v) => set({ checklist: { ...c.checklist, heading: v } })}
             />
-            <ul className="mt-8">
+            <ul className="mx-auto mt-8 max-w-md text-left">
               {c.checklist.items.map((it, ii) => (
                 <li
                   key={ii}
                   className="flex items-start gap-4 border-t border-current/15 py-4 first:border-t-0"
                 >
-                  <span className="mt-1 text-lg font-black" style={{ color: primary }}>
+                  <span className="mt-0.5 text-lg font-black" style={{ color: onDark ? "#fff" : primary }}>
                     ✓
                   </span>
                   <Editable
@@ -237,53 +295,30 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
                 </li>
               ))}
             </ul>
-          </EditFrame>
+          </Band>
         );
 
-      // ── CALLOUT : 컬러 밴드, 거대 중앙 텍스트 ────────────────
-      case "callout":
-        return (
-          <EditFrame ctx={ctx} idx={i} s={s} baseW={860} className="px-6 text-center">
-            <Editable
-              as="p"
-              multiline
-              editing={editing}
-              {...tp("callout.text")}
-              className="text-[28px] font-black leading-[1.1] md:text-[46px]"
-              value={c.callout.text}
-              onChange={(v) => set({ callout: { ...c.callout, text: v } })}
-            />
-            {(c.callout.sub || editing) && (
-              <Editable
-                as="p"
-                editing={editing}
-                {...tp("callout.sub")}
-                className="mx-auto mt-5 max-w-md text-sm font-bold uppercase tracking-[0.2em] opacity-70"
-                value={c.callout.sub}
-                onChange={(v) => set({ callout: { ...c.callout, sub: v } })}
-              />
-            )}
-          </EditFrame>
-        );
-
-      // ── STEPS : 밴드, 큰 숫자 세로 ───────────────────────────
       case "steps":
         return (
-          <EditFrame ctx={ctx} idx={i} s={s} baseW={COL} className="px-6">
+          <Band s={s} i={i} onDark={onDark}>
+            <Pill onDark={onDark}>Step</Pill>
             <Editable
               as="h2"
               editing={editing}
               {...tp("steps.heading")}
-              className="text-[24px] font-black leading-tight md:text-[34px]"
+              className="mt-4 text-[24px] font-black leading-tight md:text-[34px]"
               value={c.steps.heading}
               onChange={(v) => set({ steps: { ...c.steps, heading: v } })}
             />
-            <div className="mt-8">
+            <div className="mx-auto mt-8 max-w-lg text-left">
               {c.steps.items.map((st, si) => (
-                <div key={si} className="flex gap-5 border-t border-current/15 py-6 first:border-t-0">
+                <div
+                  key={si}
+                  className="flex gap-5 border-t border-current/15 py-6 first:border-t-0"
+                >
                   <div
-                    className="text-[40px] font-black leading-none tabular-nums"
-                    style={{ color: primary }}
+                    className="text-[36px] font-black leading-none tabular-nums"
+                    style={{ color: onDark ? "#fff" : primary, opacity: onDark ? 0.9 : 1 }}
                   >
                     {pad2(si + 1)}
                   </div>
@@ -305,7 +340,8 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
                       multiline
                       editing={editing}
                       {...tp("steps.desc")}
-                      className="mt-1.5 text-sm leading-relaxed opacity-70"
+                      className="mt-1.5 text-sm leading-relaxed"
+                      style={{ opacity: 0.7 }}
                       value={st.desc}
                       onChange={(v) => {
                         const items = [...c.steps.items];
@@ -317,141 +353,122 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
                 </div>
               ))}
             </div>
-          </EditFrame>
+          </Band>
         );
 
-      // ── DETAIL : 풀블리드 이미지 + 오버레이 제목, 아래 본문 밴드
       case "detail": {
+        if (c.detail.mode === "image")
+          return (
+            <section className="relative">
+              <LongImage
+                src={c.detail.image}
+                widthPct={c.detail.imageW}
+                onResize={(p) => set({ detail: { ...c.detail, imageW: p } })}
+              />
+            </section>
+          );
         const head = (
-          <Editable
-            as="h2"
-            editing={editing}
-            {...tp("detail.heading")}
-            className="text-[26px] font-black leading-tight text-white md:text-[42px]"
-            value={c.detail.heading}
-            onChange={(v) => set({ detail: { ...c.detail, heading: v } })}
-          />
-        );
-        const body = (
-          <EditFrame ctx={ctx} idx={i} s={s} baseW={COL} className="px-6 pt-10">
+          <>
+            <Pill onDark={onDark}>Detail</Pill>
+            <Editable
+              as="h2"
+              editing={editing}
+              {...tp("detail.heading")}
+              className="mt-4 text-[24px] font-black leading-tight md:text-[34px]"
+              value={c.detail.heading}
+              onChange={(v) => set({ detail: { ...c.detail, heading: v } })}
+            />
             <Editable
               as="p"
               multiline
               editing={editing}
               {...tp("detail.body")}
-              className="text-[15px] leading-[1.9] opacity-80 md:text-[17px]"
+              className="mx-auto mt-4 max-w-xl text-[15px] leading-[1.9] md:text-[17px]"
+              style={{ opacity: 0.78 }}
               value={c.detail.body}
               onChange={(v) => set({ detail: { ...c.detail, body: v } })}
             />
-          </EditFrame>
+          </>
         );
         if (c.detail.mode === "text")
           return (
-            <EditFrame ctx={ctx} idx={i} s={s} baseW={COL} className="px-6">
-              <Editable
-                as="h2"
-                editing={editing}
-                {...tp("detail.heading")}
-                className="text-[24px] font-black leading-tight md:text-[34px]"
-                value={c.detail.heading}
-                onChange={(v) => set({ detail: { ...c.detail, heading: v } })}
-              />
-              <Editable
-                as="p"
-                multiline
-                editing={editing}
-                {...tp("detail.body")}
-                className="mt-5 text-[15px] leading-[1.9] opacity-80 md:text-[17px]"
-                value={c.detail.body}
-                onChange={(v) => set({ detail: { ...c.detail, body: v } })}
-              />
-            </EditFrame>
-          );
-        if (c.detail.mode === "image")
-          return (
-            <SectionImage
-              ctx={ctx}
-              k="detail"
-              natural
-              imgClassName="w-full object-cover"
-              fallbackAspect="3/2"
-            />
+            <Band s={s} i={i} onDark={onDark}>
+              {head}
+            </Band>
           );
         return (
-          <div>
-            <div className="relative">
-              <SectionImage
-                ctx={ctx}
-                k="detail"
-                natural={false}
-                imgClassName="w-full object-cover"
-                fallbackAspect="16/10"
+          <>
+            <Band s={s} i={i} onDark={onDark}>
+              {head}
+            </Band>
+            <section className="relative" style={{ background: s.bg || c.theme.bg }}>
+              <LongImage
+                src={c.detail.image}
+                widthPct={c.detail.imageW}
+                onResize={(p) => set({ detail: { ...c.detail, imageW: p } })}
               />
-              <Overlay align="left">{head}</Overlay>
-            </div>
-            {body}
-          </div>
+            </section>
+          </>
         );
       }
 
-      // ── SPECS : 밴드, 얇은 구분선 행 ─────────────────────────
       case "specs":
         return (
-          <EditFrame ctx={ctx} idx={i} s={s} baseW={COL} className="px-6">
-            {c.specs.map((sp, si) => (
-              <div
-                key={si}
-                className="flex justify-between border-t border-current/15 py-4 text-sm first:border-t-0 md:text-base"
-              >
-                <Editable
-                  as="span"
-                  editing={editing}
-                  {...tp("specs.label")}
-                  className="font-black uppercase tracking-wide"
-                  value={sp.label}
-                  onChange={(v) => {
-                    const specs = [...c.specs];
-                    specs[si] = { ...sp, label: v };
-                    set({ specs });
-                  }}
-                />
-                <Editable
-                  as="span"
-                  editing={editing}
-                  {...tp("specs.value")}
-                  className="opacity-70"
-                  value={sp.value}
-                  onChange={(v) => {
-                    const specs = [...c.specs];
-                    specs[si] = { ...sp, value: v };
-                    set({ specs });
-                  }}
-                />
-              </div>
-            ))}
-          </EditFrame>
+          <Band s={s} i={i} onDark={onDark}>
+            <Pill onDark={onDark}>제품 정보</Pill>
+            <div className="mx-auto mt-6 max-w-md text-left">
+              {c.specs.map((sp, si) => (
+                <div
+                  key={si}
+                  className="flex justify-between border-t border-current/15 py-4 text-sm first:border-t-0 md:text-base"
+                >
+                  <Editable
+                    as="span"
+                    editing={editing}
+                    {...tp("specs.label")}
+                    className="font-black"
+                    value={sp.label}
+                    onChange={(v) => {
+                      const specs = [...c.specs];
+                      specs[si] = { ...sp, label: v };
+                      set({ specs });
+                    }}
+                  />
+                  <Editable
+                    as="span"
+                    editing={editing}
+                    {...tp("specs.value")}
+                    style={{ opacity: 0.7 }}
+                    value={sp.value}
+                    onChange={(v) => {
+                      const specs = [...c.specs];
+                      specs[si] = { ...sp, value: v };
+                      set({ specs });
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </Band>
         );
 
-      // ── REVIEWS : 가로 스크롤 스냅 스트립 ────────────────────
       case "reviews":
         return (
-          <div>
-            <div className="px-6 pb-6 md:px-14">
-              <h2 className="text-[24px] font-black md:text-[34px]">고객 후기</h2>
-            </div>
-            <div className="flex snap-x snap-mandatory gap-0 overflow-x-auto">
+          <Band s={s} i={i} onDark={onDark} narrow={720}>
+            <Pill onDark={onDark}>Review</Pill>
+            <div className="mx-auto mt-7 max-w-xl text-left">
               {c.reviews.map((r, ri) => (
                 <div
                   key={ri}
-                  className="w-[85vw] shrink-0 snap-start border-l border-current/15 px-6 py-8 first:border-l-0 md:w-[440px] md:px-10"
+                  className="border-t border-current/15 py-6 first:border-t-0"
                 >
-                  <Stars className="text-base" />
+                  <Stars className="text-sm" />
                   <Editable
                     as="p"
                     multiline
                     editing={editing}
                     {...tp("reviews.text")}
-                    className="mt-3 text-[16px] font-bold leading-relaxed md:text-[19px]"
+                    className="mt-2 text-[15px] font-bold leading-relaxed md:text-[17px]"
                     value={r.text}
                     onChange={(v) => {
                       const reviews = [...c.reviews];
@@ -463,7 +480,8 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
                     as="div"
                     editing={editing}
                     {...tp("reviews.name")}
-                    className="mt-5 text-xs font-black uppercase tracking-[0.18em] opacity-50"
+                    className="mt-3 text-xs font-black uppercase tracking-[0.18em]"
+                    style={{ opacity: 0.5 }}
                     value={r.name}
                     onChange={(v) => {
                       const reviews = [...c.reviews];
@@ -474,19 +492,18 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
                 </div>
               ))}
             </div>
-          </div>
+          </Band>
         );
 
-      // ── PRICING : 컬러 밴드, 거대 가격 ──────────────────────
       case "pricing":
         return (
-          <EditFrame ctx={ctx} idx={i} s={s} baseW={720} className="px-6 text-center">
+          <Band s={s} i={i} onDark={onDark} narrow={620}>
             <div className="flex items-end justify-center gap-3">
               <Editable
                 as="span"
                 editing={editing}
                 {...tp("pricing.price")}
-                className="text-[52px] font-black leading-none md:text-[72px]"
+                className="text-[46px] font-black leading-none md:text-[64px]"
                 value={c.pricing.price}
                 onChange={(v) => set({ pricing: { ...c.pricing, price: v } })}
               />
@@ -494,7 +511,8 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
                 as="span"
                 editing={editing}
                 {...tp("pricing.compareAt")}
-                className="pb-2 text-lg line-through opacity-40"
+                className="pb-2 text-lg line-through"
+                style={{ opacity: 0.4 }}
                 value={c.pricing.compareAt}
                 onChange={(v) => set({ pricing: { ...c.pricing, compareAt: v } })}
               />
@@ -503,25 +521,19 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
               as="p"
               editing={editing}
               {...tp("pricing.note")}
-              className="mt-3 text-sm font-bold uppercase tracking-[0.16em] opacity-70"
+              className="mt-3 text-sm font-bold uppercase tracking-[0.14em]"
+              style={{ opacity: 0.7 }}
               value={c.pricing.note}
               onChange={(v) => set({ pricing: { ...c.pricing, note: v } })}
             />
-            {!pricingCtaHidden && (
-              <CtaLink
-                ctx={ctx}
-                className="mt-8 inline-block bg-white px-12 py-4 text-base font-black uppercase tracking-[0.14em] text-black"
-              />
-            )}
-          </EditFrame>
+          </Band>
         );
 
-      // ── FAQ : 밴드, 얇은 구분선 Q/A ─────────────────────────
       case "faq":
         return (
-          <EditFrame ctx={ctx} idx={i} s={s} baseW={COL} className="px-6">
-            <h2 className="text-[24px] font-black md:text-[34px]">자주 묻는 질문</h2>
-            <div className="mt-8">
+          <Band s={s} i={i} onDark={onDark} narrow={720}>
+            <Pill onDark={onDark}>FAQ</Pill>
+            <div className="mx-auto mt-7 max-w-xl text-left">
               {c.faq.map((f, fi) => (
                 <div key={fi} className="border-t border-current/15 py-5 first:border-t-0">
                   <Editable
@@ -541,7 +553,8 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
                     multiline
                     editing={editing}
                     {...tp("faq.a")}
-                    className="mt-2 text-sm leading-relaxed opacity-70"
+                    className="mt-2 text-sm leading-relaxed"
+                    style={{ opacity: 0.7 }}
                     value={f.a}
                     onChange={(v) => {
                       const faq = [...c.faq];
@@ -552,92 +565,82 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
                 </div>
               ))}
             </div>
-          </EditFrame>
+          </Band>
         );
 
-      // ── BLOCK ──────────────────────────────────────────────
       case "block": {
         if (!s.block) return null;
         const b = s.block;
         const setBlock = (patch: Partial<typeof b>) =>
           ctx.setSection(i, { block: { ...b, ...patch } });
-        const heading = (
-          <Editable
-            as="h2"
-            editing={editing}
-            className="text-[24px] font-black leading-tight text-white md:text-[38px]"
-            value={b.heading}
-            styleKey={`block.${s.key}.heading`}
-            textStyle={c.textStyles?.[`block.${s.key}.heading`]}
-            selected={ctx.selectedTextKey === `block.${s.key}.heading`}
-            onSelect={ctx.onSelectText}
-            onChange={(v) => setBlock({ heading: v })}
-          />
-        );
         if (b.mode === "image")
           return (
-            <FlexImage
-              src={b.image}
-              widthPct={b.imageW}
-              aspect={b.imageAspect}
-              natural
-              editing={editing}
-              canResize={ctx.canResize}
-              imgClassName="w-full object-cover"
-              fallbackAspect="3/2"
-              onResize={(p) => setBlock({ imageW: p })}
-            />
+            <section className="relative" style={{ background: s.bg || c.theme.bg }}>
+              <FlexImage
+                src={b.image}
+                widthPct={b.imageW}
+                natural
+                editing={editing}
+                canResize={ctx.canResize}
+                imgClassName=""
+                fallbackAspect="1/1"
+                onResize={(p) => setBlock({ imageW: p })}
+              />
+              <PadHandles ctx={ctx} idx={i} s={s} />
+            </section>
           );
+        const text = (
+          <>
+            <Editable
+              as="h2"
+              editing={editing}
+              className="text-[22px] font-black leading-tight md:text-[32px]"
+              value={b.heading}
+              styleKey={`block.${s.key}.heading`}
+              textStyle={c.textStyles?.[`block.${s.key}.heading`]}
+              selected={ctx.selectedTextKey === `block.${s.key}.heading`}
+              onSelect={ctx.onSelectText}
+              onChange={(v) => setBlock({ heading: v })}
+            />
+            <Editable
+              as="p"
+              multiline
+              editing={editing}
+              className="mx-auto mt-4 max-w-xl text-[15px] leading-[1.9]"
+              style={{ opacity: 0.78 }}
+              value={b.body}
+              styleKey={`block.${s.key}.body`}
+              textStyle={c.textStyles?.[`block.${s.key}.body`]}
+              selected={ctx.selectedTextKey === `block.${s.key}.body`}
+              onSelect={ctx.onSelectText}
+              onChange={(v) => setBlock({ body: v })}
+            />
+          </>
+        );
         if (b.mode === "text")
           return (
-            <EditFrame ctx={ctx} idx={i} s={s} baseW={COL} className="px-6">
-              <Editable
-                as="h2"
-                editing={editing}
-                className="text-[22px] font-black md:text-[30px]"
-                value={b.heading}
-                styleKey={`block.${s.key}.heading`}
-                textStyle={c.textStyles?.[`block.${s.key}.heading`]}
-                selected={ctx.selectedTextKey === `block.${s.key}.heading`}
-                onSelect={ctx.onSelectText}
-                onChange={(v) => setBlock({ heading: v })}
-              />
-              <Editable
-                as="p"
-                multiline
-                editing={editing}
-                className="mt-4 text-[15px] leading-[1.9] opacity-80"
-                value={b.body}
-                styleKey={`block.${s.key}.body`}
-                textStyle={c.textStyles?.[`block.${s.key}.body`]}
-                selected={ctx.selectedTextKey === `block.${s.key}.body`}
-                onSelect={ctx.onSelectText}
-                onChange={(v) => setBlock({ body: v })}
-              />
-            </EditFrame>
+            <Band s={s} i={i} onDark={onDark}>
+              {text}
+            </Band>
           );
         return (
-          <div>
-            <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={b.image} alt="" className="w-full object-cover" style={{ aspectRatio: "16/10" }} />
-              <Overlay align="left">{heading}</Overlay>
-            </div>
-            <EditFrame ctx={ctx} idx={i} s={s} baseW={COL} className="px-6 pt-10">
-              <Editable
-                as="p"
-                multiline
+          <>
+            <Band s={s} i={i} onDark={onDark}>
+              {text}
+            </Band>
+            <section className="relative" style={{ background: s.bg || c.theme.bg }}>
+              <FlexImage
+                src={b.image}
+                widthPct={b.imageW}
+                natural
                 editing={editing}
-                className="text-[15px] leading-[1.9] opacity-80"
-                value={b.body}
-                styleKey={`block.${s.key}.body`}
-                textStyle={c.textStyles?.[`block.${s.key}.body`]}
-                selected={ctx.selectedTextKey === `block.${s.key}.body`}
-                onSelect={ctx.onSelectText}
-                onChange={(v) => setBlock({ body: v })}
+                canResize={ctx.canResize}
+                imgClassName=""
+                fallbackAspect="1/1"
+                onResize={(p) => setBlock({ imageW: p })}
               />
-            </EditFrame>
-          </div>
+            </section>
+          </>
         );
       }
 
@@ -646,76 +649,15 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
     }
   };
 
-  // 이미지/오버레이 섹션은 자체 배경, 그 외 밴드는 s.bg (없으면 어둡게/밝게 번갈아)
-  const imageLike = (s: SectionRef) =>
-    (s.type === "hero" && c.hero.mode !== "text") ||
-    s.type === "highlights" ||
-    (s.type === "detail" && c.detail.mode !== "text") ||
-    (s.type === "block" && s.block?.mode !== "text");
-
-  const enabled = c.sections.filter((s) => s.enabled);
-
   return (
     <div style={{ background: c.theme.bg, color: c.theme.text }}>
-      {enabled.map((s) => {
+      {c.sections.map((s) => {
+        if (!s.enabled) return null;
         const i = c.sections.indexOf(s);
         const inner = renderSection(s, i);
         if (!inner) return null;
-        if (imageLike(s)) {
-          return (
-            <section key={s.key || `${s.type}-${i}`} className="relative">
-              {inner}
-            </section>
-          );
-        }
-        const bg = s.bg || c.theme.bg || "#ffffff";
-        const onDark = isDarkHex(bg);
-        const pad = sectionPad(s);
-        return (
-          <section
-            key={s.key || `${s.type}-${i}`}
-            className="relative"
-            style={{
-              background: bg,
-              color: onDark ? "#fff" : undefined,
-              paddingTop: pad,
-              paddingBottom: pad,
-            }}
-          >
-            {s.bgImage && (
-              <div
-                className="pointer-events-none absolute inset-0 opacity-100"
-                style={{
-                  backgroundImage: `url("${s.bgImage}")`,
-                  backgroundSize: s.bgFit === "contain" ? "contain" : "cover",
-                  backgroundPosition: "center",
-                  backgroundRepeat: "no-repeat",
-                }}
-              />
-            )}
-            {inner}
-            <PadHandles ctx={ctx} idx={i} s={s} />
-          </section>
-        );
+        return <div key={s.key || `${s.type}-${i}`}>{inner}</div>;
       })}
-
-      {!(heroCtaHidden && pricingCtaHidden) && (
-        <div className="sticky bottom-0 z-40 flex items-center justify-between gap-4 border-t border-white/10 bg-black px-5 py-3 text-white md:px-10">
-          <div className="min-w-0">
-            <div className="truncate text-sm font-black md:text-base">
-              {c.pricing.price}
-              <span className="ml-2 text-xs font-normal line-through opacity-50">
-                {c.pricing.compareAt}
-              </span>
-            </div>
-          </div>
-          <CtaLink
-            ctx={ctx}
-            className="shrink-0 px-7 py-3 text-sm font-black uppercase tracking-[0.12em]"
-            style={{ background: primary }}
-          />
-        </div>
-      )}
     </div>
   );
 }

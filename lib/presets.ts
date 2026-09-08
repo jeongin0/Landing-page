@@ -22,25 +22,33 @@ export const PRESETS: {
   {
     id: "bold",
     label: "스트립 (상품 상세)",
-    desc: "화면 끝까지 꽉 찬 사진 밴드 위에 텍스트를 얹고, 섹션이 이어 붙는 정통 상세페이지. 하단 구매바 고정.",
+    desc: "긴 통이미지와 컬러 텍스트 밴드가 번갈아 흐르는 정통 상세페이지. POINT 라벨. 구매 버튼 없음.",
     make: () => {
       const c = defaultStoreContent();
       c.style = "bold";
       c.theme = { primary: "#e23744", bg: "#ffffff", text: "#111111" };
       c.layout = { width: "narrow", customPx: 720 };
+      const imgBlock = (image: string, key: string): SectionRef => ({
+        type: "block",
+        enabled: true,
+        key,
+        pad: "normal",
+        block: { heading: "", body: "", image, mode: "image", align: "left" },
+      });
       c.sections = [
         band("hero", undefined),
-        band("highlights", undefined),
         band("callout", "#e23744"),
+        band("highlights", undefined),
+        imgBlock(U("photo-1600271886742-f049cd451bba", 1400), "pb1"),
         band("checklist", "#111111"),
         band("detail", undefined),
+        band("steps", "#f7f2f2"),
         band("specs", "#f3f3f4"),
         band("reviews", "#ffffff"),
         band("pricing", "#111111"),
         band("faq", "#f3f3f4"),
-        band("steps", undefined, false),
       ];
-      c.cta = { text: "지금 구매하기", href: "#" };
+      c.cta = { text: "", href: "" };
       c.hero = {
         ...c.hero,
         badge: "신제품 출시",

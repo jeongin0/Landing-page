@@ -371,6 +371,24 @@ export function newBlock(): SectionRef {
   };
 }
 
+// 통이미지 전용 블록 (긴 이미지 한 장)
+export function newImageBlock(): SectionRef {
+  return {
+    type: "block",
+    enabled: true,
+    key: genKey(),
+    block: { heading: "", body: "", image: "", mode: "image", align: "left" },
+  };
+}
+
+// 섹션 복제 (block 은 새 key, 나머지는 얕은 복사)
+export function duplicateSectionRef(s: SectionRef): SectionRef {
+  if (s.type === "block") {
+    return { ...s, key: genKey(), block: { ...(s.block as FreeBlock) } };
+  }
+  return { ...s };
+}
+
 export type Project = {
   id: string;
   title: string;

@@ -4,7 +4,14 @@ import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getProject, saveProject, setPublished } from "@/lib/storage";
 import type { Project, StoreContent, SectionMode, SectionRef, LayoutStyle } from "@/lib/schema";
-import { SECTION_LABELS, SECTION_MODE_LABELS, LAYOUT_STYLE_LABELS, newBlock } from "@/lib/schema";
+import {
+  SECTION_LABELS,
+  SECTION_MODE_LABELS,
+  LAYOUT_STYLE_LABELS,
+  newBlock,
+  newImageBlock,
+  duplicateSectionRef,
+} from "@/lib/schema";
 import type { WidthPreset } from "@/lib/schema";
 import StoreProduct from "@/components/templates/StoreProduct";
 import GenerateModal from "@/components/GenerateModal";
@@ -17,7 +24,6 @@ const TEXT_LABELS: Record<string, string> = {
   "hero.badge": "메인 라벨(뱃지)",
   "hero.title": "메인 제목",
   "hero.subtitle": "메인 부제목",
-  "cta.text": "구매 버튼 문구",
   "detail.heading": "상세 제목",
   "detail.body": "상세 본문",
   "highlights.title": "강점 제목 (전체)",
@@ -134,6 +140,22 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
       ...project.content,
       sections: [...project.content.sections, newBlock()],
     });
+  };
+
+  const addImageBlock = () => {
+    if (!project) return;
+    update({
+      ...project.content,
+      sections: [...project.content.sections, newImageBlock()],
+    });
+  };
+
+  // 섹션 복제해서 바로 아래에 추가
+  const duplicateSection = (index: number) => {
+    if (!project) return;
+    const arr = [...project.content.sections];
+    arr.splice(index + 1, 0, duplicateSectionRef(arr[index]));
+    update({ ...project.content, sections: arr });
   };
 
   // block 은 삭제, 기본 섹션은 비활성으로
@@ -514,6 +536,9 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                         className="px-1 text-gray-400 disabled:opacity-30">▲</button>
                       <button onClick={() => moveSection(i, 1)} disabled={i === project.content.sections.length - 1}
                         className="px-1 text-gray-400 disabled:opacity-30">▼</button>
+                      <button onClick={() => duplicateSection(i)}
+                        title="이 섹션 복제"
+                        className="px-1 text-gray-400 hover:text-gray-900">⧉</button>
                       <button onClick={() => removeSection(i)}
                         title={s.type === "block" ? "삭제" : "숨기기"}
                         className="px-1 text-gray-300 hover:text-red-500">✕</button>
@@ -616,12 +641,23 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   </div>
                 ))}
               </div>
-              <button
-                onClick={addBlock}
-                className="mt-2 w-full rounded-lg border border-dashed border-gray-300 py-1.5 text-xs font-semibold text-gray-500 hover:border-gray-500"
-              >
-                + 자유 블록 추가
-              </button>
+              <div className="mt-2 flex gap-1.5">
+                <button
+                  onClick={addBlock}
+                  className="flex-1 rounded-lg border border-dashed border-gray-300 py-1.5 text-xs font-semibold text-gray-500 hover:border-gray-500"
+                >
+                  + 텍스트 블록
+                </button>
+                <button
+                  onClick={addImageBlock}
+                  className="flex-1 rounded-lg border border-dashed border-gray-300 py-1.5 text-xs font-semibold text-gray-500 hover:border-gray-500"
+                >
+                  + 통이미지 블록
+                </button>
+              </div>
+              <p className="mt-1 text-[11px] text-gray-400">
+                ⧉ 로 섹션을 복제할 수 있어요. 통이미지 블록을 여러 개 넣어 이미지·텍스트를 번갈아 배치하세요.
+              </p>
             </div>
 
             <div>
@@ -690,63 +726,6 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                   placeholder="px"
                 />
               )}
-            </div>
-
-            <div>
-              <h3 className="mb-2 font-bold text-gray-700">구매 버튼</h3>
-              {(() => {
-                const heroHidden =
-                  project.content.hero.ctaHidden ?? project.content.cta.hidden ?? false;
-                const priceHidden =
-                  project.content.pricing.ctaHidden ?? project.content.cta.hidden ?? false;
-                return (
-                  <>
-                    <label className="mb-1 flex items-center gap-2 text-gray-600">
-                      <input
-                        type="checkbox"
-                        checked={!heroHidden}
-                        onChange={(e) =>
-                          update({
-                            ...project.content,
-                            hero: { ...project.content.hero, ctaHidden: !e.target.checked },
-                          })
-                        }
-                      />
-                      메인(히어로) 버튼 표시
-                    </label>
-                    <label className="mb-2 flex items-center gap-2 text-gray-600">
-                      <input
-                        type="checkbox"
-                        checked={!priceHidden}
-                        onChange={(e) =>
-                          update({
-                            ...project.content,
-                            pricing: { ...project.content.pricing, ctaHidden: !e.target.checked },
-                          })
-                        }
-                      />
-                      가격 섹션 버튼 표시
-                    </label>
-                    {(!heroHidden || !priceHidden) && (
-                      <>
-                        <label className="mb-1 block text-gray-600">링크 주소 (구매/신청 페이지)</label>
-                        <input
-                          value={project.content.cta.href}
-                          onChange={(e) =>
-                            update({
-                              ...project.content,
-                              cta: { ...project.content.cta, href: e.target.value },
-                            })
-                          }
-                          placeholder="https://smartstore.naver.com/..."
-                          className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
-                        />
-                        <p className="mt-1 text-xs text-gray-400">버튼 문구는 페이지에서 직접 클릭해 수정</p>
-                      </>
-                    )}
-                  </>
-                );
-              })()}
             </div>
 
             <div>

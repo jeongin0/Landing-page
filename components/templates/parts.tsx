@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import type { StoreContent, SectionRef } from "@/lib/schema";
 import { PAD_PX, clampSectionPx, clampPadPx, clampSplitPct } from "@/lib/schema";
-import Editable from "@/components/Editable";
 import ResizableImage from "@/components/ResizableImage";
 
 // 템플릿 렌더러들이 공유하는 편집 컨텍스트
@@ -272,31 +271,6 @@ export function SectionImage({
         } as Partial<StoreContent>)
       }
     />
-  );
-}
-
-export function CtaLink({
-  ctx,
-  className,
-  style,
-}: {
-  ctx: Ctx;
-  className: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <a href={ctx.c.cta.href || "#"} className={className} style={style}>
-      <Editable
-        as="span"
-        editing={ctx.editing}
-        value={ctx.c.cta.text}
-        styleKey="cta.text"
-        textStyle={ctx.c.textStyles?.["cta.text"]}
-        selected={ctx.selectedTextKey === "cta.text"}
-        onSelect={ctx.onSelectText}
-        onChange={(v) => ctx.set({ cta: { ...ctx.c.cta, text: v } })}
-      />
-    </a>
   );
 }
 

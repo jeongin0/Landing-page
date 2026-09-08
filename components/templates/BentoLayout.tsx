@@ -1,7 +1,6 @@
 "use client";
 
 import type { SectionRef } from "@/lib/schema";
-import { SECTION_LABELS } from "@/lib/schema";
 import Editable from "@/components/Editable";
 import {
   type Ctx,
@@ -14,51 +13,45 @@ import {
   SplitDivider,
   SectionImage,
   FlexImage,
-  CtaLink,
   Stars,
 } from "./parts";
 
 // ════════════════════════════════════════════════════════════
-// BENTO — 카드 그리드 대시보드. 상단 필내비(sticky), 12칼럼 벤토,
-// 카드마다 크기 다름, 겹치는 통계 카드, 라운드·섀도우·틴트.
+// BENTO — 카드 그리드. 상단 내비 없음. 테두리 없음(섀도우만).
+// 히어로 아래 통계 스트립. 균일한 카드로 정렬. 버튼 없음.
 // ════════════════════════════════════════════════════════════
 
-const GRID = 1160;
+const GRID = 1120;
 
 export default function BentoLayout({ ctx }: { ctx: Ctx }) {
   const { c, set, editing, primary } = ctx;
   const tp = tpOf(ctx);
-  const enabled = c.sections.filter((s) => s.enabled);
-  const heroCtaHidden = c.hero.ctaHidden ?? c.cta.hidden ?? false;
-  const pricingCtaHidden = c.pricing.ctaHidden ?? c.cta.hidden ?? false;
 
-  const card =
-    "rounded-3xl border border-black/[0.06] bg-white shadow-[0_2px_24px_rgba(0,0,0,0.06)]";
+  // 테두리 없음 — 배경 + 부드러운 섀도우만
+  const card = "rounded-[28px] bg-white shadow-[0_6px_30px_rgba(0,0,0,0.07)]";
   const chip = alpha(primary, "14");
-  const pageBg = "#f1f2f6";
+  const pageBg = "#eef0f5";
 
-  const label = (s: SectionRef) =>
-    s.type === "block" ? s.block?.heading || "블록" : SECTION_LABELS[s.type];
-
-  const H2 = (text: string, key: string, onChange: (v: string) => void) => (
+  const H2 = (
+    text: string,
+    key: string,
+    onChange: (v: string) => void,
+    cls = "text-[24px] font-extrabold leading-tight md:text-[30px]",
+  ) => (
     <Editable
       as="h2"
       editing={editing}
       {...tp(key)}
-      className="text-[24px] font-extrabold leading-tight md:text-[30px]"
+      className={cls}
       value={text}
       onChange={onChange}
     />
   );
 
-  const btn =
-    "inline-block rounded-xl px-7 py-3.5 text-sm font-bold text-white shadow-lg";
-
   const renderSection = (s: SectionRef, i: number): React.ReactNode => {
     switch (s.type) {
-      // ── HERO : 큰 카드 + 겹치는 통계 스트립 ─────────────────
       case "hero": {
-        const stats = (c.specs.length ? c.specs : []).slice(0, 3);
+        const stats = c.specs.slice(0, 3);
         const txt = (
           <div>
             {c.hero.badge && (
@@ -80,7 +73,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
               multiline
               editing={editing}
               {...tp("hero.title")}
-              className="mt-5 text-[32px] font-extrabold leading-[1.12] md:text-[48px]"
+              className="mt-5 text-[30px] font-extrabold leading-[1.14] md:text-[46px]"
               value={c.hero.title}
               onChange={(v) => set({ hero: { ...c.hero, title: v } })}
             />
@@ -93,44 +86,35 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
               value={c.hero.subtitle}
               onChange={(v) => set({ hero: { ...c.hero, subtitle: v } })}
             />
-            {!heroCtaHidden && (
-              <div className="mt-7">
-                <CtaLink ctx={ctx} className={btn} style={{ background: primary }} />
-              </div>
-            )}
           </div>
         );
-        const imgEl =
-          c.hero.mode === "text" ? null : (
-            <SectionImage
-              ctx={ctx}
-              k="hero"
-              natural={c.hero.mode === "image"}
-              imgClassName="w-full rounded-2xl object-cover"
-              fallbackAspect="4/3"
-            />
-          );
         return (
-          <div className="relative">
-            <div className={card + " p-7 md:p-12"}>
-              {imgEl ? (
-                <div className="grid gap-8 md:grid-cols-2 md:items-center">
-                  {txt}
-                  {imgEl}
-                </div>
-              ) : (
+          <div>
+            <div className={card + " overflow-hidden p-7 md:p-12"}>
+              {c.hero.mode === "text" ? (
                 txt
+              ) : (
+                <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12">
+                  {txt}
+                  <SectionImage
+                    ctx={ctx}
+                    k="hero"
+                    natural={c.hero.mode === "image"}
+                    imgClassName="w-full rounded-2xl object-cover"
+                    fallbackAspect="4/3"
+                  />
+                </div>
               )}
             </div>
-            {stats.length > 0 && (
-              <div className="relative z-10 mx-4 -mt-8 grid grid-cols-3 gap-3 md:mx-12">
+            {stats.length === 3 && (
+              <div className="relative z-10 mx-auto -mt-9 grid max-w-[92%] grid-cols-3 gap-3 md:max-w-[80%]">
                 {stats.map((sp, si) => (
-                  <div key={si} className={card + " px-4 py-4 text-center"}>
+                  <div key={si} className={card + " px-4 py-5 text-center"}>
                     <Editable
                       as="div"
                       editing={editing}
                       {...tp("specs.value")}
-                      className="text-lg font-extrabold md:text-2xl"
+                      className="text-xl font-extrabold leading-none md:text-2xl"
                       value={sp.value}
                       onChange={(v) => {
                         const specs = [...c.specs];
@@ -142,7 +126,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
                       as="div"
                       editing={editing}
                       {...tp("specs.label")}
-                      className="mt-1 text-[11px] font-semibold uppercase tracking-wide opacity-45"
+                      className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-45"
                       value={sp.label}
                       onChange={(v) => {
                         const specs = [...c.specs];
@@ -158,21 +142,16 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
         );
       }
 
-      // ── HIGHLIGHTS : 벤토 (첫 항목 큼) ─────────────────────
-      case "highlights":
+      // 균일한 3열 카드 (빈 큰 카드 없음)
+      case "highlights": {
+        const n = c.highlights.length;
+        const cols = n === 4 ? "sm:grid-cols-2 lg:grid-cols-4" : n === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3";
         return (
-          <div className="grid gap-4 md:grid-cols-6 md:grid-rows-[repeat(2,auto)]">
+          <div className={"grid gap-4 " + cols}>
             {c.highlights.map((h, hi) => (
-              <div
-                key={hi}
-                className={
-                  card +
-                  " p-6 md:p-8 " +
-                  (hi === 0 ? "md:col-span-4 md:row-span-2" : "md:col-span-2")
-                }
-              >
+              <div key={hi} className={card + " flex flex-col p-7"}>
                 <div
-                  className="grid h-12 w-12 place-items-center overflow-hidden rounded-2xl text-xl"
+                  className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-2xl text-2xl"
                   style={{ background: chip }}
                 >
                   {h.iconImage ? (
@@ -186,7 +165,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
                   as="h3"
                   editing={editing}
                   {...tp("highlights.title")}
-                  className={"mt-4 font-bold " + (hi === 0 ? "text-xl md:text-2xl" : "")}
+                  className="mt-5 text-[17px] font-bold leading-snug"
                   value={h.title}
                   onChange={(v) => {
                     const highlights = [...c.highlights];
@@ -199,7 +178,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
                   multiline
                   editing={editing}
                   {...tp("highlights.desc")}
-                  className="mt-2 text-sm leading-relaxed opacity-60"
+                  className="mt-2 text-[13.5px] leading-relaxed opacity-60"
                   value={h.desc}
                   onChange={(v) => {
                     const highlights = [...c.highlights];
@@ -211,6 +190,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
             ))}
           </div>
         );
+      }
 
       case "checklist":
         return (
@@ -222,8 +202,8 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
               {c.checklist.items.map((it, ii) => (
                 <div
                   key={ii}
-                  className="flex items-start gap-3 rounded-2xl px-4 py-3.5"
-                  style={{ background: alpha(primary, "0a") }}
+                  className="flex items-start gap-3 rounded-2xl px-4 py-4"
+                  style={{ background: alpha(primary, "0d") }}
                 >
                   <span
                     className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-black text-white"
@@ -252,7 +232,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
       case "callout":
         return (
           <div
-            className="rounded-3xl px-8 py-14 text-center text-white shadow-lg md:py-20"
+            className="rounded-[28px] px-8 py-16 text-center text-white shadow-[0_10px_36px_rgba(0,0,0,0.14)] md:py-20"
             style={{ background: `linear-gradient(135deg, ${primary}, ${alpha(primary, "cc")})` }}
           >
             <Editable
@@ -274,29 +254,21 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
                 onChange={(v) => set({ callout: { ...c.callout, sub: v } })}
               />
             )}
-            {!heroCtaHidden && (
-              <div className="mt-7">
-                <CtaLink
-                  ctx={ctx}
-                  className="inline-block rounded-xl bg-white px-8 py-3.5 text-sm font-bold shadow-lg"
-                  style={{ color: primary }}
-                />
-              </div>
-            )}
           </div>
         );
 
       case "steps":
         return (
           <div className={card + " p-8 md:p-12"}>
-            {H2(c.steps.heading, "steps.heading", (v) =>
-              set({ steps: { ...c.steps, heading: v } }),
-            )}
-            <div className="mt-9 grid gap-6 md:grid-cols-3">
+            {H2(c.steps.heading, "steps.heading", (v) => set({ steps: { ...c.steps, heading: v } }))}
+            <div className="mt-10 grid gap-x-6 gap-y-8 sm:grid-cols-3">
               {c.steps.items.map((st, si) => (
                 <div key={si} className="relative">
                   {si < c.steps.items.length - 1 && (
-                    <div className="absolute left-11 right-0 top-5 hidden h-px bg-black/10 md:block" />
+                    <div
+                      className="absolute left-12 right-[-24px] top-5 hidden h-0.5 sm:block"
+                      style={{ background: alpha(primary, "33") }}
+                    />
                   )}
                   <div
                     className="relative z-10 grid h-10 w-10 place-items-center rounded-full text-sm font-black text-white"
@@ -308,7 +280,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
                     as="div"
                     editing={editing}
                     {...tp("steps.title")}
-                    className="mt-3 font-bold"
+                    className="mt-4 font-bold"
                     value={st.title}
                     onChange={(v) => {
                       const items = [...c.steps.items];
@@ -338,9 +310,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
       case "detail": {
         const text = (
           <div>
-            {H2(c.detail.heading, "detail.heading", (v) =>
-              set({ detail: { ...c.detail, heading: v } }),
-            )}
+            {H2(c.detail.heading, "detail.heading", (v) => set({ detail: { ...c.detail, heading: v } }))}
             <Editable
               as="p"
               multiline
@@ -368,25 +338,19 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
           );
         const pct = s.splitPct ?? 50;
         return (
-          <div className={card + " relative p-6 md:p-8"}>
-            <div
-              className="grid gap-8 md:items-center md:gap-0"
-              style={{ gridTemplateColumns: undefined }}
-            >
-              <div
-                className="md:grid md:items-center"
-                style={{ gridTemplateColumns: `${pct}% ${100 - pct}%` }}
-              >
-                <div className="md:pr-8">
-                  <SectionImage
-                    ctx={ctx}
-                    k="detail"
-                    natural={false}
-                    imgClassName="w-full rounded-2xl object-cover"
-                    fallbackAspect="4/3"
-                  />
-                </div>
-                <div className="mt-6 md:mt-0 md:pl-8">{text}</div>
+          <div className={card + " relative overflow-hidden p-6 md:p-8"}>
+            <div className="flex flex-wrap items-center gap-8 md:flex-nowrap md:gap-0">
+              <div style={{ flex: `1 1 ${pct}%` }} className="md:pr-8">
+                <SectionImage
+                  ctx={ctx}
+                  k="detail"
+                  natural={false}
+                  imgClassName="w-full rounded-2xl object-cover"
+                  fallbackAspect="4/3"
+                />
+              </div>
+              <div style={{ flex: `1 1 ${100 - pct}%` }} className="md:pl-8">
+                {text}
               </div>
             </div>
             <SplitDivider ctx={ctx} idx={i} s={s} />
@@ -403,7 +367,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
                   as="div"
                   editing={editing}
                   {...tp("specs.value")}
-                  className="text-lg font-extrabold"
+                  className="text-lg font-extrabold leading-none"
                   value={sp.value}
                   onChange={(v) => {
                     const specs = [...c.specs];
@@ -415,7 +379,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
                   as="div"
                   editing={editing}
                   {...tp("specs.label")}
-                  className="mt-1 text-[11px] font-semibold uppercase tracking-wide opacity-45"
+                  className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide opacity-45"
                   value={sp.label}
                   onChange={(v) => {
                     const specs = [...c.specs];
@@ -431,9 +395,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
       case "reviews":
         return (
           <div>
-            <h2 className="mb-6 text-center text-[24px] font-extrabold md:text-[30px]">
-              고객 후기
-            </h2>
+            <h2 className="mb-7 text-center text-[24px] font-extrabold md:text-[30px]">고객 후기</h2>
             <div className="grid gap-4 md:grid-cols-3">
               {c.reviews.map((r, ri) => (
                 <div key={ri} className={card + " p-6"}>
@@ -481,7 +443,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
 
       case "pricing":
         return (
-          <div className={card + " mx-auto max-w-md p-9 text-center shadow-xl"}>
+          <div className={card + " mx-auto max-w-md p-10 text-center"}>
             <div className="flex items-end justify-center gap-2.5">
               <Editable
                 as="span"
@@ -508,25 +470,16 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
               value={c.pricing.note}
               onChange={(v) => set({ pricing: { ...c.pricing, note: v } })}
             />
-            {!pricingCtaHidden && (
-              <CtaLink
-                ctx={ctx}
-                className="mt-7 block rounded-xl px-8 py-4 text-base font-bold text-white shadow-lg"
-                style={{ background: primary }}
-              />
-            )}
           </div>
         );
 
       case "faq":
         return (
           <div className={card + " p-8 md:p-12"}>
-            <h2 className="text-center text-[24px] font-extrabold md:text-[30px]">
-              자주 묻는 질문
-            </h2>
+            <h2 className="text-center text-[24px] font-extrabold md:text-[30px]">자주 묻는 질문</h2>
             <div className="mx-auto mt-7 max-w-2xl">
               {c.faq.map((f, fi) => (
-                <div key={fi} className="border-t border-black/[0.08] py-5 first:border-t-0">
+                <div key={fi} className="border-t border-black/[0.07] py-5 first:border-t-0">
                   <div className="flex items-start justify-between gap-3">
                     <Editable
                       as="div"
@@ -599,20 +552,18 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
               <FlexImage
                 src={b.image}
                 widthPct={b.imageW}
-                aspect={b.imageAspect}
                 natural
                 editing={editing}
                 canResize={ctx.canResize}
-                imgClassName="w-full object-cover"
-                fallbackAspect="16/9"
+                imgClassName=""
+                fallbackAspect="1/1"
                 onResize={(p) => setBlock({ imageW: p })}
               />
             </div>
           );
-        if (b.mode === "text")
-          return <div className={card + " p-8 md:p-10"}>{text}</div>;
+        if (b.mode === "text") return <div className={card + " p-8 md:p-10"}>{text}</div>;
         return (
-          <div className={card + " grid gap-8 p-6 md:grid-cols-2 md:items-center md:p-8"}>
+          <div className={card + " grid items-center gap-8 p-6 md:grid-cols-2 md:p-8"}>
             <FlexImage
               src={b.image}
               widthPct={b.imageW}
@@ -636,42 +587,21 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
 
   return (
     <div style={{ background: pageBg, color: c.theme.text }}>
-      <div className="sticky top-0 z-40 px-3 py-3">
-        <nav className="mx-auto flex w-fit max-w-full items-center gap-1 overflow-x-auto rounded-full border border-black/[0.06] bg-white/90 px-2 py-1.5 shadow-lg backdrop-blur">
-          {enabled.slice(0, 7).map((s, idx) => (
-            <a
-              key={s.key || s.type + idx}
-              href={`#bento-${idx}`}
-              className="shrink-0 rounded-full px-3 py-1 text-xs font-semibold opacity-60 hover:bg-black/[0.04] hover:opacity-100"
-            >
-              {label(s)}
-            </a>
-          ))}
-          {!(heroCtaHidden && pricingCtaHidden) && (
-            <CtaLink
-              ctx={ctx}
-              className="ml-1 shrink-0 rounded-full px-4 py-1.5 text-xs font-bold text-white"
-              style={{ background: primary }}
-            />
-          )}
-        </nav>
-      </div>
-
-      <div className="mx-auto max-w-[1220px] px-4 pb-20 md:px-8">
-        {enabled.map((s, idx) => {
+      <div className="mx-auto max-w-[1180px] px-4 py-6 md:px-8 md:py-10">
+        {c.sections.map((s) => {
+          if (!s.enabled) return null;
           const i = c.sections.indexOf(s);
           const inner = renderSection(s, i);
           if (!inner) return null;
-          const pad = Math.round(sectionPad(s) / 2);
+          const p = Math.round(sectionPad(s) / 2.4);
           const onDark = isDarkHex(s.bg);
           return (
             <section
               key={s.key || `${s.type}-${i}`}
-              id={`bento-${idx}`}
-              className="relative scroll-mt-20"
+              className="relative"
               style={{
-                paddingTop: pad,
-                paddingBottom: pad,
+                paddingTop: p,
+                paddingBottom: p,
                 background: s.bg || undefined,
                 color: onDark ? "#fff" : undefined,
               }}
