@@ -11,6 +11,7 @@ import {
   EditFrame,
   PadHandles,
   SplitDivider,
+  SectionBgImage,
   SectionImage,
   FlexImage,
   Stars,
@@ -598,7 +599,8 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
           const inner = renderSection(s, i);
           if (!inner) return null;
           const p = Math.round(sectionPad(s) / 2.4);
-          const onDark = isDarkHex(s.bg);
+          const bgImgDark = !!s.bgImage && s.bgFit !== "contain";
+          const onDark = isDarkHex(s.bg) || bgImgDark;
           return (
             <section
               key={s.key || `${s.type}-${i}`}
@@ -606,13 +608,16 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
               style={{
                 paddingTop: p,
                 paddingBottom: p,
-                background: s.bg || undefined,
+                background: s.bgImage ? undefined : s.bg || undefined,
                 color: onDark ? "#fff" : undefined,
               }}
             >
-              <EditFrame ctx={ctx} idx={i} s={s} baseW={GRID}>
-                {inner}
-              </EditFrame>
+              <SectionBgImage s={s} />
+              <div className="relative">
+                <EditFrame ctx={ctx} idx={i} s={s} baseW={GRID}>
+                  {inner}
+                </EditFrame>
+              </div>
               <PadHandles ctx={ctx} idx={i} s={s} />
             </section>
           );

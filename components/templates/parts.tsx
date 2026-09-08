@@ -274,6 +274,32 @@ export function SectionImage({
   );
 }
 
+// 섹션 배경 이미지 레이어 (relative 인 부모 안에 절대배치)
+export function SectionBgImage({ s }: { s: SectionRef }) {
+  if (!s.bgImage) return null;
+  const contain = s.bgFit === "contain";
+  return (
+    <>
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage: `url("${s.bgImage}")`,
+          backgroundSize: contain ? "contain" : "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: s.bgFixed ? "fixed" : undefined,
+        }}
+      />
+      {!contain && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: s.bg || "rgba(0,0,0,.42)" }}
+        />
+      )}
+    </>
+  );
+}
+
 export const Stars = ({ className = "" }: { className?: string }) => (
   <div className={"tracking-[0.15em] text-amber-400 " + className}>★★★★★</div>
 );

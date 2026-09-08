@@ -10,6 +10,7 @@ import {
   EditFrame,
   PadHandles,
   SplitDivider,
+  SectionBgImage,
   SectionImage,
   FlexImage,
 } from "./parts";
@@ -80,11 +81,18 @@ export default function RailLayout({ ctx }: { ctx: Ctx }) {
     narrow?: number;
   }) => {
     const pad = sectionPad(s);
+    const bgImgDark = !!s.bgImage && s.bgFit !== "contain";
     return (
       <section
         className="relative"
-        style={{ background: s.bg || undefined, paddingTop: pad, paddingBottom: pad }}
+        style={{
+          background: s.bgImage ? undefined : s.bg || undefined,
+          color: bgImgDark ? "#fff" : undefined,
+          paddingTop: pad,
+          paddingBottom: pad,
+        }}
       >
+        <SectionBgImage s={s} />
         <EditFrame
           ctx={ctx}
           idx={i}

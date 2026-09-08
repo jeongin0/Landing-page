@@ -11,6 +11,7 @@ import {
   sectionPad,
   EditFrame,
   PadHandles,
+  SectionBgImage,
   FlexImage,
   Stars,
 } from "./parts";
@@ -76,16 +77,18 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
     narrow?: number;
   }) => {
     const pad = sectionPad(s);
+    const bgImgDark = !!s.bgImage && s.bgFit !== "contain";
     return (
       <section
         className="relative"
         style={{
-          background: s.bg || c.theme.bg || "#ffffff",
-          color: onDark ? "#fff" : undefined,
+          background: s.bgImage ? undefined : s.bg || c.theme.bg || "#ffffff",
+          color: onDark || bgImgDark ? "#fff" : undefined,
           paddingTop: pad,
           paddingBottom: pad,
         }}
       >
+        <SectionBgImage s={s} />
         <EditFrame ctx={ctx} idx={i} s={s} baseW={narrow} className="px-6 text-center">
           {children}
         </EditFrame>
@@ -94,7 +97,8 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
     );
   };
 
-  const onDarkOf = (s: SectionRef) => isDarkHex(s.bg);
+  const onDarkOf = (s: SectionRef) =>
+    isDarkHex(s.bg) || (!!s.bgImage && s.bgFit !== "contain");
 
   const renderSection = (s: SectionRef, i: number): React.ReactNode => {
     const onDark = onDarkOf(s);

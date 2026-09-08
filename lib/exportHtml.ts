@@ -39,6 +39,19 @@ export function exportHtml(c: StoreContent): string {
     return out.length ? out.join(";") + ";" : "";
   };
   const pad = (s: SectionRef) => s.padPx ?? PAD_PX[s.pad ?? "normal"];
+  const bgImgDark = (s: SectionRef) => !!s.bgImage && s.bgFit !== "contain";
+  // 섹션 배경 이미지 레이어 (부모 section 은 position:relative 여야 함)
+  const bgLayer = (s: SectionRef) => {
+    if (!s.bgImage) return "";
+    const contain = s.bgFit === "contain";
+    return `<div style="position:absolute;inset:0;background-image:url(&quot;${esc(
+      s.bgImage,
+    )}&quot;);background-size:${contain ? "contain" : "cover"};background-position:center;background-repeat:no-repeat;${
+      s.bgFixed ? "background-attachment:fixed;" : ""
+    }"></div>${
+      contain ? "" : `<div style="position:absolute;inset:0;background:${esc(s.bg || "rgba(0,0,0,.42)")}"></div>`
+    }`;
+  };
   const longImg = (src: string, w?: number) =>
     `<div style="width:${Math.max(20, Math.min(100, w ?? 100))}%;margin:0 auto"><img src="${esc(src)}" alt="" style="display:block;width:100%"/></div>`;
 
@@ -50,13 +63,15 @@ export function exportHtml(c: StoreContent): string {
       }">${esc(txt)}</span>`;
     const band = (s: SectionRef, inner: string, narrow = 620) => {
       const bg = s.bg || t.bg || "#fff";
-      const dark = isDark(bg);
-      return `<section style="background:${esc(bg)};${dark ? "color:#fff;" : ""}padding:${pad(s)}px 0"><div style="max-width:${
+      const dark = isDark(bg) || bgImgDark(s);
+      return `<section style="position:relative;${s.bgImage ? "" : `background:${esc(bg)};`}${
+        dark ? "color:#fff;" : ""
+      }padding:${pad(s)}px 0">${bgLayer(s)}<div style="position:relative;max-width:${
         s.wPx ?? narrow
       }px;margin:0 auto;padding:0 24px;text-align:center">${inner}</div></section>`;
     };
     const one = (s: SectionRef): string => {
-      const dark = isDark(s.bg);
+      const dark = isDark(s.bg) || bgImgDark(s);
       switch (s.type) {
         case "hero": {
           const txt = `${c.hero.badge ? `<div style="margin-bottom:20px">${pill(c.hero.badge, dark)}</div>` : ""}
@@ -198,7 +213,9 @@ export function exportHtml(c: StoreContent): string {
   const rail = (): string => {
     const hair = "rgba(0,0,0,.12)";
     const wrap = (s: SectionRef, inner: string, narrow = 940, center = true) =>
-      `<section style="${s.bg ? `background:${esc(s.bg)};` : ""}padding:${pad(s)}px 0"><div style="max-width:${
+      `<section style="position:relative;${
+        s.bgImage ? "" : s.bg ? `background:${esc(s.bg)};` : ""
+      }${bgImgDark(s) ? "color:#fff;" : ""}padding:${pad(s)}px 0">${bgLayer(s)}<div style="position:relative;max-width:${
         s.wPx ?? narrow
       }px;margin:0 auto;padding:0 24px;${center ? "text-align:center" : ""}">${inner}</div></section>`;
     const one = (s: SectionRef): string => {
@@ -458,7 +475,9 @@ export function exportHtml(c: StoreContent): string {
       })();
       if (!inner.trim()) return "";
       const p = Math.round(pad(s) / 2.4);
-      return `<section style="padding:${p}px 0;${s.bg ? `background:${esc(s.bg)};` : ""}">${inner}</section>`;
+      return `<section style="position:relative;padding:${p}px 0;${
+        s.bgImage ? "" : s.bg ? `background:${esc(s.bg)};` : ""
+      }${bgImgDark(s) ? "color:#fff;" : ""}">${bgLayer(s)}<div style="position:relative">${inner}</div></section>`;
     };
     return `<div style="background:#eef0f5"><div style="max-width:1180px;margin:0 auto;padding:24px 16px 40px">${en
       .map(one)

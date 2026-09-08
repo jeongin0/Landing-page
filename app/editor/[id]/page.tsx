@@ -3,11 +3,10 @@
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getProject, saveProject, setPublished } from "@/lib/storage";
-import type { Project, StoreContent, SectionMode, SectionRef, LayoutStyle } from "@/lib/schema";
+import type { Project, StoreContent, SectionMode, SectionRef } from "@/lib/schema";
 import {
   SECTION_LABELS,
   SECTION_MODE_LABELS,
-  LAYOUT_STYLE_LABELS,
   newBlock,
   newImageBlock,
   duplicateSectionRef,
@@ -375,29 +374,6 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
         {/* 사이드 패널 */}
         {editing && (
           <aside className="w-[340px] shrink-0 space-y-5 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4 text-sm">
-            <div className="rounded-lg border border-gray-200 bg-white p-3">
-              <h3 className="mb-2 font-bold text-gray-700">템플릿 스타일</h3>
-              <select
-                value={project.content.style}
-                onChange={(e) =>
-                  update({
-                    ...project.content,
-                    style: e.target.value as LayoutStyle,
-                  })
-                }
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs"
-              >
-                {(Object.keys(LAYOUT_STYLE_LABELS) as LayoutStyle[]).map((k) => (
-                  <option key={k} value={k}>
-                    {LAYOUT_STYLE_LABELS[k]}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1.5 text-[11px] text-gray-400">
-                스타일을 바꾸면 전체 레이아웃·타이포가 달라집니다. 입력한 내용과 섹션 구성은 그대로 유지돼요.
-              </p>
-            </div>
-
             <div className="rounded-lg border border-violet-200 bg-violet-50 p-3">
               <h3 className="mb-2 font-bold text-violet-900">글자 스타일</h3>
               {selText ? (
@@ -456,32 +432,6 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
             </div>
 
             <div>
-              <h3 className="mb-2 font-bold text-gray-700">영역 구성</h3>
-              {([
-                ["hero", "메인(히어로)"],
-                ["detail", "상세 설명"],
-              ] as const).map(([sec, label]) => (
-                <label key={sec} className="mb-2 flex items-center justify-between text-gray-600">
-                  <span>{label}</span>
-                  <select
-                    value={project.content[sec].mode ?? "split"}
-                    onChange={(e) =>
-                      update({
-                        ...project.content,
-                        [sec]: { ...project.content[sec], mode: e.target.value as SectionMode },
-                      })
-                    }
-                    className="rounded border border-gray-300 px-2 py-1 text-xs"
-                  >
-                    {(Object.keys(SECTION_MODE_LABELS) as SectionMode[]).map((m) => (
-                      <option key={m} value={m}>{SECTION_MODE_LABELS[m]}</option>
-                    ))}
-                  </select>
-                </label>
-              ))}
-            </div>
-
-            <div>
               <h3 className="mb-2 font-bold text-gray-700">라벨 (뱃지) 색</h3>
               <label className="mb-2 flex items-center justify-between">
                 <span className="text-gray-600">배경</span>
@@ -498,26 +448,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
             </div>
 
             <div>
-              <h3 className="mb-2 font-bold text-gray-700">강점 아이콘 이미지</h3>
-              {project.content.highlights.map((h, i) => (
-                <div key={i} className="mb-2">
-                  <div className="mb-1 text-xs text-gray-500">{i + 1}. {h.title || "강점"}</div>
-                  <ImageField
-                    value={h.iconImage || ""}
-                    projectId={project.id}
-                    onChange={(url) => {
-                      const highlights = [...project.content.highlights];
-                      highlights[i] = { ...h, iconImage: url || undefined };
-                      update({ ...project.content, highlights });
-                    }}
-                  />
-                </div>
-              ))}
-              <p className="text-xs text-gray-400">비우면 이모지 사용 (페이지에서 클릭해 수정)</p>
-            </div>
-
-            <div>
-              <h3 className="mb-2 font-bold text-gray-700">섹션 (순서 · 배경)</h3>
+              <h3 className="mb-2 font-bold text-gray-700">섹션 (순서 · 배경 · 이미지)</h3>
               <div className="space-y-1.5">
                 {project.content.sections.map((s, i) => (
                   <div key={s.key || s.type} className="rounded-lg border border-gray-200 bg-white px-2 py-1.5">
@@ -600,14 +531,23 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                             </p>
                           )}
                         </div>
-                        {s.type === "block" && (
+                        {(s.type === "hero" || s.type === "detail" || s.type === "block") && (
                           <select
-                            value={s.block?.mode || "text"}
-                            onChange={(e) =>
-                              updateSection(i, {
-                                block: { ...s.block!, mode: e.target.value as SectionMode },
-                              })
+                            value={
+                              s.type === "block"
+                                ? s.block?.mode || "text"
+                                : project.content[s.type].mode ?? "split"
                             }
+                            onChange={(e) => {
+                              const m = e.target.value as SectionMode;
+                              if (s.type === "block")
+                                updateSection(i, { block: { ...s.block!, mode: m } });
+                              else
+                                update({
+                                  ...project.content,
+                                  [s.type]: { ...project.content[s.type], mode: m },
+                                });
+                            }}
                             className="w-full rounded border border-gray-200 px-1 py-0.5 text-[11px] text-gray-500"
                           >
                             {(Object.keys(SECTION_MODE_LABELS) as SectionMode[]).map((m) => (
@@ -623,6 +563,51 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                               updateSection(i, { block: { ...s.block!, image: url } })
                             }
                           />
+                        )}
+                        {s.type === "hero" && project.content.hero.mode !== "text" && (
+                          <div className="text-[11px] text-gray-500">
+                            <div className="mb-0.5">메인 이미지</div>
+                            <ImageField
+                              value={project.content.hero.image}
+                              projectId={project.id}
+                              onChange={(url) =>
+                                update({ ...project.content, hero: { ...project.content.hero, image: url } })
+                              }
+                            />
+                          </div>
+                        )}
+                        {s.type === "detail" && project.content.detail.mode !== "text" && (
+                          <div className="text-[11px] text-gray-500">
+                            <div className="mb-0.5">상세 이미지</div>
+                            <ImageField
+                              value={project.content.detail.image}
+                              projectId={project.id}
+                              onChange={(url) =>
+                                update({ ...project.content, detail: { ...project.content.detail, image: url } })
+                              }
+                            />
+                          </div>
+                        )}
+                        {s.type === "highlights" && (
+                          <div className="text-[11px] text-gray-500">
+                            <div className="mb-1">강점 이미지 (비우면 이모지·번호)</div>
+                            {project.content.highlights.map((h, hi) => (
+                              <div key={hi} className="mb-1.5">
+                                <div className="text-[10px] text-gray-400">
+                                  {hi + 1}. {h.title || "강점"}
+                                </div>
+                                <ImageField
+                                  value={h.iconImage || ""}
+                                  projectId={project.id}
+                                  onChange={(url) => {
+                                    const highlights = [...project.content.highlights];
+                                    highlights[hi] = { ...h, iconImage: url || undefined };
+                                    update({ ...project.content, highlights });
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
                         )}
                         <select
                           value={s.w || "inherit"}
@@ -745,118 +730,8 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
               ))}
             </div>
 
-            <div>
-              <h3 className="mb-2 font-bold text-gray-700">이미지</h3>
-              <label className="mb-1 block text-gray-600">히어로 이미지</label>
-              <ImageField
-                value={project.content.hero.image}
-                projectId={project.id}
-                onChange={(url) =>
-                  update({
-                    ...project.content,
-                    hero: { ...project.content.hero, image: url },
-                  })
-                }
-              />
-              {isPaid ? (
-                <>
-                  <label className="mt-1 flex items-center gap-2 text-gray-500">
-                    <span className="w-8 shrink-0">크기</span>
-                    <input
-                      type="range"
-                      min={20}
-                      max={100}
-                      value={project.content.hero.imageW ?? 100}
-                      onChange={(e) =>
-                        update({
-                          ...project.content,
-                          hero: { ...project.content.hero, imageW: Number(e.target.value) },
-                        })
-                      }
-                      className="flex-1"
-                    />
-                    <span className="w-9 shrink-0 text-right tabular-nums">
-                      {project.content.hero.imageW ?? 100}%
-                    </span>
-                  </label>
-                  <p className="mt-1 text-[11px] text-gray-400">
-                    이미지 오른쪽 아래 손잡이를 대각선으로 끌면 폭·비율이 함께 바뀝니다.
-                    {project.content.hero.imageAspect != null && (
-                      <button
-                        onClick={() => {
-                          const hero = { ...project.content.hero };
-                          delete hero.imageAspect;
-                          update({ ...project.content, hero });
-                        }}
-                        className="ml-1 underline"
-                      >
-                        비율 초기화
-                      </button>
-                    )}
-                  </p>
-                </>
-              ) : (
-                <p className="mt-1 text-xs text-gray-400">
-                  이미지 크기 조절은{" "}
-                  <Link href="/pricing" className="underline">Pro</Link> 전용
-                </p>
-              )}
-
-              <label className="mb-1 mt-3 block text-gray-600">상세 이미지</label>
-              <ImageField
-                value={project.content.detail.image}
-                projectId={project.id}
-                onChange={(url) =>
-                  update({
-                    ...project.content,
-                    detail: { ...project.content.detail, image: url },
-                  })
-                }
-              />
-              {isPaid ? (
-                <>
-                  <label className="mt-1 flex items-center gap-2 text-gray-500">
-                    <span className="w-8 shrink-0">크기</span>
-                    <input
-                      type="range"
-                      min={20}
-                      max={100}
-                      value={project.content.detail.imageW ?? 100}
-                      onChange={(e) =>
-                        update({
-                          ...project.content,
-                          detail: { ...project.content.detail, imageW: Number(e.target.value) },
-                        })
-                      }
-                      className="flex-1"
-                    />
-                    <span className="w-9 shrink-0 text-right tabular-nums">
-                      {project.content.detail.imageW ?? 100}%
-                    </span>
-                  </label>
-                  {project.content.detail.imageAspect != null && (
-                    <button
-                      onClick={() => {
-                        const detail = { ...project.content.detail };
-                        delete detail.imageAspect;
-                        update({ ...project.content, detail });
-                      }}
-                      className="mt-1 text-[11px] text-gray-400 underline"
-                    >
-                      비율 초기화
-                    </button>
-                  )}
-                </>
-              ) : (
-                <p className="mt-1 text-xs text-gray-400">
-                  이미지 크기 조절은{" "}
-                  <Link href="/pricing" className="underline">Pro</Link> 전용
-                </p>
-              )}
-            </div>
-
             <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-800">
-              💡 페이지의 <b>글자를 직접 클릭</b>하면 바로 수정됩니다. 수정 내용은 자동 저장돼요.
+              💡 페이지의 <b>글자를 직접 클릭</b>하면 바로 수정됩니다. 이미지 크기·비율·여백은 미리보기에서 손잡이를 <b>드래그</b>해 조절해요. 자동 저장됩니다.
             </div>
           </aside>
         )}
