@@ -72,9 +72,16 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
         src={c.hero.image}
         editing={editing}
         widthPct={c.hero.imageW ?? 100}
-        aspect={aspect}
+        aspect={c.hero.imageAspect ? String(c.hero.imageAspect) : aspect}
         imgClassName="w-full rounded-2xl object-cover shadow-lg"
-        onResize={canResize ? (p) => set({ hero: { ...c.hero, imageW: p } }) : undefined}
+        onResize={
+          canResize
+            ? (p, a) =>
+                set({
+                  hero: { ...c.hero, imageW: p, ...(a != null ? { imageAspect: a } : {}) },
+                })
+            : undefined
+        }
       />
     </div>
   );
@@ -84,9 +91,16 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
         src={c.detail.image}
         editing={editing}
         widthPct={c.detail.imageW ?? 100}
-        aspect={aspect}
+        aspect={c.detail.imageAspect ? String(c.detail.imageAspect) : aspect}
         imgClassName="w-full rounded-2xl object-cover shadow-lg"
-        onResize={canResize ? (p) => set({ detail: { ...c.detail, imageW: p } }) : undefined}
+        onResize={
+          canResize
+            ? (p, a) =>
+                set({
+                  detail: { ...c.detail, imageW: p, ...(a != null ? { imageAspect: a } : {}) },
+                })
+            : undefined
+        }
       />
     </div>
   );

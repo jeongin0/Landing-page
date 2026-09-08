@@ -456,25 +456,42 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                 }
               />
               {isPaid ? (
-                <label className="mt-1 flex items-center gap-2 text-gray-500">
-                  <span className="w-8 shrink-0">크기</span>
-                  <input
-                    type="range"
-                    min={20}
-                    max={100}
-                    value={project.content.hero.imageW ?? 100}
-                    onChange={(e) =>
-                      update({
-                        ...project.content,
-                        hero: { ...project.content.hero, imageW: Number(e.target.value) },
-                      })
-                    }
-                    className="flex-1"
-                  />
-                  <span className="w-9 shrink-0 text-right tabular-nums">
-                    {project.content.hero.imageW ?? 100}%
-                  </span>
-                </label>
+                <>
+                  <label className="mt-1 flex items-center gap-2 text-gray-500">
+                    <span className="w-8 shrink-0">크기</span>
+                    <input
+                      type="range"
+                      min={20}
+                      max={100}
+                      value={project.content.hero.imageW ?? 100}
+                      onChange={(e) =>
+                        update({
+                          ...project.content,
+                          hero: { ...project.content.hero, imageW: Number(e.target.value) },
+                        })
+                      }
+                      className="flex-1"
+                    />
+                    <span className="w-9 shrink-0 text-right tabular-nums">
+                      {project.content.hero.imageW ?? 100}%
+                    </span>
+                  </label>
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    이미지 오른쪽 아래 손잡이를 대각선으로 끌면 폭·비율이 함께 바뀝니다.
+                    {project.content.hero.imageAspect != null && (
+                      <button
+                        onClick={() => {
+                          const hero = { ...project.content.hero };
+                          delete hero.imageAspect;
+                          update({ ...project.content, hero });
+                        }}
+                        className="ml-1 underline"
+                      >
+                        비율 초기화
+                      </button>
+                    )}
+                  </p>
+                </>
               ) : (
                 <p className="mt-1 text-xs text-gray-400">
                   이미지 크기 조절은{" "}
@@ -494,25 +511,39 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                 }
               />
               {isPaid ? (
-                <label className="mt-1 flex items-center gap-2 text-gray-500">
-                  <span className="w-8 shrink-0">크기</span>
-                  <input
-                    type="range"
-                    min={20}
-                    max={100}
-                    value={project.content.detail.imageW ?? 100}
-                    onChange={(e) =>
-                      update({
-                        ...project.content,
-                        detail: { ...project.content.detail, imageW: Number(e.target.value) },
-                      })
-                    }
-                    className="flex-1"
-                  />
-                  <span className="w-9 shrink-0 text-right tabular-nums">
-                    {project.content.detail.imageW ?? 100}%
-                  </span>
-                </label>
+                <>
+                  <label className="mt-1 flex items-center gap-2 text-gray-500">
+                    <span className="w-8 shrink-0">크기</span>
+                    <input
+                      type="range"
+                      min={20}
+                      max={100}
+                      value={project.content.detail.imageW ?? 100}
+                      onChange={(e) =>
+                        update({
+                          ...project.content,
+                          detail: { ...project.content.detail, imageW: Number(e.target.value) },
+                        })
+                      }
+                      className="flex-1"
+                    />
+                    <span className="w-9 shrink-0 text-right tabular-nums">
+                      {project.content.detail.imageW ?? 100}%
+                    </span>
+                  </label>
+                  {project.content.detail.imageAspect != null && (
+                    <button
+                      onClick={() => {
+                        const detail = { ...project.content.detail };
+                        delete detail.imageAspect;
+                        update({ ...project.content, detail });
+                      }}
+                      className="mt-1 text-[11px] text-gray-400 underline"
+                    >
+                      비율 초기화
+                    </button>
+                  )}
+                </>
               ) : (
                 <p className="mt-1 text-xs text-gray-400">
                   이미지 크기 조절은{" "}

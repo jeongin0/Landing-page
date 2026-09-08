@@ -89,6 +89,7 @@ export type StoreContent = {
     subtitle: string;
     image: string;
     imageW?: number; // 이미지 폭 % (20~100). 없으면 100
+    imageAspect?: number; // 이미지 가로세로 비율 (w/h). 없으면 스타일 기본값
   };
   highlights: Highlight[];
   detail: {
@@ -96,6 +97,7 @@ export type StoreContent = {
     body: string;
     image: string;
     imageW?: number; // 이미지 폭 % (20~100). 없으면 100
+    imageAspect?: number; // 이미지 가로세로 비율 (w/h). 없으면 스타일 기본값
   };
   specs: Spec[];
   reviews: Review[];
@@ -112,6 +114,13 @@ export const clampImageW = (v: unknown): number | undefined => {
   const n = typeof v === "number" ? v : NaN;
   if (!Number.isFinite(n)) return undefined;
   return Math.max(20, Math.min(100, Math.round(n)));
+};
+
+// 이미지 가로세로 비율 정규화 (0.3~5). 없으면 undefined = 스타일 기본값
+export const clampAspect = (v: unknown): number | undefined => {
+  const n = typeof v === "number" ? v : NaN;
+  if (!Number.isFinite(n) || n <= 0) return undefined;
+  return Math.max(0.3, Math.min(5, Math.round(n * 1000) / 1000));
 };
 
 // 예전 데이터 보정 (없는 필드 채우기)
@@ -141,10 +150,12 @@ export function normalizeContent(c: unknown): StoreContent {
       subtitle: raw.hero?.subtitle ?? "",
       image: raw.hero?.image ?? "",
       imageW: clampImageW(raw.hero?.imageW),
+      imageAspect: clampAspect(raw.hero?.imageAspect),
     },
     detail: {
       ...(raw.detail as StoreContent["detail"]),
       imageW: clampImageW(raw.detail?.imageW),
+      imageAspect: clampAspect(raw.detail?.imageAspect),
     },
   };
 }
