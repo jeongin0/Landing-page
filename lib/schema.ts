@@ -11,15 +11,21 @@ export type Highlight = {
 export type Spec = { label: string; value: string };
 export type Review = { name: string; text: string; rating: number };
 export type Faq = { q: string; a: string };
+export type ChecklistItem = { text: string };
+export type Step = { title: string; desc: string };
 
 export type SectionType =
   | "hero"
   | "highlights"
   | "detail"
+  | "checklist"
+  | "callout"
+  | "steps"
   | "specs"
   | "reviews"
   | "pricing"
-  | "faq";
+  | "faq"
+  | "block"; // 자유 블록 (여러 개 가능)
 
 // 히어로·상세 영역 구성 방식
 export type SectionMode = "split" | "text" | "image";
@@ -50,35 +56,64 @@ export const clampTextStyles = (
   return Object.keys(out).length ? out : undefined;
 };
 
+// 자유 블록 내용 (type === "block" 일 때만)
+export type FreeBlock = {
+  heading: string;
+  body: string;
+  image: string;
+  mode: SectionMode; // split / text / image
+  align?: "left" | "center";
+  imageAspect?: number;
+};
+
 export type SectionRef = {
   type: SectionType;
   enabled: boolean;
   w?: Exclude<WidthPreset, "custom">; // 섹션별 폭 (없으면 전체 본문 폭 상속)
+  bg?: string; // 섹션 배경색 (hex). 없으면 페이지 기본 배경
+  bgImage?: string; // 섹션 배경 이미지 URL
+  pad?: "tight" | "normal" | "loose"; // 상하 여백
+  key?: string; // 자유 블록 식별용 (여러 개일 때)
+  block?: FreeBlock; // type === "block" 일 때 내용
 };
 
 export const SECTION_LABELS: Record<SectionType, string> = {
   hero: "메인 (제목·이미지)",
-  highlights: "강점 3가지",
+  highlights: "강점",
   detail: "상세 설명",
+  checklist: "이런 분께 추천 (체크리스트)",
+  callout: "강조 문구",
+  steps: "진행 순서",
   specs: "스펙 표",
   reviews: "고객 후기",
   pricing: "가격 · 구매",
   faq: "자주 묻는 질문",
+  block: "자유 블록",
 };
 
 export const DEFAULT_SECTIONS: SectionRef[] = [
   { type: "hero", enabled: true },
   { type: "highlights", enabled: true },
+  { type: "checklist", enabled: false },
   { type: "detail", enabled: true },
+  { type: "callout", enabled: false },
+  { type: "steps", enabled: false },
   { type: "specs", enabled: true },
   { type: "reviews", enabled: true },
   { type: "pricing", enabled: true },
   { type: "faq", enabled: true },
 ];
 
-export type WidthPreset = "narrow" | "normal" | "wide" | "full" | "custom";
+export const PAD_PX: Record<"tight" | "normal" | "loose", number> = {
+  tight: 32,
+  normal: 64,
+  loose: 104,
+};
+
+export type WidthPreset = "mobile" | "narrow" | "normal" | "wide" | "full" | "custom";
 
 export const WIDTH_PX: Record<Exclude<WidthPreset, "custom">, number> = {
+  mobile: 640, // 상세페이지(모바일 기준)
   narrow: 720,
   normal: 960,
   wide: 1280,
@@ -138,6 +173,9 @@ export type StoreContent = {
     splitPct?: number; // 클래식 스타일에서 이미지 열이 차지하는 비율 % (30~75). 없으면 50
     mode?: SectionMode; // 영역 구성: 이미지+텍스트 / 텍스트만 / 통이미지
   };
+  checklist: { heading: string; items: ChecklistItem[] };
+  callout: { text: string; sub: string };
+  steps: { heading: string; items: Step[] };
   specs: Spec[];
   reviews: Review[];
   pricing: {
@@ -177,6 +215,39 @@ export const clampCols = (v: unknown): number | undefined => {
   return Math.max(2, Math.min(4, Math.round(n)));
 };
 
+let blockKeySeq = 0;
+const genKey = () =>
+  `b${Date.now().toString(36)}${(blockKeySeq++).toString(36)}`;
+
+// 섹션 목록 보정: 새로 생긴 타입 뒤에 추가, block 은 key 보장
+function normalizeSections(raw: unknown): SectionRef[] {
+  const arr: SectionRef[] = Array.isArray(raw) && raw.length
+    ? (raw as SectionRef[]).map((s) => ({ ...s }))
+    : DEFAULT_SECTIONS.map((s) => ({ ...s }));
+  // block 이 아닌 기본 타입 중 목록에 없는 건 뒤에 (비활성으로) 붙임
+  for (const d of DEFAULT_SECTIONS) {
+    if (d.type !== "block" && !arr.some((s) => s.type === d.type)) {
+      arr.push({ ...d, enabled: false });
+    }
+  }
+  return arr.map((s) => {
+    if (s.type === "block") {
+      return {
+        ...s,
+        key: s.key || genKey(),
+        block: {
+          heading: s.block?.heading ?? "",
+          body: s.block?.body ?? "",
+          image: s.block?.image ?? "",
+          mode: clampMode(s.block?.mode) ?? "text",
+          align: s.block?.align === "center" ? "center" : "left",
+        },
+      };
+    }
+    return s;
+  });
+}
+
 // 예전 데이터 보정 (없는 필드 채우기)
 export function normalizeContent(c: unknown): StoreContent {
   const raw = (c || {}) as Record<string, unknown> & Partial<StoreContent>;
@@ -184,14 +255,15 @@ export function normalizeContent(c: unknown): StoreContent {
     .brand;
   const legacyHero = (raw as { hero?: { ctaText?: string } }).hero;
   const primary = raw.theme?.primary || "#111827";
+  const rawLayout = raw.layout as StoreContent["layout"] | undefined;
   return {
     ...(raw as StoreContent),
     style: raw.style || "classic",
-    layout: raw.layout || { width: "normal", customPx: 960 },
-    sections:
-      Array.isArray(raw.sections) && raw.sections.length
-        ? (raw.sections as SectionRef[])
-        : DEFAULT_SECTIONS.map((s) => ({ ...s })),
+    layout: {
+      width: rawLayout?.width || "narrow",
+      customPx: rawLayout?.customPx || 720,
+    },
+    sections: normalizeSections(raw.sections),
     highlightsCols: clampCols(raw.highlightsCols),
     reviewsCols: clampCols(raw.reviewsCols),
     textStyles: clampTextStyles(raw.textStyles),
@@ -218,6 +290,42 @@ export function normalizeContent(c: unknown): StoreContent {
       splitPct: clampSplit(raw.detail?.splitPct),
       mode: clampMode(raw.detail?.mode),
     },
+    checklist: {
+      heading: raw.checklist?.heading ?? "이런 분께 추천합니다",
+      items:
+        Array.isArray(raw.checklist?.items) && raw.checklist!.items.length
+          ? raw.checklist!.items
+          : [
+              { text: "첫 번째 추천 대상을 적어주세요" },
+              { text: "두 번째 추천 대상을 적어주세요" },
+              { text: "세 번째 추천 대상을 적어주세요" },
+            ],
+    },
+    callout: {
+      text: raw.callout?.text ?? "한 줄로 핵심을 강조하세요",
+      sub: raw.callout?.sub ?? "",
+    },
+    steps: {
+      heading: raw.steps?.heading ?? "진행 순서",
+      items:
+        Array.isArray(raw.steps?.items) && raw.steps!.items.length
+          ? raw.steps!.items
+          : [
+              { title: "1단계", desc: "설명을 입력하세요" },
+              { title: "2단계", desc: "설명을 입력하세요" },
+              { title: "3단계", desc: "설명을 입력하세요" },
+            ],
+    },
+  };
+}
+
+// 새 자유 블록 하나 생성
+export function newBlock(): SectionRef {
+  return {
+    type: "block",
+    enabled: true,
+    key: genKey(),
+    block: { heading: "새 블록 제목", body: "내용을 입력하세요.", image: "", mode: "text", align: "left" },
   };
 }
 

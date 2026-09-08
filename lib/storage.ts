@@ -99,7 +99,7 @@ export async function createProject(
     id: crypto.randomUUID(),
     title: title.trim() || "제목 없는 페이지",
     templateId,
-    content: makePreset(templateId),
+    content: normalizeContent(makePreset(templateId)),
     published: false,
     createdAt: now,
     updatedAt: now,

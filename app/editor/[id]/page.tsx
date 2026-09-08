@@ -3,8 +3,8 @@
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getProject, saveProject, setPublished } from "@/lib/storage";
-import type { Project, StoreContent, SectionType, SectionMode } from "@/lib/schema";
-import { SECTION_LABELS, SECTION_MODE_LABELS } from "@/lib/schema";
+import type { Project, StoreContent, SectionMode, SectionRef } from "@/lib/schema";
+import { SECTION_LABELS, SECTION_MODE_LABELS, newBlock } from "@/lib/schema";
 import type { WidthPreset } from "@/lib/schema";
 import StoreProduct from "@/components/templates/StoreProduct";
 import GenerateModal from "@/components/GenerateModal";
@@ -31,6 +31,13 @@ const TEXT_LABELS: Record<string, string> = {
   "pricing.price": "가격",
   "pricing.compareAt": "정가(취소선)",
   "pricing.note": "가격 설명",
+  "checklist.heading": "추천 대상 제목",
+  "checklist.item": "추천 대상 항목 (전체)",
+  "callout.text": "강조 문구",
+  "callout.sub": "강조 문구 보조설명",
+  "steps.heading": "진행 순서 제목",
+  "steps.title": "단계 제목 (전체)",
+  "steps.desc": "단계 설명 (전체)",
 };
 import { usePlan } from "@/lib/usePlan";
 import { useRequireAuth } from "@/lib/useRequireAuth";
@@ -113,24 +120,40 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     return [...arr, ...Array.from({ length: n - arr.length }, () => ({ ...BLANK[key] }))];
   };
 
-  const toggleSection = (type: SectionType) => {
+  const updateSection = (index: number, patch: Partial<SectionRef>) => {
+    if (!project) return;
+    const arr = project.content.sections.map((s, i) =>
+      i === index ? { ...s, ...patch } : s,
+    );
+    update({ ...project.content, sections: arr });
+  };
+
+  const addBlock = () => {
     if (!project) return;
     update({
       ...project.content,
-      sections: project.content.sections.map((s) =>
-        s.type === type ? { ...s, enabled: !s.enabled } : s,
-      ),
+      sections: [...project.content.sections, newBlock()],
     });
   };
 
-  const setSectionWidth = (index: number, w: string) => {
+  // block 은 삭제, 기본 섹션은 비활성으로
+  const removeSection = (index: number) => {
     if (!project) return;
-    const arr = project.content.sections.map((s, i) =>
-      i === index
-        ? { ...s, w: w === "inherit" ? undefined : (w as NonNullable<typeof s.w>) }
-        : s,
-    );
-    update({ ...project.content, sections: arr });
+    const s = project.content.sections[index];
+    if (s.type === "block") {
+      update({
+        ...project.content,
+        sections: project.content.sections.filter((_, i) => i !== index),
+      });
+    } else {
+      updateSection(index, { enabled: false });
+    }
+  };
+
+  const setSectionWidth = (index: number, w: string) => {
+    updateSection(index, {
+      w: w === "inherit" ? undefined : (w as NonNullable<SectionRef["w"]>),
+    });
   };
 
   const moveSection = (index: number, dir: -1 | 1) => {
@@ -449,40 +472,108 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
             </div>
 
             <div>
-              <h3 className="mb-2 font-bold text-gray-700">섹션 (순서 · 표시)</h3>
-              <div className="space-y-1">
+              <h3 className="mb-2 font-bold text-gray-700">섹션 (순서 · 배경)</h3>
+              <div className="space-y-1.5">
                 {project.content.sections.map((s, i) => (
-                  <div key={s.type} className="rounded border border-gray-200 bg-white px-2 py-1">
+                  <div key={s.key || s.type} className="rounded-lg border border-gray-200 bg-white px-2 py-1.5">
                     <div className="flex items-center gap-1">
                       <input
                         type="checkbox"
                         checked={s.enabled}
-                        onChange={() => toggleSection(s.type)}
+                        onChange={() => updateSection(i, { enabled: !s.enabled })}
                       />
-                      <span className={"flex-1 " + (s.enabled ? "" : "text-gray-400 line-through")}>
-                        {SECTION_LABELS[s.type]}
+                      <span className={"flex-1 truncate " + (s.enabled ? "" : "text-gray-400 line-through")}>
+                        {s.type === "block"
+                          ? s.block?.heading || "자유 블록"
+                          : SECTION_LABELS[s.type]}
                       </span>
                       <button onClick={() => moveSection(i, -1)} disabled={i === 0}
                         className="px-1 text-gray-400 disabled:opacity-30">▲</button>
                       <button onClick={() => moveSection(i, 1)} disabled={i === project.content.sections.length - 1}
                         className="px-1 text-gray-400 disabled:opacity-30">▼</button>
+                      <button onClick={() => removeSection(i)}
+                        title={s.type === "block" ? "삭제" : "숨기기"}
+                        className="px-1 text-gray-300 hover:text-red-500">✕</button>
                     </div>
                     {s.enabled && (
-                      <select
-                        value={s.w || "inherit"}
-                        onChange={(e) => setSectionWidth(i, e.target.value)}
-                        className="mt-1 w-full rounded border border-gray-200 px-1 py-0.5 text-[11px] text-gray-500"
-                      >
-                        <option value="inherit">폭: 전체 설정 따름</option>
-                        <option value="narrow">폭: 좁게 (720)</option>
-                        <option value="normal">폭: 보통 (960)</option>
-                        <option value="wide">폭: 넓게 (1280)</option>
-                        <option value="full">폭: 최대 (1920)</option>
-                      </select>
+                      <div className="mt-1.5 space-y-1.5 border-t border-gray-100 pt-1.5">
+                        <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                          <span className="w-9 shrink-0">배경</span>
+                          <input
+                            type="color"
+                            value={hexOnly(s.bg || "#ffffff")}
+                            onChange={(e) => updateSection(i, { bg: e.target.value })}
+                            className="h-6 w-9 rounded border border-gray-300"
+                          />
+                          {s.bg && (
+                            <button onClick={() => updateSection(i, { bg: undefined })}
+                              className="underline">없음</button>
+                          )}
+                          <select
+                            value={s.pad || "normal"}
+                            onChange={(e) => updateSection(i, { pad: e.target.value as SectionRef["pad"] })}
+                            className="ml-auto rounded border border-gray-200 px-1 py-0.5"
+                          >
+                            <option value="tight">여백 좁게</option>
+                            <option value="normal">여백 보통</option>
+                            <option value="loose">여백 넓게</option>
+                          </select>
+                        </div>
+                        <div className="text-[11px] text-gray-500">
+                          <div className="mb-0.5">배경 이미지</div>
+                          <ImageField
+                            value={s.bgImage || ""}
+                            projectId={project.id}
+                            onChange={(url) => updateSection(i, { bgImage: url || undefined })}
+                          />
+                        </div>
+                        {s.type === "block" && (
+                          <select
+                            value={s.block?.mode || "text"}
+                            onChange={(e) =>
+                              updateSection(i, {
+                                block: { ...s.block!, mode: e.target.value as SectionMode },
+                              })
+                            }
+                            className="w-full rounded border border-gray-200 px-1 py-0.5 text-[11px] text-gray-500"
+                          >
+                            {(Object.keys(SECTION_MODE_LABELS) as SectionMode[]).map((m) => (
+                              <option key={m} value={m}>{SECTION_MODE_LABELS[m]}</option>
+                            ))}
+                          </select>
+                        )}
+                        {s.type === "block" && s.block?.mode !== "text" && (
+                          <ImageField
+                            value={s.block?.image || ""}
+                            projectId={project.id}
+                            onChange={(url) =>
+                              updateSection(i, { block: { ...s.block!, image: url } })
+                            }
+                          />
+                        )}
+                        <select
+                          value={s.w || "inherit"}
+                          onChange={(e) => setSectionWidth(i, e.target.value)}
+                          className="w-full rounded border border-gray-200 px-1 py-0.5 text-[11px] text-gray-500"
+                        >
+                          <option value="inherit">폭: 전체 설정 따름</option>
+                          <option value="mobile">폭: 모바일 (640)</option>
+                          <option value="narrow">폭: 좁게 (720)</option>
+                          <option value="normal">폭: 보통 (960)</option>
+                          <option value="wide">폭: 넓게 (1280)</option>
+                          <option value="full">폭: 최대 (1920)</option>
+                        </select>
+                      </div>
                     )}
                   </div>
                 ))}
               </div>
+              <button
+                onClick={addBlock}
+                className="mt-2 w-full rounded-lg border border-dashed border-gray-300 py-1.5 text-xs font-semibold text-gray-500 hover:border-gray-500"
+              >
+                + 자유 블록 추가
+              </button>
             </div>
 
             <div>
@@ -527,10 +618,11 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                 }
                 className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
               >
+                <option value="mobile">모바일 상세페이지 (640px)</option>
                 <option value="narrow">좁게 (720px)</option>
                 <option value="normal">보통 (960px)</option>
-                <option value="wide">넓게 (1200px)</option>
-                <option value="full">전체 (100%)</option>
+                <option value="wide">넓게 (1280px)</option>
+                <option value="full">전체 (1920px)</option>
                 <option value="custom">직접 지정</option>
               </select>
               {project.content.layout.width === "custom" && (

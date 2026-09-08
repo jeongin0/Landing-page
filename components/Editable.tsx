@@ -11,6 +11,7 @@ type Props = {
   as?: "div" | "span" | "h1" | "h2" | "h3" | "p";
   multiline?: boolean;
   editing: boolean;
+  style?: React.CSSProperties;
   // 폰트/크기 오버라이드용
   styleKey?: string;
   textStyle?: TextStyle;
@@ -26,6 +27,7 @@ export default function Editable({
   as = "div",
   multiline = false,
   editing,
+  style: styleProp,
   styleKey,
   textStyle,
   selected,
@@ -49,9 +51,10 @@ export default function Editable({
     (editing && selected ? " ring-2 ring-violet-500 ring-offset-1" : "");
 
   const style: React.CSSProperties = {
-    whiteSpace: multiline ? "pre-wrap" : undefined,
-    fontFamily: fontStack(textStyle?.font),
-    fontSize: textStyle?.size ? `${textStyle.size}px` : undefined,
+    ...styleProp,
+    whiteSpace: multiline ? "pre-wrap" : styleProp?.whiteSpace,
+    fontFamily: fontStack(textStyle?.font) ?? styleProp?.fontFamily,
+    fontSize: textStyle?.size ? `${textStyle.size}px` : styleProp?.fontSize,
   };
 
   return createElement(
