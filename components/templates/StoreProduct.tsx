@@ -251,8 +251,8 @@ export default function StoreProduct({
         }} />
     );
 
-  const hTitle = (h: (typeof c.highlights)[number]) => (
-    <Editable as="h3" editing={editing} className={"mt-3 font-bold " + headingFont} value={h.title} {...tp("highlights.title")}
+  const hTitle = (h: (typeof c.highlights)[number], topCls = "mt-3") => (
+    <Editable as="h3" editing={editing} className={topCls + " font-bold " + headingFont} value={h.title} {...tp("highlights.title")}
       onChange={(v) => {
         const highlights = [...c.highlights];
         highlights[c.highlights.indexOf(h)] = { ...h, title: v };
@@ -286,15 +286,15 @@ export default function StoreProduct({
       <section className={wrap + " py-12"}>
         <div className="divide-y divide-black/10">
           {c.highlights.map((h, i) => (
-            <div key={i} className="flex gap-5 py-6">
-              <div className="text-lg font-bold opacity-30">
+            <div key={i} className="flex items-start gap-5 py-6">
+              <div className="font-bold leading-normal opacity-30">
                 {String(i + 1).padStart(2, "0")}
               </div>
               <div className="flex-1">
-                {hTitle(h)}
+                {hTitle(h, "")}
                 {hDesc(h)}
               </div>
-              <div>{hIcon(h, 40)}</div>
+              <div className="shrink-0">{hIcon(h, 40)}</div>
             </div>
           ))}
         </div>
