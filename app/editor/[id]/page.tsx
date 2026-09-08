@@ -3,8 +3,8 @@
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getProject, saveProject, setPublished } from "@/lib/storage";
-import type { Project, StoreContent, SectionType } from "@/lib/schema";
-import { SECTION_LABELS } from "@/lib/schema";
+import type { Project, StoreContent, SectionType, SectionMode } from "@/lib/schema";
+import { SECTION_LABELS, SECTION_MODE_LABELS } from "@/lib/schema";
 import type { WidthPreset } from "@/lib/schema";
 import StoreProduct from "@/components/templates/StoreProduct";
 import GenerateModal from "@/components/GenerateModal";
@@ -273,6 +273,45 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
         {/* 사이드 패널 */}
         {editing && (
           <aside className="w-[340px] shrink-0 space-y-5 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4 text-sm">
+            <div>
+              <h3 className="mb-2 font-bold text-gray-700">영역 구성</h3>
+              {([
+                ["hero", "메인(히어로)"],
+                ["detail", "상세 설명"],
+              ] as const).map(([sec, label]) => (
+                <label key={sec} className="mb-2 flex items-center justify-between text-gray-600">
+                  <span>{label}</span>
+                  <select
+                    value={project.content[sec].mode ?? "split"}
+                    onChange={(e) =>
+                      update({
+                        ...project.content,
+                        [sec]: { ...project.content[sec], mode: e.target.value as SectionMode },
+                      })
+                    }
+                    className="rounded border border-gray-300 px-2 py-1 text-xs"
+                  >
+                    {(Object.keys(SECTION_MODE_LABELS) as SectionMode[]).map((m) => (
+                      <option key={m} value={m}>{SECTION_MODE_LABELS[m]}</option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+              <label className="mt-1 flex items-center gap-2 text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={!project.content.cta.hidden}
+                  onChange={(e) =>
+                    update({
+                      ...project.content,
+                      cta: { ...project.content.cta, hidden: !e.target.checked },
+                    })
+                  }
+                />
+                구매 버튼 표시
+              </label>
+            </div>
+
             <div>
               <h3 className="mb-2 font-bold text-gray-700">라벨 (뱃지) 색</h3>
               <label className="mb-2 flex items-center justify-between">

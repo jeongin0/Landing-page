@@ -21,6 +21,16 @@ export type SectionType =
   | "pricing"
   | "faq";
 
+// 히어로·상세 영역 구성 방식
+export type SectionMode = "split" | "text" | "image";
+export const SECTION_MODE_LABELS: Record<SectionMode, string> = {
+  split: "이미지 + 텍스트",
+  text: "텍스트만",
+  image: "통이미지",
+};
+export const clampMode = (v: unknown): SectionMode | undefined =>
+  v === "split" || v === "text" || v === "image" ? v : undefined;
+
 export type SectionRef = {
   type: SectionType;
   enabled: boolean;
@@ -82,6 +92,7 @@ export type StoreContent = {
   cta: {
     text: string; // 버튼 문구
     href: string; // 버튼 링크
+    hidden?: boolean; // true 면 구매 버튼 숨김 (히어로·가격 섹션)
   };
   hero: {
     badge: string;
@@ -93,6 +104,7 @@ export type StoreContent = {
     imageW?: number; // 이미지 폭 % (20~100). 없으면 100
     imageAspect?: number; // 이미지 가로세로 비율 (w/h). 없으면 스타일 기본값
     splitPct?: number; // 클래식 스타일에서 이미지 열이 차지하는 비율 % (30~75). 없으면 50
+    mode?: SectionMode; // 영역 구성: 이미지+텍스트 / 텍스트만 / 통이미지
   };
   highlights: Highlight[];
   detail: {
@@ -102,6 +114,7 @@ export type StoreContent = {
     imageW?: number; // 이미지 폭 % (20~100). 없으면 100
     imageAspect?: number; // 이미지 가로세로 비율 (w/h). 없으면 스타일 기본값
     splitPct?: number; // 클래식 스타일에서 이미지 열이 차지하는 비율 % (30~75). 없으면 50
+    mode?: SectionMode; // 영역 구성: 이미지+텍스트 / 텍스트만 / 통이미지
   };
   specs: Spec[];
   reviews: Review[];
@@ -172,12 +185,14 @@ export function normalizeContent(c: unknown): StoreContent {
       imageW: clampImageW(raw.hero?.imageW),
       imageAspect: clampAspect(raw.hero?.imageAspect),
       splitPct: clampSplit(raw.hero?.splitPct),
+      mode: clampMode(raw.hero?.mode),
     },
     detail: {
       ...(raw.detail as StoreContent["detail"]),
       imageW: clampImageW(raw.detail?.imageW),
       imageAspect: clampAspect(raw.detail?.imageAspect),
       splitPct: clampSplit(raw.detail?.splitPct),
+      mode: clampMode(raw.detail?.mode),
     },
   };
 }

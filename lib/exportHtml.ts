@@ -24,11 +24,13 @@ export function exportHtml(c: StoreContent): string {
   const secMax = (w?: keyof typeof WIDTH_PX) => (w ? WIDTH_PX[w] : maxW);
   const card = `border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.04);`;
   const btn = (big = false) =>
-    `<a href="${esc(c.cta.href || "#")}" style="display:inline-block;background:${esc(
-      t.primary,
-    )};color:#fff;font-weight:700;border-radius:8px;text-decoration:none;padding:${
-      big ? "16px 40px;font-size:18px" : "12px 28px"
-    }">${esc(c.cta.text)}</a>`;
+    c.cta.hidden
+      ? ""
+      : `<a href="${esc(c.cta.href || "#")}" style="display:inline-block;background:${esc(
+          t.primary,
+        )};color:#fff;font-weight:700;border-radius:8px;text-decoration:none;padding:${
+          big ? "16px 40px;font-size:18px" : "12px 28px"
+        }">${esc(c.cta.text)}</a>`;
 
   const badge = c.hero.badge
     ? `<span style="display:inline-block;border-radius:9999px;padding:4px 12px;font-size:12px;font-weight:700;background:${esc(
@@ -42,15 +44,24 @@ export function exportHtml(c: StoreContent): string {
       : `<div style="font-size:30px">${esc(h.icon)}</div>`;
 
   const S: Record<SectionType, () => string> = {
-    hero: () => `<section class="lb-hero lb-hero-main" style="${wrap}padding-top:56px;padding-bottom:56px">
-  <div class="lb-hero-text">
+    hero: () => {
+      const hImg = `<div style="width:${c.hero.imageW ?? 100}%;margin:0 auto"><img src="${esc(
+        c.hero.image,
+      )}" alt="" style="width:100%;border-radius:16px;object-fit:cover;aspect-ratio:${
+        c.hero.imageAspect ?? (c.hero.mode === "image" ? "16/9" : "4/3")
+      };box-shadow:0 10px 30px rgba(0,0,0,.12)"/></div>`;
+      const hText = `<div class="lb-hero-text">
     ${badge}
     <h1 style="margin:16px 0 0;font-size:32px;font-weight:800;line-height:1.2">${nl2br(c.hero.title)}</h1>
     <p style="margin:16px 0 0;font-size:16px;opacity:.8">${nl2br(c.hero.subtitle)}</p>
-    <div style="margin-top:24px">${btn()}</div>
-  </div>
-  <div style="width:${c.hero.imageW ?? 100}%;margin:0 auto"><img src="${esc(c.hero.image)}" alt="" style="width:100%;border-radius:16px;object-fit:cover;aspect-ratio:${c.hero.imageAspect ?? "4/3"};box-shadow:0 10px 30px rgba(0,0,0,.12)"/></div>
-</section>`,
+    ${btn() ? `<div style="margin-top:24px">${btn()}</div>` : ""}
+  </div>`;
+      if (c.hero.mode === "text")
+        return `<section style="${wrap}padding:56px 20px">${hText}</section>`;
+      if (c.hero.mode === "image")
+        return `<section style="${wrap}padding:56px 20px">${hImg}</section>`;
+      return `<section class="lb-hero lb-hero-main" style="${wrap}padding-top:56px;padding-bottom:56px">${hText}${hImg}</section>`;
+    },
 
     highlights: () => `<section style="${wrap}padding:40px 20px">
   <div class="lb-grid3 lb-grid-h">${c.highlights
@@ -63,13 +74,22 @@ export function exportHtml(c: StoreContent): string {
     .join("")}</div>
 </section>`,
 
-    detail: () => `<section class="lb-hero lb-detail-main" style="${wrap}padding:56px 20px">
-  <div style="width:${c.detail.imageW ?? 100}%;margin:0 auto"><img src="${esc(c.detail.image)}" alt="" style="width:100%;border-radius:16px;object-fit:cover;aspect-ratio:${c.detail.imageAspect ?? "4/3"};box-shadow:0 10px 30px rgba(0,0,0,.12)"/></div>
-  <div class="lb-hero-text">
+    detail: () => {
+      const dImg = `<div style="width:${c.detail.imageW ?? 100}%;margin:0 auto"><img src="${esc(
+        c.detail.image,
+      )}" alt="" style="width:100%;border-radius:16px;object-fit:cover;aspect-ratio:${
+        c.detail.imageAspect ?? (c.detail.mode === "image" ? "16/9" : "4/3")
+      };box-shadow:0 10px 30px rgba(0,0,0,.12)"/></div>`;
+      const dText = `<div class="lb-hero-text">
     <h2 style="margin:0;font-size:24px;font-weight:800">${esc(c.detail.heading)}</h2>
     <p style="margin:16px 0 0;opacity:.8">${nl2br(c.detail.body)}</p>
-  </div>
-</section>`,
+  </div>`;
+      if (c.detail.mode === "text")
+        return `<section style="${wrap}padding:56px 20px">${dText}</section>`;
+      if (c.detail.mode === "image")
+        return `<section style="${wrap}padding:56px 20px">${dImg}</section>`;
+      return `<section class="lb-hero lb-detail-main" style="${wrap}padding:56px 20px">${dImg}${dText}</section>`;
+    },
 
     specs: () => `<section style="${wrap}padding:40px 20px">
   <div style="border:1px solid rgba(0,0,0,.06);border-radius:16px;overflow:hidden">${c.specs
@@ -101,7 +121,7 @@ export function exportHtml(c: StoreContent): string {
       <span style="font-size:18px;text-decoration:line-through;opacity:.4">${esc(c.pricing.compareAt)}</span>
     </div>
     <p style="margin:8px 0 0;font-size:14px;opacity:.7">${esc(c.pricing.note)}</p>
-    <div style="margin-top:24px">${btn(true)}</div>
+    ${btn(true) ? `<div style="margin-top:24px">${btn(true)}</div>` : ""}
   </div>
 </section>`,
 

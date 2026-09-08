@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import type { StoreContent, SectionType } from "@/lib/schema";
 import { WIDTH_PX } from "@/lib/schema";
 import Editable from "@/components/Editable";
@@ -19,22 +18,17 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
   const set = (patch: Partial<StoreContent>) => onChange?.({ ...c, ...patch });
   const style = c.style || "classic";
 
-  // 2열 레이아웃(클래식 히어로·상세): 이미지 열이 차지하는 비율(%)을 드래그로 조절
-  const heroRowRef = useRef<HTMLDivElement>(null);
-  const detailRowRef = useRef<HTMLDivElement>(null);
+  // 2열 레이아웃(클래식 히어로·상세): 이미지 열이 차지하는 비율(%)을 드래그로 조절.
+  // ref 대신 손잡이 DOM 에서 [data-split-row] 조상을 찾아 계산 (렌더 중 ref 접근 회피)
   const heroSplit = c.hero.splitPct ?? 50;
   const detailSplit = c.detail.splitPct ?? 50;
 
   const makeSplitDrag =
-    (
-      rowRef: React.RefObject<HTMLDivElement | null>,
-      imageSide: "left" | "right",
-      apply: (pct: number) => void,
-    ) =>
+    (imageSide: "left" | "right", apply: (pct: number) => void) =>
     (e: React.PointerEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      const row = rowRef.current;
+      const row = (e.currentTarget as HTMLElement).closest("[data-split-row]");
       if (!row || !onChange) return;
       const rect = row.getBoundingClientRect();
       const move = (ev: PointerEvent) => {
@@ -52,10 +46,10 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
       window.addEventListener("pointerup", up);
     };
 
-  const startHeroSplit = makeSplitDrag(heroRowRef, "right", (p) =>
+  const startHeroSplit = makeSplitDrag("right", (p) =>
     set({ hero: { ...c.hero, splitPct: p } }),
   );
-  const startDetailSplit = makeSplitDrag(detailRowRef, "left", (p) =>
+  const startDetailSplit = makeSplitDrag("left", (p) =>
     set({ detail: { ...c.detail, splitPct: p } }),
   );
 
@@ -95,19 +89,25 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
         ? "text-4xl md:text-5xl"
         : "text-3xl md:text-4xl";
 
-  const ctaBtn = (big = false) => (
-    <a
-      href={c.cta.href || "#"}
-      className={
-        "inline-block rounded-lg font-semibold text-white " +
-        (big ? "px-10 py-4 text-lg" : "px-6 py-3")
-      }
-      style={{ background: c.theme.primary }}
-    >
-      <Editable as="span" editing={editing} value={c.cta.text}
-        onChange={(v) => set({ cta: { ...c.cta, text: v } })} />
-    </a>
-  );
+  const ctaBtn = (big = false, cls = "mt-6") =>
+    c.cta.hidden && !editing ? null : (
+      <div className={cls} style={c.cta.hidden ? { opacity: 0.4 } : undefined}>
+        <a
+          href={c.cta.href || "#"}
+          className={
+            "inline-block rounded-lg font-semibold text-white " +
+            (big ? "px-10 py-4 text-lg" : "px-6 py-3")
+          }
+          style={{ background: c.theme.primary }}
+        >
+          <Editable as="span" editing={editing} value={c.cta.text}
+            onChange={(v) => set({ cta: { ...c.cta, text: v } })} />
+        </a>
+        {c.cta.hidden && editing && (
+          <span className="ml-2 text-xs text-gray-400">(숨김 — 내보내기에 안 나옴)</span>
+        )}
+      </div>
+    );
 
   const badge = c.hero.badge ? (
     <span className="inline-block rounded-full px-3 py-1 text-xs font-semibold"
@@ -168,28 +168,41 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
     </div>
   );
 
-  // ── HERO ── 스타일별로 완전히 다르게
+  const heroText = (
+    <>
+      {badge}
+      {heroTitle}
+      {heroSub}
+      {ctaBtn()}
+    </>
+  );
+
+  // ── HERO ── mode 우선, 그다음 스타일별
   const hero =
-    style === "spotlight" ? (
+    c.hero.mode === "text" ? (
+      <section className={wrap + " py-14"}>{heroText}</section>
+    ) : c.hero.mode === "image" ? (
+      <section className={wrap + " py-14"}>{heroImg("", "16/9")}</section>
+    ) : style === "spotlight" ? (
       <section className={wrap + " py-16 text-center"}>
         {heroImg("mb-10", "16/9")}
         {badge}
         {heroTitle}
         {heroSub}
-        <div className="mt-8">{ctaBtn(true)}</div>
+        {ctaBtn(true, "mt-8")}
       </section>
     ) : style === "editorial" ? (
       <section className={wrap + " py-14"}>
         {badge}
         {heroTitle}
         {heroSub}
-        <div className="mt-6">{ctaBtn()}</div>
+        {ctaBtn()}
         {heroImg("mt-10", "21/9")}
       </section>
     ) : (
       <section className={wrap + " py-14"}>
         <div
-          ref={heroRowRef}
+          data-split-row
           className="md:grid md:items-center md:gap-10"
           style={{ gridTemplateColumns: `${100 - heroSplit}fr ${heroSplit}fr` }}
         >
@@ -197,7 +210,7 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
             {badge}
             {heroTitle}
             {heroSub}
-            <div className="mt-6">{ctaBtn()}</div>
+            {ctaBtn()}
           </div>
           <div className="relative mt-8 md:mt-0">
             {splitHandle(startHeroSplit, "left")}
@@ -282,22 +295,35 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
       </section>
     );
 
+  const detailHeading = (cls: string) => (
+    <Editable as="h2" editing={editing} className={cls}
+      value={c.detail.heading}
+      onChange={(v) => set({ detail: { ...c.detail, heading: v } })} />
+  );
+  const detailBody = (cls: string) => (
+    <Editable as="p" multiline editing={editing} className={cls}
+      value={c.detail.body}
+      onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
+  );
+
   const detail =
-    style === "spotlight" || style === "editorial" ? (
+    c.detail.mode === "text" ? (
       <section className={wrap + " py-14"}>
-        <Editable as="h2" editing={editing}
-          className={`text-center text-2xl font-extrabold ${headingFont}`}
-          value={c.detail.heading}
-          onChange={(v) => set({ detail: { ...c.detail, heading: v } })} />
+        {detailHeading("text-2xl font-extrabold " + headingFont)}
+        {detailBody("mt-4 opacity-80")}
+      </section>
+    ) : c.detail.mode === "image" ? (
+      <section className={wrap + " py-14"}>{detailImg("", "16/9")}</section>
+    ) : style === "spotlight" || style === "editorial" ? (
+      <section className={wrap + " py-14"}>
+        {detailHeading(`text-center text-2xl font-extrabold ${headingFont}`)}
         {detailImg("my-8", "16/9")}
-        <Editable as="p" multiline editing={editing} className="opacity-80"
-          value={c.detail.body}
-          onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
+        {detailBody("opacity-80")}
       </section>
     ) : (
       <section className={wrap + " py-14"}>
         <div
-          ref={detailRowRef}
+          data-split-row
           className="md:grid md:items-center md:gap-10"
           style={{ gridTemplateColumns: `${detailSplit}fr ${100 - detailSplit}fr` }}
         >
@@ -306,12 +332,8 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
             {detailImg("", "4/3")}
           </div>
           <div className="mt-8 md:mt-0">
-            <Editable as="h2" editing={editing} className={"text-2xl font-extrabold " + headingFont}
-              value={c.detail.heading}
-              onChange={(v) => set({ detail: { ...c.detail, heading: v } })} />
-            <Editable as="p" multiline editing={editing} className="mt-4 opacity-80"
-              value={c.detail.body}
-              onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
+            {detailHeading("text-2xl font-extrabold " + headingFont)}
+            {detailBody("mt-4 opacity-80")}
           </div>
         </div>
       </section>
@@ -376,7 +398,7 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
         </div>
         <Editable as="p" editing={editing} className="mt-2 text-sm opacity-70" value={c.pricing.note}
           onChange={(v) => set({ pricing: { ...c.pricing, note: v } })} />
-        <div className="mt-6">{ctaBtn(true)}</div>
+        {ctaBtn(true)}
       </div>
     </section>
   );
