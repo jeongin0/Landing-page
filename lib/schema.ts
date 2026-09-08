@@ -266,6 +266,8 @@ function normalizeSections(raw: unknown): SectionRef[] {
       arr.push({ ...d, enabled: false });
     }
   }
+  // 모든 섹션에 고유 key 부여 (복제된 동일 타입 섹션의 React key 충돌 방지)
+  const seenKey = new Set<string>();
   return arr.map((raw) => {
     const s: SectionRef = {
       ...raw,
@@ -273,10 +275,13 @@ function normalizeSections(raw: unknown): SectionRef[] {
       padPx: clampPadPx(raw.padPx),
       splitPct: clampSplitPct(raw.splitPct),
     };
+    const key =
+      typeof s.key === "string" && s.key && !seenKey.has(s.key) ? s.key : genKey();
+    seenKey.add(key);
     if (s.type === "block") {
       return {
         ...s,
-        key: s.key || genKey(),
+        key,
         block: {
           heading: s.block?.heading ?? "",
           body: s.block?.body ?? "",
@@ -286,7 +291,7 @@ function normalizeSections(raw: unknown): SectionRef[] {
         },
       };
     }
-    return s;
+    return { ...s, key };
   });
 }
 
@@ -381,12 +386,12 @@ export function newImageBlock(): SectionRef {
   };
 }
 
-// 섹션 복제 (block 은 새 key, 나머지는 얕은 복사)
+// 섹션 복제 — 항상 새 key 를 부여해 React key 충돌 방지
 export function duplicateSectionRef(s: SectionRef): SectionRef {
   if (s.type === "block") {
     return { ...s, key: genKey(), block: { ...(s.block as FreeBlock) } };
   }
-  return { ...s };
+  return { ...s, key: genKey() };
 }
 
 export type Project = {

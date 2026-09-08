@@ -451,7 +451,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
               <h3 className="mb-2 font-bold text-gray-700">섹션 (순서 · 배경 · 이미지)</h3>
               <div className="space-y-1.5">
                 {project.content.sections.map((s, i) => (
-                  <div key={s.key || s.type} className="rounded-lg border border-gray-200 bg-white px-2 py-1.5">
+                  <div key={s.key || `${s.type}-${i}`} className="rounded-lg border border-gray-200 bg-white px-2 py-1.5">
                     <div className="flex items-center gap-1">
                       <input
                         type="checkbox"

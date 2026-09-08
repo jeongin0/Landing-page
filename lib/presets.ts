@@ -94,7 +94,7 @@ export const PRESETS: {
   {
     id: "editorial",
     label: "레일 (브랜드 · 미니멀)",
-    desc: "왼쪽에 목차가 고정되고 오른쪽에 세리프 대형 제목이 흐르는 브랜드 소개형. 여백 많고 무채색.",
+    desc: "세리프 대형 제목과 넓은 여백, 화면 끝까지 차는 긴 이미지로 흐르는 미니멀 브랜드 소개형. 무채색. 구매 버튼 없음.",
     make: () => {
       const c = defaultStoreContent();
       c.style = "editorial";
@@ -168,7 +168,7 @@ export const PRESETS: {
   {
     id: "showcase",
     label: "벤토 (서비스 · 앱 소개)",
-    desc: "크기가 제각각인 라운드 카드 그리드로 짜인 SaaS·서비스 소개형. 상단 필내비 + 겹치는 통계 카드.",
+    desc: "균일한 라운드 카드 그리드(테두리 없이 섀도우만)로 짜인 SaaS·서비스 소개형. 히어로 아래 겹치는 통계 카드. 구매 버튼 없음.",
     make: () => {
       const c = defaultStoreContent();
       c.style = "showcase";
