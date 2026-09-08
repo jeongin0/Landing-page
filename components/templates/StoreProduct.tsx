@@ -19,27 +19,61 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
   const set = (patch: Partial<StoreContent>) => onChange?.({ ...c, ...patch });
   const style = c.style || "classic";
 
-  // 클래식 히어로: 텍스트 / 이미지 열 비율 (이미지 쪽 %)
+  // 2열 레이아웃(클래식 히어로·상세): 이미지 열이 차지하는 비율(%)을 드래그로 조절
   const heroRowRef = useRef<HTMLDivElement>(null);
+  const detailRowRef = useRef<HTMLDivElement>(null);
   const heroSplit = c.hero.splitPct ?? 50;
-  const startSplitDrag = (e: React.PointerEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const row = heroRowRef.current;
-    if (!row || !onChange) return;
-    const rect = row.getBoundingClientRect();
-    const move = (ev: PointerEvent) => {
-      const rightPct = ((rect.right - ev.clientX) / rect.width) * 100;
-      const next = Math.max(30, Math.min(75, Math.round(rightPct)));
-      set({ hero: { ...c.hero, splitPct: next } });
+  const detailSplit = c.detail.splitPct ?? 50;
+
+  const makeSplitDrag =
+    (
+      rowRef: React.RefObject<HTMLDivElement | null>,
+      imageSide: "left" | "right",
+      apply: (pct: number) => void,
+    ) =>
+    (e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const row = rowRef.current;
+      if (!row || !onChange) return;
+      const rect = row.getBoundingClientRect();
+      const move = (ev: PointerEvent) => {
+        const raw =
+          imageSide === "right"
+            ? ((rect.right - ev.clientX) / rect.width) * 100
+            : ((ev.clientX - rect.left) / rect.width) * 100;
+        apply(Math.max(30, Math.min(75, Math.round(raw))));
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
     };
-    const up = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
-    };
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
-  };
+
+  const startHeroSplit = makeSplitDrag(heroRowRef, "right", (p) =>
+    set({ hero: { ...c.hero, splitPct: p } }),
+  );
+  const startDetailSplit = makeSplitDrag(detailRowRef, "left", (p) =>
+    set({ detail: { ...c.detail, splitPct: p } }),
+  );
+
+  // 열 경계에 놓는 세로 드래그 손잡이
+  const splitHandle = (
+    onDown: (e: React.PointerEvent) => void,
+    side: "left" | "right",
+  ) =>
+    editing && canResize ? (
+      <span
+        onPointerDown={onDown}
+        title="드래그해서 이미지 영역 넓히기 / 좁히기"
+        className={
+          "absolute top-1/2 z-10 hidden h-16 w-2.5 -translate-y-1/2 cursor-ew-resize touch-none rounded-full bg-gray-900/70 md:block " +
+          (side === "left" ? "-left-5" : "-right-5")
+        }
+      />
+    ) : null;
 
   const maxW =
     c.layout.width === "custom"
@@ -160,13 +194,7 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
             <div className="mt-6">{ctaBtn()}</div>
           </div>
           <div className="relative mt-8 md:mt-0">
-            {editing && canResize && (
-              <span
-                onPointerDown={startSplitDrag}
-                title="드래그해서 이미지 영역 넓히기 / 좁히기"
-                className="absolute -left-5 top-1/2 z-10 hidden h-16 w-2.5 -translate-y-1/2 cursor-ew-resize touch-none rounded-full bg-gray-900/70 md:block"
-              />
-            )}
+            {splitHandle(startHeroSplit, "left")}
             {heroImg("", "4/3")}
           </div>
         </div>
@@ -261,15 +289,24 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
           onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
       </section>
     ) : (
-      <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"}>
-        {detailImg("", "4/3")}
-        <div>
-          <Editable as="h2" editing={editing} className={"text-2xl font-extrabold " + headingFont}
-            value={c.detail.heading}
-            onChange={(v) => set({ detail: { ...c.detail, heading: v } })} />
-          <Editable as="p" multiline editing={editing} className="mt-4 opacity-80"
-            value={c.detail.body}
-            onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
+      <section className={wrap + " py-14"}>
+        <div
+          ref={detailRowRef}
+          className="md:grid md:items-center md:gap-10"
+          style={{ gridTemplateColumns: `${detailSplit}fr ${100 - detailSplit}fr` }}
+        >
+          <div className="relative">
+            {splitHandle(startDetailSplit, "right")}
+            {detailImg("", "4/3")}
+          </div>
+          <div className="mt-8 md:mt-0">
+            <Editable as="h2" editing={editing} className={"text-2xl font-extrabold " + headingFont}
+              value={c.detail.heading}
+              onChange={(v) => set({ detail: { ...c.detail, heading: v } })} />
+            <Editable as="p" multiline editing={editing} className="mt-4 opacity-80"
+              value={c.detail.body}
+              onChange={(v) => set({ detail: { ...c.detail, body: v } })} />
+          </div>
         </div>
       </section>
     );

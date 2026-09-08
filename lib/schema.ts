@@ -99,6 +99,7 @@ export type StoreContent = {
     image: string;
     imageW?: number; // 이미지 폭 % (20~100). 없으면 100
     imageAspect?: number; // 이미지 가로세로 비율 (w/h). 없으면 스타일 기본값
+    splitPct?: number; // 클래식 스타일에서 이미지 열이 차지하는 비율 % (30~75). 없으면 50
   };
   specs: Spec[];
   reviews: Review[];
@@ -165,6 +166,7 @@ export function normalizeContent(c: unknown): StoreContent {
       ...(raw.detail as StoreContent["detail"]),
       imageW: clampImageW(raw.detail?.imageW),
       imageAspect: clampAspect(raw.detail?.imageAspect),
+      splitPct: clampSplit(raw.detail?.splitPct),
     },
   };
 }

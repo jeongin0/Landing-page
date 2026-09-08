@@ -63,7 +63,7 @@ export function exportHtml(c: StoreContent): string {
     .join("")}</div>
 </section>`,
 
-    detail: () => `<section class="lb-hero" style="${wrap}padding:56px 20px">
+    detail: () => `<section class="lb-hero lb-detail-main" style="${wrap}padding:56px 20px">
   <div style="width:${c.detail.imageW ?? 100}%;margin:0 auto"><img src="${esc(c.detail.image)}" alt="" style="width:100%;border-radius:16px;object-fit:cover;aspect-ratio:${c.detail.imageAspect ?? "4/3"};box-shadow:0 10px 30px rgba(0,0,0,.12)"/></div>
   <div class="lb-hero-text">
     <h2 style="margin:0;font-size:24px;font-weight:800">${esc(c.detail.heading)}</h2>
@@ -142,6 +142,7 @@ export function exportHtml(c: StoreContent): string {
     .lb-grid3{grid-template-columns:repeat(3,1fr)}
     .lb-hero{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
     .lb-hero-main{grid-template-columns:${100 - (c.hero.splitPct ?? 50)}fr ${c.hero.splitPct ?? 50}fr}
+    .lb-detail-main{grid-template-columns:${c.detail.splitPct ?? 50}fr ${100 - (c.detail.splitPct ?? 50)}fr}
     .lb-hero-text{margin-top:0}
   }
 </style>
