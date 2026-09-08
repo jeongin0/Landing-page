@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function IntroPopup() {
-  const [open, setOpen] = useState(false);
-
   // index 페이지에 들어올 때마다 노출 (닫기는 ✕ 로만)
-  useEffect(() => {
-    setOpen(true);
-  }, []);
+  const [open, setOpen] = useState(true);
 
   return (
     <>

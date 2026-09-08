@@ -28,18 +28,10 @@ export const PRESETS: {
       c.style = "bold";
       c.theme = { primary: "#e23744", bg: "#ffffff", text: "#111111" };
       c.layout = { width: "narrow", customPx: 720 };
-      const imgBlock = (image: string, key: string): SectionRef => ({
-        type: "block",
-        enabled: true,
-        key,
-        pad: "normal",
-        block: { heading: "", body: "", image, mode: "image", align: "left" },
-      });
       c.sections = [
         band("hero", undefined),
         band("callout", "#e23744"),
         band("highlights", undefined),
-        imgBlock(U("photo-1600271886742-f049cd451bba", 1400), "pb1"),
         band("checklist", "#111111"),
         band("detail", undefined),
         band("steps", "#f7f2f2"),

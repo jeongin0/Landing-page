@@ -48,10 +48,12 @@ http://localhost:3000
 
 - 프로젝트 생성 / 목록 / 삭제
 - 페이지 글자 클릭해서 바로 수정 (contentEditable)
-- 테마 색상 3종 + 이미지 URL 변경 (사이드 패널)
-- 0.6초 자동 저장 (브라우저 localStorage)
-- AI 카피 생성 (상품 정보 → 히어로/강점/상세/후기/FAQ)
-- 독립 실행 HTML 파일로 내보내기
+- 테마 색상 + 섹션 배경/이미지/순서/폭 변경 (사이드 패널)
+- 섹션 폭·여백·이미지 비율 드래그 조절
+- 0.6초 자동 저장 (Supabase)
+- AI 카피 생성 (상품 정보 → 히어로/강점/상세/후기/FAQ, Pro 전용)
+- 독립 실행 HTML · 이미지(PNG/JPEG/WEBP)로 내보내기
+- 공유 링크 게시 (`/p/<id>`)
 
 ## 구조
 
@@ -59,13 +61,17 @@ http://localhost:3000
 lib/schema.ts         편집 콘텐츠 타입 (= 나중에 DB projects.content)
 lib/defaultContent.ts 새 프로젝트 기본값
 lib/storage.ts        저장 레이어 (v2에서 이 파일만 Supabase로 교체)
-lib/exportHtml.ts     StoreContent → 정적 HTML
+lib/exportHtml.ts     StoreContent → 정적 HTML (strip/rail/bento 3종 셸 분기)
+lib/presets.ts        템플릿 프리셋 3종 (bold/editorial/showcase)
 components/Editable.tsx          인라인 편집 텍스트
-components/templates/StoreProduct.tsx   템플릿 렌더러
+components/templates/StoreProduct.tsx   style 로 3종 레이아웃 분기
+components/templates/{Strip,Rail,Bento}Layout.tsx  템플릿별 렌더러
+components/templates/parts.tsx   레이아웃 공용 (편집 컨텍스트·드래그 핸들·이미지)
 components/GenerateModal.tsx     AI 생성 폼
-app/page.tsx                     대시보드
+app/page.tsx                     홍보 랜딩페이지
+app/projects/page.tsx            프로젝트 목록 · 템플릿 선택
 app/editor/[id]/page.tsx         에디터
-app/api/generate/route.ts        Claude 호출
+app/api/generate/route.ts        Google Gemini 호출 (Pro 전용 + 사용량 한도)
 app/api/export/route.ts          HTML 내보내기
 ```
 

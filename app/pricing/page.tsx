@@ -3,11 +3,17 @@
 import Header from "@/components/Header";
 import { usePlan, startCheckout } from "@/lib/usePlan";
 
+// 실제 표기 금액은 LemonSqueezy 상품 가격과 맞춰 Vercel 환경변수로 주입.
+// (없으면 아래 기본값으로 표시 — 배포 전 반드시 실제 금액으로 교체)
+const PRICE_PRO = process.env.NEXT_PUBLIC_PRICE_PRO || "9,900원";
+const PRICE_LIFETIME = process.env.NEXT_PUBLIC_PRICE_LIFETIME || "89,000원";
+
 const plans = [
   {
     key: "free" as const,
     name: "Free",
     price: "0원",
+    period: "",
     features: [
       "프로젝트 2개",
       "클릭 편집",
@@ -18,7 +24,8 @@ const plans = [
   {
     key: "pro" as const,
     name: "Pro",
-    price: "월 구독",
+    price: PRICE_PRO,
+    period: "/ 월",
     features: [
       "프로젝트 무제한",
       "AI 카피 생성",
@@ -30,8 +37,9 @@ const plans = [
   {
     key: "lifetime" as const,
     name: "연간",
-    price: "연 구독",
-    features: ["Pro 전체 기능", "1년마다 자동 갱신", "월 구독보다 저렴"],
+    price: PRICE_LIFETIME,
+    period: "/ 년",
+    features: ["Pro 전체 기능", "1년마다 자동 갱신", "월 결제보다 저렴"],
     cta: "연간 구독 시작",
   },
 ];
@@ -67,7 +75,14 @@ export default function PricingPage() {
                   </div>
                 )}
                 <div className="font-bold">{p.name}</div>
-                <div className="mt-1 text-2xl font-extrabold">{p.price}</div>
+                <div className="mt-1 text-2xl font-extrabold">
+                  {p.price}
+                  {p.period && (
+                    <span className="ml-1 text-sm font-medium text-gray-400">
+                      {p.period}
+                    </span>
+                  )}
+                </div>
                 <ul className="mt-4 space-y-1 text-sm text-gray-600">
                   {p.features.map((f) => (
                     <li key={f}>· {f}</li>

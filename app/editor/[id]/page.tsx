@@ -293,6 +293,10 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   return (
     <div className="flex h-screen flex-col">
       {usedFontsHref && <link rel="stylesheet" href={usedFontsHref} />}
+      {/* 에디터는 PC 최적화 — 좁은 화면 안내 */}
+      <div className="bg-amber-50 px-4 py-1.5 text-center text-xs text-amber-800 md:hidden">
+        편집기는 PC 화면에 맞춰져 있어요. 넓은 화면에서 열면 더 편합니다.
+      </div>
       {/* 툴바 */}
       <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-2">
         <div className="flex items-center gap-3">

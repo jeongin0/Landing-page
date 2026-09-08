@@ -28,12 +28,19 @@ export const tpOf =
 
 export function isDarkHex(hex?: string): boolean {
   if (!hex) return false;
-  const m = /^#?([0-9a-f]{6})/i.exec(hex);
+  const m = /^#?([0-9a-f]{6})([0-9a-f]{2})?/i.exec(hex);
   if (!m) return false;
   const n = parseInt(m[1], 16);
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
+  let r = (n >> 16) & 255;
+  let g = (n >> 8) & 255;
+  let b = n & 255;
+  // 알파가 있으면 흰 배경 위에 얹힌 결과색으로 판단 (연한 틴트를 어둡다고 오판하지 않도록)
+  if (m[2]) {
+    const a = parseInt(m[2], 16) / 255;
+    r = Math.round(r * a + 255 * (1 - a));
+    g = Math.round(g * a + 255 * (1 - a));
+    b = Math.round(b * a + 255 * (1 - a));
+  }
   return 0.299 * r + 0.587 * g + 0.114 * b < 140;
 }
 

@@ -119,7 +119,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
                       as="div"
                       editing={editing}
                       {...tp("specs.value")}
-                      className="text-xl font-extrabold leading-none md:text-2xl"
+                      className="break-keep text-[15px] font-extrabold leading-tight md:text-2xl"
                       value={sp.value}
                       onChange={(v) => {
                         const specs = [...c.specs];

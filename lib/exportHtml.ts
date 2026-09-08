@@ -15,10 +15,19 @@ const A = (hex: string, hh: string) => {
   return m ? "#" + m[1] + hh : hex;
 };
 function isDark(hex?: string) {
-  const m = /^#?([0-9a-f]{6})/i.exec(hex || "");
+  const m = /^#?([0-9a-f]{6})([0-9a-f]{2})?/i.exec(hex || "");
   if (!m) return false;
   const n = parseInt(m[1], 16);
-  return 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255) < 140;
+  let r = (n >> 16) & 255;
+  let g = (n >> 8) & 255;
+  let b = n & 255;
+  if (m[2]) {
+    const a = parseInt(m[2], 16) / 255;
+    r = r * a + 255 * (1 - a);
+    g = g * a + 255 * (1 - a);
+    b = b * a + 255 * (1 - a);
+  }
+  return 0.299 * r + 0.587 * g + 0.114 * b < 140;
 }
 const SERIF = "'Nanum Myeongjo', ui-serif, Georgia, 'Times New Roman', serif";
 
@@ -375,7 +384,7 @@ export function exportHtml(c: StoreContent): string {
                   ? `<div style="display:flex;gap:12px;max-width:80%;margin:-36px auto 0;position:relative;z-index:1">${stats
                       .map(
                         (sp) => `<div style="flex:1;${card};padding:16px 12px;text-align:center">
-                        <div style="font-size:24px;font-weight:800;line-height:1;${sx("specs.value")}">${esc(sp.value)}</div>
+                        <div style="font-size:17px;font-weight:800;line-height:1.15;word-break:keep-all;${sx("specs.value")}">${esc(sp.value)}</div>
                         <div style="margin-top:6px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.45;${sx("specs.label")}">${esc(sp.label)}</div></div>`,
                       )
                       .join("")}</div>`

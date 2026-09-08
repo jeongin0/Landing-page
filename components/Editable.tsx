@@ -59,8 +59,8 @@ export default function Editable({
 
   return createElement(
     as,
+    // eslint-disable-next-line react-hooks/refs -- createElement 로 ref 전달 (false positive)
     {
-      // eslint-disable-next-line react-hooks/refs -- createElement 로 ref 전달 (false positive)
       ref,
       className: cls,
       contentEditable: editing,

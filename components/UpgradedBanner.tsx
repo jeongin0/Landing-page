@@ -1,22 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 // 결제 후 LemonSqueezy 가 /?upgraded=1 로 돌려보내면 뜨는 완료 안내.
 export default function UpgradedBanner() {
   const params = useSearchParams();
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
-    if (params.get("upgraded") === "1") setOpen(true);
-  }, [params]);
-
+  const open = !dismissed && params.get("upgraded") === "1";
   if (!open) return null;
 
   const close = () => {
-    setOpen(false);
+    setDismissed(true);
     router.replace("/");
     // 헤더의 플랜 뱃지 등 plan 상태를 새로 읽도록
     router.refresh();
