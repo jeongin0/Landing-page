@@ -16,7 +16,7 @@ const SECTIONS: SectionRef[] = [
 
 // 새 프로젝트 생성 시 기본값 (샘플: 휴대용 텀블러)
 export const defaultStoreContent = (): StoreContent => ({
-  style: "classic",
+  style: "bold",
   theme: {
     primary: "#2563eb",
     bg: "#ffffff",

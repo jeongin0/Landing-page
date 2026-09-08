@@ -1,14 +1,16 @@
 import type { StoreContent, SectionRef } from "./schema";
 import { defaultStoreContent } from "./defaultContent";
 
-export type PresetId = "classic" | "spotlight" | "editorial";
+export type PresetId = "bold" | "editorial" | "showcase";
 
-// 상세페이지 흐름 + 섹션별 배경 밴드
 const band = (
   type: SectionRef["type"],
   bg: string | undefined,
   enabled = true,
 ): SectionRef => ({ type, enabled, pad: "loose", ...(bg ? { bg } : {}) });
+
+const U = (id: string, w = 1400) =>
+  `https://images.unsplash.com/${id}?w=${w}&q=80`;
 
 export const PRESETS: {
   id: PresetId;
@@ -16,163 +18,216 @@ export const PRESETS: {
   desc: string;
   make: () => StoreContent;
 }[] = [
+  // ── 1. BOLD ─────────────────────────────────────────────
   {
-    id: "classic",
-    label: "커머스 (제품)",
-    desc: "제품 판매용. 밝은 밴드 + 어두운 강조 밴드가 번갈아 나오는 정석 상세페이지.",
+    id: "bold",
+    label: "볼드 커머스 (상품 상세)",
+    desc: "채도 높은 컬러블록 + POINT 라벨 + 풀블리드 사진이 좌우로 교차하는 정통 상세페이지.",
     make: () => {
       const c = defaultStoreContent();
-      c.style = "classic";
-      return c;
-    },
-  },
-  {
-    id: "spotlight",
-    label: "강의 · 클래스",
-    desc: "강의/부트캠프용. 큰 히어로 + 추천 대상 + 커리큘럼(진행 순서) 강조.",
-    make: () => {
-      const c = defaultStoreContent();
-      c.style = "spotlight";
-      c.theme.primary = "#4f46e5";
+      c.style = "bold";
+      c.theme.primary = "#2563eb";
+      c.layout = { width: "narrow", customPx: 720 };
       c.sections = [
-        { type: "hero", enabled: true, pad: "loose", bg: "#0f172a" },
-        band("checklist", "#ffffff"),
-        band("highlights", "#f5f5ff"),
-        band("callout", "#4f46e5"),
-        band("steps", "#ffffff"),
-        band("detail", "#f5f5ff"),
+        band("hero", "#eef2ff"),
+        band("highlights", "#ffffff"),
+        band("checklist", "#0f172a"),
+        band("detail", "#ffffff"),
+        band("callout", "#2563eb"),
+        band("steps", "#f5f7fb"),
+        band("specs", "#f5f7fb"),
         band("reviews", "#ffffff"),
         band("pricing", "#0f172a"),
-        band("faq", "#f5f5ff"),
-        band("specs", undefined, false),
+        band("faq", "#f5f7fb"),
       ];
-      c.cta.text = "지금 수강 신청";
-      c.hero = {
-        ...c.hero,
-        badge: "3기 모집",
-        badgeBg: "#4f46e533",
-        badgeText: "#c7d2fe",
-        title: "비전공자도 4주 만에\n첫 랜딩페이지 완성",
-        subtitle:
-          "매주 라이브 강의 + 과제 피드백. 수강 후 바로 포트폴리오 1개가 남습니다.",
-        image:
-          "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1400&q=80",
-        mode: "split",
-      };
       c.highlights = [
-        { icon: "🎥", title: "라이브 강의 4주", desc: "녹화본 평생 제공. 놓쳐도 다시 보기." },
-        { icon: "✍️", title: "과제 첨삭", desc: "매주 제출 → 1:1 피드백으로 실력 확인." },
-        { icon: "💬", title: "커뮤니티", desc: "수강생 전용 채널에서 질문·정보 공유." },
+        {
+          icon: "🔥",
+          iconImage: U("photo-1517705008128-361805f42e86"),
+          title: "6시간 보온, 아침 커피를 점심까지",
+          desc: "진공 2중 스테인리스 구조로 온도를 오래 붙잡습니다. 미지근한 커피는 이제 그만.",
+        },
+        {
+          icon: "❄️",
+          iconImage: U("photo-1523362628745-0c100150b504"),
+          title: "12시간 보냉, 얼음이 한나절을 버팁니다",
+          desc: "여름 운동, 등산, 캠핑에 하나. 오후 내내 시원한 물을 마실 수 있어요.",
+        },
+        {
+          icon: "🧼",
+          iconImage: U("photo-1602143407151-7111542de6e8"),
+          title: "입구가 넓어 손이 들어가는 세척",
+          desc: "안쪽 코팅이 없어 냄새가 배지 않고, 식기세척기도 사용할 수 있습니다.",
+        },
       ];
-      c.checklist = {
-        heading: "이런 분께 추천합니다",
-        items: [
-          { text: "포트폴리오가 없어 지원을 못 하고 있는 분" },
-          { text: "강의만 듣고 끝나는 게 아니라 결과물이 필요한 분" },
-          { text: "혼자 하다 매번 중간에 멈췄던 분" },
-        ],
+      c.callout = {
+        text: "하루의 온도, 이 한 병으로",
+        sub: "지금 주문 시 무료배송 + 7일 무조건 환불",
       };
-      c.callout = { text: "4주 뒤, 포트폴리오 1개가 남습니다", sub: "3기 얼리버드 마감 임박" };
-      c.steps = {
-        heading: "커리큘럼",
-        items: [
-          { title: "1주차 · 기초", desc: "HTML/CSS와 레이아웃의 원리" },
-          { title: "2주차 · 반응형", desc: "컴포넌트와 모바일 대응" },
-          { title: "3주차 · 실전", desc: "내 주제로 랜딩페이지 제작" },
-          { title: "4주차 · 배포", desc: "배포와 포트폴리오 정리" },
-        ],
-      };
-      c.detail = {
-        heading: "수업은 이렇게 진행돼요",
-        body: "매주 화요일 저녁 라이브 강의 2시간, 주말까지 과제 제출. 다음 강의 전에 1:1 피드백을 드립니다.",
-        image:
-          "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1400&q=80",
-        mode: "split",
-      };
-      c.reviews = [
-        { name: "수강생 A", text: "4주 만에 제 사업 랜딩페이지를 직접 만들었어요.", rating: 5 },
-        { name: "수강생 B", text: "과제 피드백이 정말 꼼꼼합니다.", rating: 5 },
-        { name: "수강생 C", text: "비전공자인데 따라갈 만했어요.", rating: 5 },
-      ];
-      c.pricing = { price: "149,000원", compareAt: "220,000원", note: "3기 얼리버드 · 환불 규정 별도" };
-      c.faq = [
-        { q: "완전 초보도 가능한가요?", a: "네, 1주차는 기초부터 시작합니다." },
-        { q: "녹화본은 언제까지 보나요?", a: "평생 제공됩니다." },
-        { q: "환불 되나요?", a: "1주차 강의 전까지 100% 환불 가능합니다." },
-      ];
       return c;
     },
   },
+
+  // ── 2. EDITORIAL ────────────────────────────────────────
   {
     id: "editorial",
-    label: "로컬 · 서비스",
-    desc: "매장/스튜디오/서비스 안내용. 담백한 톤 + 세리프 제목 + 이용 안내 중심.",
+    label: "에디토리얼 (브랜드 · 미니멀)",
+    desc: "세리프 대형 제목과 넓은 여백, 얇은 헤어라인으로 흐르는 럭셔리 브랜드 소개형.",
     make: () => {
       const c = defaultStoreContent();
       c.style = "editorial";
-      c.theme.primary = "#0f766e";
+      c.theme = { primary: "#1b1a17", bg: "#f7f5f1", text: "#1b1a17" };
+      c.layout = { width: "normal", customPx: 960 };
       c.sections = [
-        band("hero", "#f4f7f6"),
-        band("highlights", "#ffffff"),
-        band("checklist", "#0f2e2b"),
-        band("detail", "#ffffff"),
-        band("steps", "#f4f7f6"),
-        band("reviews", "#ffffff"),
-        band("callout", "#0f766e"),
-        band("faq", "#f4f7f6"),
-        band("specs", undefined, false),
+        band("hero", undefined),
+        band("highlights", undefined),
+        band("detail", undefined),
+        band("callout", undefined),
+        band("checklist", undefined),
+        band("reviews", undefined),
+        band("specs", undefined),
+        band("faq", undefined),
+        band("steps", undefined, false),
         band("pricing", undefined, false),
       ];
-      c.cta.text = "상담 예약하기";
+      c.cta = { text: "제품 보러 가기", href: "#" };
       c.hero = {
         ...c.hero,
-        badge: "신규 오픈",
-        badgeBg: "#0f766e1f",
-        badgeText: "#0f766e",
-        title: "동네에서 가장 친절한\n1:1 맞춤 요가 스튜디오",
-        subtitle: "첫 방문 무료 체험. 소수 정예 수업으로 자세 하나하나 봐드립니다.",
-        image:
-          "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=1600&q=80",
+        badge: "New — Eau de Parfum",
+        badgeBg: "transparent",
+        badgeText: "#1b1a17",
+        title: "피부에 머무는\n담백한 나무의 잔향",
+        subtitle:
+          "합성 머스크를 덜어내고 시더우드와 베티버를 중심에 둔 미니멀 시그니처. 하루가 지나도 옅게 남습니다.",
+        image: U("photo-1615634260167-c8cdede054de", 1600),
         mode: "split",
       };
       c.highlights = [
-        { icon: "🧘", title: "소수 정예", desc: "회당 최대 6명. 개인별 자세 교정." },
-        { icon: "📍", title: "역 3분", desc: "2호선 OO역 2번 출구 도보 3분." },
-        { icon: "🕐", title: "새벽·야간반", desc: "출근 전·퇴근 후 시간대 운영." },
+        { icon: "01", title: "8시간 지속", desc: "가벼운 시작, 오래 남는 마무리. 은은한 잔향으로 이어집니다." },
+        { icon: "02", title: "비건 포뮬러", desc: "동물성 원료를 쓰지 않고, 재활용 유리병에 담았습니다." },
+        { icon: "03", title: "무착색", desc: "인공 색소 없이 원액 그대로. 옷에 묻어도 자국이 남지 않습니다." },
       ];
+      c.detail = {
+        heading: "하나의 노트에서 시작합니다",
+        body:
+          "버지니아산 시더우드를 베이스로, 상단에 베르가못과 핑크페퍼를 얹었습니다. 시간이 지나며 우디한 잔향과 화이트 머스크가 피부 위에 남습니다. 30ml / 50ml.",
+        image: U("photo-1592945403244-b3fbafd7f539", 1400),
+        mode: "split",
+      };
+      c.callout = {
+        text: "향은 결국, 오래 곁에 두고 싶은지로 정해집니다",
+        sub: "30ml · 50ml · 리필",
+      };
       c.checklist = {
-        heading: "이런 분께 딱 맞아요",
+        heading: "이런 분께 어울립니다",
         items: [
-          { text: "큰 헬스장 그룹수업이 부담스러운 분" },
-          { text: "자세가 맞는지 봐줄 사람이 필요한 분" },
-          { text: "출근 전·퇴근 후에 다니고 싶은 분" },
+          { text: "강한 향이 부담스러워 가벼운 향수를 찾는 분" },
+          { text: "우디·머스크 계열을 좋아하는 분" },
+          { text: "데일리로 매일 뿌릴 시그니처가 필요한 분" },
         ],
       };
-      c.callout = { text: "첫 방문, 무료로 체험해보세요", sub: "아래 버튼으로 예약 후 방문" };
-      c.steps = {
-        heading: "체험 신청 방법",
+      c.reviews = [
+        { name: "정◦◦", text: "과하지 않아서 사무실에서도 부담 없이 쓸 수 있어요. 잔향이 특히 좋습니다.", rating: 5 },
+        { name: "이◦◦", text: "우디 계열을 여러 개 써봤는데 이건 담백하면서도 깊이가 있어요.", rating: 5 },
+        { name: "한◦◦", text: "재활용 유리병에 담긴 것도 마음에 들고, 리필이 있어서 계속 씁니다.", rating: 5 },
+      ];
+      c.specs = [
+        { label: "용량", value: "30ml / 50ml" },
+        { label: "부향률", value: "Eau de Parfum" },
+        { label: "탑 노트", value: "베르가못 · 핑크페퍼" },
+        { label: "베이스", value: "시더우드 · 베티버 · 머스크" },
+      ];
+      c.faq = [
+        { q: "잔향은 얼마나 가나요?", a: "체질에 따라 다르지만 옷에 뿌리면 하루가 지나도 옅게 남습니다." },
+        { q: "리필로만 구매할 수 있나요?", a: "본품 구매 이력이 있으면 리필(50ml)만 단독 구매할 수 있습니다." },
+        { q: "테스터가 있나요?", a: "1.5ml 샘플 3종 세트를 별도로 판매합니다." },
+      ];
+      return c;
+    },
+  },
+
+  // ── 3. SHOWCASE ─────────────────────────────────────────
+  {
+    id: "showcase",
+    label: "쇼케이스 (서비스 · 앱 소개)",
+    desc: "라운드 카드 그리드와 아이콘칩, 소프트 섀도우로 정리한 SaaS·서비스 소개형.",
+    make: () => {
+      const c = defaultStoreContent();
+      c.style = "showcase";
+      c.theme = { primary: "#4f46e5", bg: "#ffffff", text: "#1f2937" };
+      c.layout = { width: "normal", customPx: 960 };
+      c.sections = [
+        band("hero", "#f6f7fb"),
+        band("highlights", "#ffffff"),
+        band("checklist", "#ffffff"),
+        band("steps", "#f6f7fb"),
+        band("detail", "#ffffff"),
+        band("reviews", "#f6f7fb"),
+        band("callout", undefined),
+        band("pricing", "#ffffff"),
+        band("faq", "#f6f7fb"),
+        band("specs", "#ffffff", false),
+      ];
+      c.cta = { text: "무료로 시작하기", href: "#" };
+      c.hero = {
+        ...c.hero,
+        badge: "베타 오픈 · 카드 등록 없이",
+        badgeBg: "#4f46e514",
+        badgeText: "#4f46e5",
+        title: "예약부터 정산까지\n한 화면에서",
+        subtitle:
+          "흩어진 예약 문자와 엑셀을 하나로 모았습니다. 팀이 같은 일정을 보고, 노쇼는 자동으로 줄어듭니다.",
+        image: U("photo-1552581234-26160f608093", 1500),
+        mode: "split",
+      };
+      c.highlights = [
+        { icon: "📅", title: "통합 캘린더", desc: "네이버·전화·워크인 예약을 한 캘린더에서 확인하고 관리합니다." },
+        { icon: "🔔", title: "자동 알림", desc: "예약 확정·리마인드·노쇼 확인 문자를 자동으로 보냅니다." },
+        { icon: "📊", title: "매출 리포트", desc: "일·주·월 매출과 재방문율을 자동으로 집계해 보여줍니다." },
+      ];
+      c.checklist = {
+        heading: "이런 팀에 잘 맞습니다",
         items: [
-          { title: "01 · 예약", desc: "아래 버튼으로 원하는 시간대 선택" },
-          { title: "02 · 방문", desc: "편한 옷차림으로 오시면 매트는 무료 제공" },
-          { title: "03 · 상담", desc: "수업 후 목표에 맞는 수강 플랜 안내" },
+          { text: "예약 문자를 사람이 일일이 확인하고 있는 매장" },
+          { text: "직원마다 다른 캘린더를 쓰고 있는 팀" },
+          { text: "노쇼 때문에 매출 예측이 어려운 곳" },
+          { text: "엑셀로 매출을 정리하는 데 시간을 쓰는 사장님" },
+        ],
+      };
+      c.steps = {
+        heading: "3분이면 시작합니다",
+        items: [
+          { title: "01 · 가입", desc: "이메일만으로 가입. 카드 등록이 필요 없습니다." },
+          { title: "02 · 연동", desc: "쓰던 예약 채널을 연결하면 기존 예약을 그대로 가져옵니다." },
+          { title: "03 · 초대", desc: "팀원을 초대하면 같은 일정을 실시간으로 함께 봅니다." },
         ],
       };
       c.detail = {
-        heading: "이용 안내",
-        body: "운영시간: 평일 06:00–22:00 / 주말 09:00–18:00\n주소: 서울시 OO구 OO로 00\n주차: 건물 지하 2시간 무료\n문의: 010-0000-0000",
-        image:
-          "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=1600&q=80",
+        heading: "노쇼를 줄이는 건 결국 타이밍입니다",
+        body:
+          "예약 24시간 전과 2시간 전에 자동으로 리마인드를 보냅니다. 고객이 링크로 방문·취소를 선택하면 빈 자리는 대기 명단에 자동으로 안내됩니다.",
+        image: U("photo-1517245386807-bb43f82c33c4", 1400),
         mode: "split",
       };
+      c.callout = {
+        text: "이번 달 노쇼, 몇 건인지 바로 답할 수 있나요?",
+        sub: "지금 연동하면 지난 예약까지 함께 분석해 드립니다",
+      };
       c.reviews = [
-        { name: "김**", text: "선생님이 자세를 계속 봐주셔서 확실히 달라요.", rating: 5 },
-        { name: "이**", text: "새벽반 있어서 출근 전에 다닙니다.", rating: 5 },
-        { name: "박**", text: "동네에 이런 곳이 생겨서 좋아요.", rating: 5 },
+        { name: "김소연", text: "캘린더 하나로 합치니까 전화 확인하는 시간이 확 줄었어요.", rating: 5 },
+        { name: "박준호", text: "자동 리마인드 켜고 노쇼가 눈에 띄게 줄었습니다.", rating: 5 },
+        { name: "이지민", text: "월말 정산이 클릭 한 번이라 회계사한테 그냥 넘깁니다.", rating: 5 },
       ];
+      c.pricing = {
+        price: "월 29,000원",
+        compareAt: "39,000원",
+        note: "베타 기간 한정가 · 언제든 해지",
+        ctaHidden: false,
+      };
       c.faq = [
-        { q: "첫 방문 체험은 어떻게 하나요?", a: "아래 버튼으로 예약 후 방문하시면 됩니다." },
-        { q: "운동복 대여 되나요?", a: "매트는 무료 제공, 운동복은 대여 3,000원입니다." },
-        { q: "환불 규정은요?", a: "등록 후 7일 이내, 수업 3회 미만 시 전액 환불." },
+        { q: "기존 예약 데이터를 옮길 수 있나요?", a: "채널을 연동하면 지난 3개월 예약을 자동으로 가져옵니다." },
+        { q: "직원 수 제한이 있나요?", a: "베타 기간에는 인원 제한 없이 초대할 수 있습니다." },
+        { q: "해지하면 데이터는요?", a: "해지 후 30일간 보관하며, 언제든 CSV로 내보낼 수 있습니다." },
       ];
       return c;
     },

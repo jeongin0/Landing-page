@@ -123,14 +123,25 @@ export const WIDTH_PX: Record<Exclude<WidthPreset, "custom">, number> = {
   full: 1920,
 };
 
-// 레이아웃 스타일 — 템플릿마다 시각적으로 다르게
-export type LayoutStyle = "classic" | "spotlight" | "editorial";
+// 레이아웃 스타일 — 템플릿마다 레이아웃·타이포·구성이 완전히 다름
+export type LayoutStyle = "bold" | "editorial" | "showcase";
 
 export const LAYOUT_STYLE_LABELS: Record<LayoutStyle, string> = {
-  classic: "클래식 (텍스트·이미지 좌우 배치)",
-  spotlight: "스포트라이트 (큰 이미지 + 중앙 정렬)",
-  editorial: "에디토리얼 (세로로 흐르는 매거진형)",
+  bold: "볼드 커머스 · 컬러블록 + POINT 라벨 + 풀블리드 사진",
+  editorial: "에디토리얼 · 세리프 대형 제목 + 여백 + 헤어라인",
+  showcase: "쇼케이스 · 카드 그리드 + 아이콘칩 + 소프트 섀도우",
 };
+
+// 예전 style 값 → 새 style 값 매핑 (DB 하위호환)
+const STYLE_ALIAS: Record<string, LayoutStyle> = {
+  classic: "bold",
+  spotlight: "showcase",
+  editorial: "editorial",
+  bold: "bold",
+  showcase: "showcase",
+};
+export const clampStyle = (v: unknown): LayoutStyle =>
+  (typeof v === "string" && STYLE_ALIAS[v]) || "bold";
 
 export type StoreContent = {
   style: LayoutStyle;
@@ -261,7 +272,7 @@ export function normalizeContent(c: unknown): StoreContent {
   const rawLayout = raw.layout as StoreContent["layout"] | undefined;
   return {
     ...(raw as StoreContent),
-    style: raw.style || "classic",
+    style: clampStyle(raw.style),
     layout: {
       width: rawLayout?.width || "narrow",
       customPx: rawLayout?.customPx || 720,

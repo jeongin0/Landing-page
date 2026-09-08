@@ -3,8 +3,8 @@
 import { use, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getProject, saveProject, setPublished } from "@/lib/storage";
-import type { Project, StoreContent, SectionMode, SectionRef } from "@/lib/schema";
-import { SECTION_LABELS, SECTION_MODE_LABELS, newBlock } from "@/lib/schema";
+import type { Project, StoreContent, SectionMode, SectionRef, LayoutStyle } from "@/lib/schema";
+import { SECTION_LABELS, SECTION_MODE_LABELS, LAYOUT_STYLE_LABELS, newBlock } from "@/lib/schema";
 import type { WidthPreset } from "@/lib/schema";
 import StoreProduct from "@/components/templates/StoreProduct";
 import GenerateModal from "@/components/GenerateModal";
@@ -353,6 +353,29 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
         {/* 사이드 패널 */}
         {editing && (
           <aside className="w-[340px] shrink-0 space-y-5 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4 text-sm">
+            <div className="rounded-lg border border-gray-200 bg-white p-3">
+              <h3 className="mb-2 font-bold text-gray-700">템플릿 스타일</h3>
+              <select
+                value={project.content.style}
+                onChange={(e) =>
+                  update({
+                    ...project.content,
+                    style: e.target.value as LayoutStyle,
+                  })
+                }
+                className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs"
+              >
+                {(Object.keys(LAYOUT_STYLE_LABELS) as LayoutStyle[]).map((k) => (
+                  <option key={k} value={k}>
+                    {LAYOUT_STYLE_LABELS[k]}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-[11px] text-gray-400">
+                스타일을 바꾸면 전체 레이아웃·타이포가 달라집니다. 입력한 내용과 섹션 구성은 그대로 유지돼요.
+              </p>
+            </div>
+
             <div className="rounded-lg border border-violet-200 bg-violet-50 p-3">
               <h3 className="mb-2 font-bold text-violet-900">글자 스타일</h3>
               {selText ? (

@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import { usePlan } from "@/lib/usePlan";
 import { useRequireAuth } from "@/lib/useRequireAuth";
 import { PRESETS } from "@/lib/presets";
+import TemplatePreviewModal from "@/components/TemplatePreviewModal";
 
 export default function ProjectsPage() {
   const router = useRouter();
@@ -16,8 +17,9 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState<(typeof PRESETS)[number] | null>(null);
   const { isPaid } = usePlan();
-  const FREE_MAX = 3;
+  const FREE_MAX = 2;
   const atFreeLimit = !isPaid && projects.length >= FREE_MAX;
 
   useEffect(() => {
@@ -62,16 +64,25 @@ export default function ProjectsPage() {
         <h1 className="text-2xl font-extrabold">내 프로젝트</h1>
 
         <h2 className="mt-8 text-sm font-bold text-gray-700">템플릿 선택해서 새로 만들기</h2>
+        <p className="mt-1 text-xs text-gray-400">
+          카드를 누르면 아래에 실제 레이아웃 미리보기가 열려요.
+        </p>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           {PRESETS.map((p) => (
             <button
               key={p.id}
-              onClick={() => handleCreate(p.id)}
+              onClick={() => setPreview(p)}
               disabled={busy}
-              className="rounded-xl border border-gray-200 p-4 text-left hover:border-gray-900 disabled:opacity-40"
+              className={
+                "rounded-xl border p-4 text-left transition-colors disabled:opacity-40 " +
+                (preview?.id === p.id
+                  ? "border-gray-900 ring-2 ring-gray-900/10"
+                  : "border-gray-200 hover:border-gray-900")
+              }
             >
               <div className="font-semibold">{p.label}</div>
               <div className="mt-1 text-xs text-gray-500">{p.desc}</div>
+              <div className="mt-2 text-xs font-semibold text-blue-600">미리보기 →</div>
             </button>
           ))}
         </div>
@@ -84,6 +95,17 @@ export default function ProjectsPage() {
             </Link>{" "}
             하면 프로젝트 무제한 + AI 카피 생성 + 이미지 크기 조절을 쓸 수 있어요.
           </div>
+        )}
+
+        {preview && (
+          <TemplatePreviewModal
+            presetId={preview.id}
+            label={preview.label}
+            desc={preview.desc}
+            busy={busy}
+            onClose={() => setPreview(null)}
+            onPick={() => handleCreate(preview.id)}
+          />
         )}
 
         <div className="mt-10 space-y-2">

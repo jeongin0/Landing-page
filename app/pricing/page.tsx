@@ -9,7 +9,7 @@ const plans = [
     name: "Free",
     price: "0원",
     features: [
-      "프로젝트 3개",
+      "프로젝트 2개",
       "클릭 편집",
       "이미지 업로드",
       "HTML · 이미지 내보내기",
