@@ -51,6 +51,8 @@ export async function POST(req: Request) {
               "카드번호: 4242 4242 4242 4242<br/>" +
               "만료일: 미래의 아무 날짜 · CVC: 아무 3자리 숫자<br/>" +
               "이름 · 주소 · 우편번호도 아무 값이나 입력하면 됩니다.</p>",
+            receipt_thank_you_note:
+              "완료되었습니다!<br/>결제와 주문 모두 마쳤습니다.<br/>영수증이 곧 이메일로 발송됩니다.",
           },
           checkout_options: {
             desc: true,
