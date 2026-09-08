@@ -25,7 +25,11 @@ export async function POST(req: Request) {
   const userId: string | undefined = custom.user_id;
   const wantedPlan: string | undefined = custom.plan;
   const lifetimeVariant = process.env.LEMONSQUEEZY_VARIANT_LIFETIME;
-  const orderVariantId = String(attr.first_order_item?.variant_id ?? "");
+  // order 페이로드는 first_order_item.variant_id, subscription 페이로드는 attr.variant_id
+  const variantId = String(attr.variant_id ?? attr.first_order_item?.variant_id ?? "");
+  const isLifetime =
+    wantedPlan === "lifetime" ||
+    (!!lifetimeVariant && variantId === String(lifetimeVariant));
 
   const admin = supabaseAdmin();
 
@@ -43,13 +47,10 @@ export async function POST(req: Request) {
   let periodEnd: string | null = null;
   let subId: string | null = null;
 
+  // Pro = 월 구독, Lifetime = 연 구독. 둘 다 LemonSqueezy Subscription.
   if (event === "order_created" && attr.status === "paid") {
-    // order_created 는 구독/일회성 결제 모두에서 발생한다.
-    // subscription_* 이벤트가 웹훅에 등록 안 돼 있어도 여기서 플랜을 부여한다.
-    const isLifetimeOrder =
-      wantedPlan === "lifetime" ||
-      (!!lifetimeVariant && orderVariantId === String(lifetimeVariant));
-    if (isLifetimeOrder) plan = "lifetime";
+    // 구독 첫 결제 시에도 order_created 가 온다. custom.plan 으로 즉시 부여.
+    if (isLifetime) plan = "lifetime";
     else if (wantedPlan === "pro") plan = "pro";
   } else if (
     event === "subscription_created" ||
@@ -57,7 +58,8 @@ export async function POST(req: Request) {
     event === "subscription_resumed"
   ) {
     const s = attr.status; // active | on_trial | paused | past_due | unpaid | cancelled | expired
-    plan = s === "active" || s === "on_trial" ? "pro" : "free";
+    const active = s === "active" || s === "on_trial";
+    plan = active ? (isLifetime ? "lifetime" : "pro") : "free";
     periodEnd = attr.renews_at ?? null;
     subId = String(body.data?.id ?? "");
   } else if (event === "subscription_cancelled" || event === "subscription_expired") {
@@ -69,7 +71,8 @@ export async function POST(req: Request) {
     status: attr.status,
     userId,
     wantedPlan,
-    orderVariantId,
+    variantId,
+    isLifetime,
     resolvedPlan: plan,
   });
 

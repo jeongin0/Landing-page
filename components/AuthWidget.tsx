@@ -9,7 +9,7 @@ import { usePlan } from "@/lib/usePlan";
 const PLAN_LABEL: Record<string, string> = {
   free: "Free",
   pro: "Pro",
-  lifetime: "Lifetime",
+  lifetime: "연간",
 };
 
 export default function AuthWidget() {

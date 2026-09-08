@@ -29,10 +29,10 @@ const plans = [
   },
   {
     key: "lifetime" as const,
-    name: "Lifetime",
-    price: "1회 결제",
-    features: ["Pro 전체 기능", "1년 이용"],
-    cta: "1년 이용권 구매",
+    name: "연간",
+    price: "연 구독",
+    features: ["Pro 전체 기능", "1년마다 자동 갱신", "월 구독보다 저렴"],
+    cta: "연간 구독 시작",
   },
 ];
 
