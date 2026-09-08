@@ -12,7 +12,7 @@ const plans = [
       "프로젝트 3개",
       "클릭 편집",
       "이미지 업로드",
-      "HTML · 이미지 내보내기 (워터마크 없음)",
+      "HTML · 이미지 내보내기",
     ],
   },
   {
@@ -61,6 +61,16 @@ export default function PricingPage() {
               >
                 <div className="font-bold">{p.name}</div>
                 <div className="mt-1 text-2xl font-extrabold">{p.price}</div>
+                {p.key === "pro" && (
+                  <div className="mt-3 rounded-lg bg-gray-100 p-3 text-[11px] leading-relaxed text-gray-500">
+                    <div className="font-semibold text-gray-600">테스트 결제 (실제 결제 아님)</div>
+                    카드번호 <span className="font-mono">4242 4242 4242 4242</span>
+                    <br />
+                    만료일 미래 아무 날짜 · CVC 아무 3자리
+                    <br />
+                    이름 · 우편번호도 아무 값이면 됩니다.
+                  </div>
+                )}
                 <ul className="mt-4 space-y-1 text-sm text-gray-600">
                   {p.features.map((f) => (
                     <li key={f}>· {f}</li>

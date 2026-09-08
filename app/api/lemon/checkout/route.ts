@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         attributes: {
           checkout_data: {
             email: user.email,
-            custom: { user_id: user.id },
+            custom: { user_id: user.id, plan },
           },
           product_options: {
             redirect_url: `${origin}/?upgraded=1`,

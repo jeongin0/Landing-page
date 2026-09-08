@@ -1,5 +1,7 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
+import UpgradedBanner from "@/components/UpgradedBanner";
 
 const features = [
   {
@@ -34,6 +36,9 @@ const steps = [
 export default function LandingPage() {
   return (
     <>
+      <Suspense fallback={null}>
+        <UpgradedBanner />
+      </Suspense>
       <Header />
       <main>
         {/* 히어로 */}

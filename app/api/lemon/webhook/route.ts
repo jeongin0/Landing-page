@@ -20,9 +20,12 @@ export async function POST(req: Request) {
   const body = JSON.parse(raw);
   const event: string = body.meta?.event_name || "";
   const attr = body.data?.attributes || {};
-  // 체크아웃 시 넘긴 custom 데이터에서 user_id 회수
-  const userId: string | undefined =
-    body.meta?.custom_data?.user_id || attr.first_order_item?.custom_data?.user_id;
+  // 체크아웃 시 넘긴 custom 데이터에서 user_id / plan 회수
+  const custom = body.meta?.custom_data || attr.first_order_item?.custom_data || {};
+  const userId: string | undefined = custom.user_id;
+  const wantedPlan: string | undefined = custom.plan;
+  const lifetimeVariant = process.env.LEMONSQUEEZY_VARIANT_LIFETIME;
+  const orderVariantId = String(attr.first_order_item?.variant_id ?? "");
 
   const admin = supabaseAdmin();
 
@@ -41,8 +44,12 @@ export async function POST(req: Request) {
   let subId: string | null = null;
 
   if (event === "order_created" && attr.status === "paid") {
-    // Lifetime(일회성) 결제
-    plan = "lifetime";
+    // order_created 는 구독 첫 결제에도 발생한다.
+    // Lifetime 상품 주문일 때만 lifetime 부여, 구독 주문은 subscription_* 이벤트가 처리.
+    const isLifetimeOrder =
+      wantedPlan === "lifetime" ||
+      (!!lifetimeVariant && orderVariantId === String(lifetimeVariant));
+    if (isLifetimeOrder) plan = "lifetime";
   } else if (
     event === "subscription_created" ||
     event === "subscription_updated" ||

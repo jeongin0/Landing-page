@@ -70,8 +70,20 @@ app/api/export/route.ts          HTML 내보내기
 ### LemonSqueezy
 - [ ] Store currency = USD, Pro / Lifetime 가격 확인
 - [ ] 두 상품 상태 = Published (draft 아님)
-- [ ] Settings → Webhooks → URL = `https://<배포도메인>/api/lemon/webhook`, 시크릿이 `LEMONSQUEEZY_WEBHOOK_SECRET` 와 일치, 이벤트 `order_created` 등 체크
+- [ ] Settings → Webhooks → URL = `https://<배포도메인>/api/lemon/webhook`, 시크릿이 `LEMONSQUEEZY_WEBHOOK_SECRET` 와 일치, 이벤트 `order_created` · `subscription_created` · `subscription_updated` · `subscription_cancelled` · `subscription_expired` 체크
 - [ ] 테스트 모드로 Pro 1건 결제 → profiles.plan 이 pro 로 바뀌는지 확인
+- [ ] 결제 완료 후 뜨는 "주문해 주셔서 감사합니다" 모달은 LemonSqueezy 화면임 → 문구는 상품 설정 > Confirmation 에서 수정 (우리 사이트에서 뜨는 완료 안내는 `components/UpgradedBanner.tsx`)
+
+#### 테스트 결제 카드 (Store = Test mode 일 때만)
+| 항목 | 값 |
+|---|---|
+| 카드번호 | `4242 4242 4242 4242` |
+| 만료일 | 미래 아무 날짜 (예: `12/34`) |
+| CVC | 아무 3자리 (예: `123`) |
+| 이름 · 우편번호 | 아무 값 |
+
+- Live 모드에서는 위 카드 안 먹음. 실제 카드로 확인했으면 대시보드에서 refund.
+- 테스트 결제는 **테스트 모드 webhook 시크릿**을 `LEMONSQUEEZY_WEBHOOK_SECRET` 에 넣어야 반영됨.
 
 ### 최종 E2E (배포 도메인에서)
 - [ ] 가입 → 로그인 → 프로젝트 생성 → 편집 → 자동저장
