@@ -16,7 +16,7 @@ export default function IntroPopup() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-40 rounded-full border border-gray-300 bg-white/90 px-3 py-1.5 text-xs font-bold tracking-widest text-gray-600 shadow-sm backdrop-blur hover:text-gray-900"
+        className="fixed bottom-4 right-4 z-40 rounded-full border border-gray-300 bg-white/90 px-3 py-1.5 text-sm font-bold tracking-widest text-gray-600 shadow-sm backdrop-blur hover:text-gray-900"
       >
         ABOUT
       </button>
@@ -34,7 +34,7 @@ export default function IntroPopup() {
             style={{ wordBreak: "keep-all" }}
           >
             <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
-              <span className="text-xs font-bold tracking-[0.25em] text-gray-400">
+              <span className="text-sm font-bold tracking-[0.25em] text-gray-400">
                 ABOUT
               </span>
               <button
@@ -69,9 +69,20 @@ export default function IntroPopup() {
                 <p>AI를 활용해 기획부터 구현까지 진행했습니다.</p>
               </div>
 
-              <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs text-gray-500">
+              <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm text-gray-500">
+                <dt className="font-bold tracking-widest text-gray-400">소스</dt>
+                <dd>
+                  <a
+                    href="https://github.com/jeongin0/Landing-page"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline hover:text-gray-900"
+                  >
+                    GitHub
+                  </a>
+                </dd>
                 <dt className="font-bold tracking-widest text-gray-400">배포</dt>
-                <dd>Vercel</dd>
+                <dd>Vercel (GitHub push → 자동 배포)</dd>
                 <dt className="font-bold tracking-widest text-gray-400">인증·DB·이미지</dt>
                 <dd>Supabase</dd>
                 <dt className="font-bold tracking-widest text-gray-400">결제·웹훅</dt>
@@ -84,7 +95,7 @@ export default function IntroPopup() {
 
               <p className="mt-5 text-sm font-semibold text-gray-900">감사합니다.</p>
 
-              <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-t border-gray-100 pt-3 text-xs text-gray-500">
+              <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 border-t border-gray-100 pt-3 text-sm text-gray-500">
                 <dt className="font-bold tracking-widest text-gray-400">NAME</dt>
                 <dd>박정인</dd>
                 <dt className="font-bold tracking-widest text-gray-400">CONTACT</dt>
