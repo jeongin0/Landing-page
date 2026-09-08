@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { normalizeContent } from "@/lib/schema";
 import StoreProduct from "@/components/templates/StoreProduct";
+import { googleFontsHref } from "@/lib/fonts";
 
 export const revalidate = 60; // 게시 페이지는 60초 캐시
 
@@ -49,5 +50,14 @@ export default async function PublishedPage({
   const p = await getPublished(id);
   if (!p) notFound();
 
-  return <StoreProduct content={p.content} editing={false} />;
+  const fontsHref = googleFontsHref(
+    Object.values(p.content.textStyles ?? {}).map((s) => s.font),
+  );
+
+  return (
+    <>
+      {fontsHref && <link rel="stylesheet" href={fontsHref} />}
+      <StoreProduct content={p.content} editing={false} />
+    </>
+  );
 }

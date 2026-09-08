@@ -31,6 +31,25 @@ export const SECTION_MODE_LABELS: Record<SectionMode, string> = {
 export const clampMode = (v: unknown): SectionMode | undefined =>
   v === "split" || v === "text" || v === "image" ? v : undefined;
 
+// 텍스트 블록 스타일 오버라이드
+export type TextStyle = { font?: string; size?: number };
+
+export const clampTextStyles = (
+  v: unknown,
+): Record<string, TextStyle> | undefined => {
+  if (!v || typeof v !== "object") return undefined;
+  const out: Record<string, TextStyle> = {};
+  for (const [k, raw] of Object.entries(v as Record<string, unknown>)) {
+    const s = (raw || {}) as TextStyle;
+    const ns: TextStyle = {};
+    if (typeof s.font === "string" && s.font && s.font !== "system") ns.font = s.font;
+    if (typeof s.size === "number" && Number.isFinite(s.size))
+      ns.size = Math.max(8, Math.min(120, Math.round(s.size)));
+    if (ns.font || ns.size) out[k] = ns;
+  }
+  return Object.keys(out).length ? out : undefined;
+};
+
 export type SectionRef = {
   type: SectionType;
   enabled: boolean;
@@ -87,8 +106,10 @@ export type StoreContent = {
     customPx: number; // width === "custom" 일 때만 사용
   };
   sections: SectionRef[]; // 섹션 순서 + 표시 여부
-  highlightsCols?: number; // 강점 열 개수 (2~4). 없으면 3
-  reviewsCols?: number; // 후기 열 개수 (2~4). 없으면 3
+  highlightsCols?: number; // (구버전) 강점 열 개수 — 지금은 항목 수로 결정
+  reviewsCols?: number; // (구버전) 후기 열 개수
+  // 텍스트 블록별 폰트/크기 오버라이드. key 예: "hero.title", "highlights.title"
+  textStyles?: Record<string, TextStyle>;
   cta: {
     text: string; // 버튼 문구
     href: string; // 버튼 링크
@@ -171,6 +192,7 @@ export function normalizeContent(c: unknown): StoreContent {
         : DEFAULT_SECTIONS.map((s) => ({ ...s })),
     highlightsCols: clampCols(raw.highlightsCols),
     reviewsCols: clampCols(raw.reviewsCols),
+    textStyles: clampTextStyles(raw.textStyles),
     cta: raw.cta || {
       text: legacyBrand?.ctaText || legacyHero?.ctaText || "지금 구매하기",
       href: legacyBrand?.ctaHref || "#pricing",

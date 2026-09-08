@@ -1,5 +1,6 @@
 import type { StoreContent, SectionType } from "./schema";
 import { WIDTH_PX } from "./schema";
+import { fontStack, googleFontsHref } from "./fonts";
 
 const esc = (s: string) =>
   String(s ?? "")
@@ -22,6 +23,18 @@ export function exportHtml(c: StoreContent): string {
 
   const wrap = `padding:0 20px;`;
   const secMax = (w?: keyof typeof WIDTH_PX) => (w ? WIDTH_PX[w] : maxW);
+
+  // 텍스트 블록별 폰트/크기 오버라이드 → 인라인 스타일 조각
+  const ts = c.textStyles || {};
+  const sx = (key: string) => {
+    const s = ts[key];
+    if (!s) return "";
+    const parts: string[] = [];
+    const f = fontStack(s.font);
+    if (f) parts.push(`font-family:${f}`);
+    if (s.size) parts.push(`font-size:${s.size}px`);
+    return parts.length ? parts.join(";") + ";" : "";
+  };
   const card = `border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.04);`;
   const btn = (big = false) =>
     c.cta.hidden
@@ -30,12 +43,12 @@ export function exportHtml(c: StoreContent): string {
           t.primary,
         )};color:#fff;font-weight:700;border-radius:8px;text-decoration:none;padding:${
           big ? "16px 40px;font-size:18px" : "12px 28px"
-        }">${esc(c.cta.text)}</a>`;
+        };${sx("cta.text")}">${esc(c.cta.text)}</a>`;
 
   const badge = c.hero.badge
     ? `<span style="display:inline-block;border-radius:9999px;padding:4px 12px;font-size:12px;font-weight:700;background:${esc(
         c.hero.badgeBg,
-      )};color:${esc(c.hero.badgeText)}">${esc(c.hero.badge)}</span>`
+      )};color:${esc(c.hero.badgeText)};${sx("hero.badge")}">${esc(c.hero.badge)}</span>`
     : "";
 
   const hIcon = (h: (typeof c.highlights)[number]) =>
@@ -52,8 +65,8 @@ export function exportHtml(c: StoreContent): string {
       };box-shadow:0 10px 30px rgba(0,0,0,.12)"/></div>`;
       const hText = `<div class="lb-hero-text">
     ${badge}
-    <h1 style="margin:16px 0 0;font-size:32px;font-weight:800;line-height:1.2">${nl2br(c.hero.title)}</h1>
-    <p style="margin:16px 0 0;font-size:16px;opacity:.8">${nl2br(c.hero.subtitle)}</p>
+    <h1 style="margin:16px 0 0;font-size:32px;font-weight:800;line-height:1.2;${sx("hero.title")}">${nl2br(c.hero.title)}</h1>
+    <p style="margin:16px 0 0;font-size:16px;opacity:.8;${sx("hero.subtitle")}">${nl2br(c.hero.subtitle)}</p>
     ${btn() ? `<div style="margin-top:24px">${btn()}</div>` : ""}
   </div>`;
       if (c.hero.mode === "text")
@@ -68,8 +81,8 @@ export function exportHtml(c: StoreContent): string {
     .map(
       (h) => `<div style="${card}">
       ${hIcon(h)}
-      <h3 style="margin:12px 0 0;font-weight:700">${esc(h.title)}</h3>
-      <p style="margin:8px 0 0;font-size:14px;opacity:.75">${nl2br(h.desc)}</p></div>`,
+      <h3 style="margin:12px 0 0;font-weight:700;${sx("highlights.title")}">${esc(h.title)}</h3>
+      <p style="margin:8px 0 0;font-size:14px;opacity:.75;${sx("highlights.desc")}">${nl2br(h.desc)}</p></div>`,
     )
     .join("")}</div>
 </section>`,
@@ -81,8 +94,8 @@ export function exportHtml(c: StoreContent): string {
         c.detail.imageAspect ?? (c.detail.mode === "image" ? "16/9" : "4/3")
       };box-shadow:0 10px 30px rgba(0,0,0,.12)"/></div>`;
       const dText = `<div class="lb-hero-text">
-    <h2 style="margin:0;font-size:24px;font-weight:800">${esc(c.detail.heading)}</h2>
-    <p style="margin:16px 0 0;opacity:.8">${nl2br(c.detail.body)}</p>
+    <h2 style="margin:0;font-size:24px;font-weight:800;${sx("detail.heading")}">${esc(c.detail.heading)}</h2>
+    <p style="margin:16px 0 0;opacity:.8;${sx("detail.body")}">${nl2br(c.detail.body)}</p>
   </div>`;
       if (c.detail.mode === "text")
         return `<section style="${wrap}padding:56px 20px">${dText}</section>`;
@@ -97,7 +110,7 @@ export function exportHtml(c: StoreContent): string {
       (s, i) => `<div style="display:flex;justify-content:space-between;padding:12px 20px;font-size:14px;${
         i < c.specs.length - 1 ? "border-bottom:1px solid rgba(0,0,0,.06)" : ""
       }">
-      <span style="font-weight:700">${esc(s.label)}</span><span style="opacity:.75">${esc(s.value)}</span></div>`,
+      <span style="font-weight:700;${sx("specs.label")}">${esc(s.label)}</span><span style="opacity:.75;${sx("specs.value")}">${esc(s.value)}</span></div>`,
     )
     .join("")}</div>
 </section>`,
@@ -108,8 +121,8 @@ export function exportHtml(c: StoreContent): string {
     .map(
       (r) => `<div style="${card}display:flex;flex-direction:column">
       <div style="color:#f59e0b">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
-      <p style="margin:8px 0 0;font-size:14px;flex:1">${nl2br(r.text)}</p>
-      <div style="margin:12px 0 0;font-size:12px;font-weight:700;opacity:.6">${esc(r.name)}</div></div>`,
+      <p style="margin:8px 0 0;font-size:14px;flex:1;${sx("reviews.text")}">${nl2br(r.text)}</p>
+      <div style="margin:12px 0 0;font-size:12px;font-weight:700;opacity:.6;${sx("reviews.name")}">${esc(r.name)}</div></div>`,
     )
     .join("")}</div>
 </section>`,
@@ -117,10 +130,10 @@ export function exportHtml(c: StoreContent): string {
     pricing: () => `<section id="pricing" style="${wrap}padding:56px 20px;text-align:center">
   <div style="border:1px solid rgba(0,0,0,.06);border-radius:24px;padding:40px">
     <div style="display:flex;align-items:flex-end;justify-content:center;gap:12px">
-      <span style="font-size:36px;font-weight:800">${esc(c.pricing.price)}</span>
-      <span style="font-size:18px;text-decoration:line-through;opacity:.4">${esc(c.pricing.compareAt)}</span>
+      <span style="font-size:36px;font-weight:800;${sx("pricing.price")}">${esc(c.pricing.price)}</span>
+      <span style="font-size:18px;text-decoration:line-through;opacity:.4;${sx("pricing.compareAt")}">${esc(c.pricing.compareAt)}</span>
     </div>
-    <p style="margin:8px 0 0;font-size:14px;opacity:.7">${esc(c.pricing.note)}</p>
+    <p style="margin:8px 0 0;font-size:14px;opacity:.7;${sx("pricing.note")}">${esc(c.pricing.note)}</p>
     ${btn(true) ? `<div style="margin-top:24px">${btn(true)}</div>` : ""}
   </div>
 </section>`,
@@ -130,8 +143,8 @@ export function exportHtml(c: StoreContent): string {
   <div>${c.faq
     .map(
       (f) => `<div style="border:1px solid rgba(0,0,0,.06);border-radius:12px;padding:20px;margin-bottom:16px">
-      <div style="font-weight:700">${esc(f.q)}</div>
-      <p style="margin:8px 0 0;font-size:14px;opacity:.75">${nl2br(f.a)}</p></div>`,
+      <div style="font-weight:700;${sx("faq.q")}">${esc(f.q)}</div>
+      <p style="margin:8px 0 0;font-size:14px;opacity:.75;${sx("faq.a")}">${nl2br(f.a)}</p></div>`,
     )
     .join("")}</div>
 </section>`,
@@ -150,7 +163,13 @@ export function exportHtml(c: StoreContent): string {
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>${esc(c.hero.title.split("\n")[0] || "상세페이지")}</title>
+<title>${esc(c.hero.title.split("\n")[0] || "상세페이지")}</title>${
+    googleFontsHref(Object.values(ts).map((s) => s.font))
+      ? `\n<link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link rel="stylesheet" href="${googleFontsHref(
+          Object.values(ts).map((s) => s.font),
+        )}"/>`
+      : ""
+  }
 <style>
   *{box-sizing:border-box}
   body{margin:0;background:${esc(t.bg)};color:${esc(t.text)};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.5;word-break:keep-all;overflow-wrap:break-word}
