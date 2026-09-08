@@ -1,5 +1,5 @@
 import type { StoreContent, SectionRef } from "./schema";
-import { PAD_PX, clampStyle } from "./schema";
+import { PAD_PX, WIDTH_PX, clampStyle } from "./schema";
 import { fontStack, googleFontsHref } from "./fonts";
 
 const esc = (s: string) =>
@@ -39,6 +39,10 @@ export function exportHtml(c: StoreContent): string {
     return out.length ? out.join(";") + ";" : "";
   };
   const pad = (s: SectionRef) => s.padPx ?? PAD_PX[s.pad ?? "normal"];
+  const pageW =
+    c.layout.width === "custom"
+      ? Math.max(320, c.layout.customPx || 720)
+      : WIDTH_PX[c.layout.width];
   const bgImgDark = (s: SectionRef) => !!s.bgImage && s.bgFit !== "contain";
   // 섹션 배경 이미지 레이어 (부모 section 은 position:relative 여야 함)
   const bgLayer = (s: SectionRef) => {
@@ -61,7 +65,7 @@ export function exportHtml(c: StoreContent): string {
       `<span style="display:inline-block;border-radius:9999px;padding:6px 16px;font-size:11px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;${
         onDark ? "background:#fff;color:#111" : `background:${esc(primary)};color:#fff`
       }">${esc(txt)}</span>`;
-    const band = (s: SectionRef, inner: string, narrow = 620) => {
+    const band = (s: SectionRef, inner: string, narrow = pageW) => {
       const bg = s.bg || t.bg || "#fff";
       const dark = isDark(bg) || bgImgDark(s);
       return `<section style="position:relative;${s.bgImage ? "" : `background:${esc(bg)};`}${
@@ -79,8 +83,8 @@ export function exportHtml(c: StoreContent): string {
             <p style="margin:20px auto 0;max-width:520px;font-size:15px;line-height:1.6;opacity:.62;${sx("hero.subtitle")}">${nl2br(c.hero.subtitle)}</p>`;
           if (c.hero.mode === "image")
             return `<section>${longImg(c.hero.image, c.hero.imageW)}</section>`;
-          if (c.hero.mode === "text") return band(s, txt, 860);
-          return band(s, txt, 860) + `<section>${longImg(c.hero.image, c.hero.imageW)}</section>`;
+          if (c.hero.mode === "text") return band(s, txt);
+          return band(s, txt) + `<section>${longImg(c.hero.image, c.hero.imageW)}</section>`;
         }
         case "highlights":
           return c.highlights
@@ -89,7 +93,7 @@ export function exportHtml(c: StoreContent): string {
               const d = isDark(bg);
               return `<section style="background:${esc(bg)};${d ? "color:#fff;" : ""}padding:${pad(s)}px 0 ${
                 h.iconImage ? Math.round(pad(s) * 0.55) : pad(s)
-              }px"><div style="max-width:620px;margin:0 auto;padding:0 24px;text-align:center">
+              }px"><div style="max-width:${s.wPx ?? pageW}px;margin:0 auto;padding:0 24px;text-align:center">
                 ${pill(`Point ${p2(i + 1)}`, d)}
                 <h3 style="margin:16px 0 0;font-size:34px;font-weight:900;line-height:1.15;${sx("highlights.title")}">${esc(h.title)}</h3>
                 <p style="margin:12px auto 0;max-width:420px;font-size:15px;line-height:1.6;opacity:.66;${sx("highlights.desc")}">${nl2br(h.desc)}</p>
@@ -105,7 +109,6 @@ export function exportHtml(c: StoreContent): string {
             s,
             `<p style="margin:0;font-size:44px;font-weight:900;line-height:1.15;${sx("callout.text")}">${nl2br(c.callout.text)}</p>
             ${c.callout.sub ? `<p style="margin:20px auto 0;max-width:420px;font-size:14px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;opacity:.7;${sx("callout.sub")}">${esc(c.callout.sub)}</p>` : ""}`,
-            880,
           );
         case "checklist":
           return band(
@@ -212,7 +215,7 @@ export function exportHtml(c: StoreContent): string {
   // ═══════════ RAIL ═══════════
   const rail = (): string => {
     const hair = "rgba(0,0,0,.12)";
-    const wrap = (s: SectionRef, inner: string, narrow = 940, center = true) =>
+    const wrap = (s: SectionRef, inner: string, narrow = pageW, center = true) =>
       `<section style="position:relative;${
         s.bgImage ? "" : s.bg ? `background:${esc(s.bg)};` : ""
       }${bgImgDark(s) ? "color:#fff;" : ""}padding:${pad(s)}px 0">${bgLayer(s)}<div style="position:relative;max-width:${
@@ -479,7 +482,7 @@ export function exportHtml(c: StoreContent): string {
         s.bgImage ? "" : s.bg ? `background:${esc(s.bg)};` : ""
       }${bgImgDark(s) ? "color:#fff;" : ""}">${bgLayer(s)}<div style="position:relative">${inner}</div></section>`;
     };
-    return `<div style="background:#eef0f5"><div style="max-width:1180px;margin:0 auto;padding:24px 16px 40px">${en
+    return `<div style="background:#eef0f5"><div style="max-width:${pageW + 40}px;margin:0 auto;padding:24px 16px 40px">${en
       .map(one)
       .join("")}</div></div>`;
   };

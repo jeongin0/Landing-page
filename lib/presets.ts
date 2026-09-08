@@ -173,7 +173,7 @@ export const PRESETS: {
       const c = defaultStoreContent();
       c.style = "showcase";
       c.theme = { primary: "#4f46e5", bg: "#ffffff", text: "#1f2937" };
-      c.layout = { width: "normal", customPx: 960 };
+      c.layout = { width: "wide", customPx: 1120 };
       c.sections = [
         { type: "hero", enabled: true, pad: "loose", splitPct: 48 },
         band("highlights", undefined),

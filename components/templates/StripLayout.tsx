@@ -1,6 +1,7 @@
 "use client";
 
 import type { SectionRef } from "@/lib/schema";
+import { WIDTH_PX } from "@/lib/schema";
 import Editable from "@/components/Editable";
 import {
   type Ctx,
@@ -21,11 +22,14 @@ import {
 // 번갈아 흐름. POINT 라벨, 두꺼운 헤드라인. 구매 버튼 없음.
 // ════════════════════════════════════════════════════════════
 
-const COL = 620;
-
 export default function StripLayout({ ctx }: { ctx: Ctx }) {
   const { c, set, editing, primary } = ctx;
   const tp = tpOf(ctx);
+  // 본문 폭 — 편집기 "본문 폭" 설정값. 섹션별 wPx 가 있으면 그게 우선.
+  const pageW =
+    c.layout.width === "custom"
+      ? Math.max(320, c.layout.customPx || 720)
+      : WIDTH_PX[c.layout.width];
 
   const Pill = ({ children, onDark }: { children: React.ReactNode; onDark: boolean }) => (
     <span
@@ -68,7 +72,7 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
     i,
     onDark,
     children,
-    narrow = COL,
+    narrow = pageW,
   }: {
     s: SectionRef;
     i: number;
@@ -153,13 +157,13 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
           );
         if (c.hero.mode === "text")
           return (
-            <Band s={s} i={i} onDark={onDark} narrow={860}>
+            <Band s={s} i={i} onDark={onDark}>
               {txt}
             </Band>
           );
         return (
           <>
-            <Band s={s} i={i} onDark={onDark} narrow={860}>
+            <Band s={s} i={i} onDark={onDark}>
               {txt}
             </Band>
             <section className="relative">
@@ -193,7 +197,7 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
                       paddingBottom: h.iconImage ? Math.round(pad * 0.55) : pad,
                     }}
                   >
-                    <div className="mx-auto max-w-[620px] px-6 text-center">
+                    <div className="mx-auto px-6 text-center" style={{ maxWidth: s.wPx ?? pageW }}>
                       <Pill onDark={d}>Point {pad2(hi + 1)}</Pill>
                       <Editable
                         as="h3"
@@ -239,7 +243,7 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
 
       case "callout":
         return (
-          <Band s={s} i={i} onDark={onDark} narrow={880}>
+          <Band s={s} i={i} onDark={onDark}>
             <Editable
               as="p"
               multiline
@@ -458,7 +462,7 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
 
       case "reviews":
         return (
-          <Band s={s} i={i} onDark={onDark} narrow={720}>
+          <Band s={s} i={i} onDark={onDark}>
             <Pill onDark={onDark}>Review</Pill>
             <div className="mx-auto mt-7 max-w-xl text-left">
               {c.reviews.map((r, ri) => (
@@ -501,7 +505,7 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
 
       case "pricing":
         return (
-          <Band s={s} i={i} onDark={onDark} narrow={620}>
+          <Band s={s} i={i} onDark={onDark}>
             <div className="flex items-end justify-center gap-3">
               <Editable
                 as="span"
@@ -535,7 +539,7 @@ export default function StripLayout({ ctx }: { ctx: Ctx }) {
 
       case "faq":
         return (
-          <Band s={s} i={i} onDark={onDark} narrow={720}>
+          <Band s={s} i={i} onDark={onDark}>
             <Pill onDark={onDark}>FAQ</Pill>
             <div className="mx-auto mt-7 max-w-xl text-left">
               {c.faq.map((f, fi) => (

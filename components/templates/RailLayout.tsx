@@ -1,6 +1,7 @@
 "use client";
 
 import type { SectionRef } from "@/lib/schema";
+import { WIDTH_PX } from "@/lib/schema";
 import Editable from "@/components/Editable";
 import {
   type Ctx,
@@ -23,12 +24,15 @@ import {
 const SERIF: React.CSSProperties = {
   fontFamily: "'Nanum Myeongjo', ui-serif, Georgia, 'Times New Roman', serif",
 };
-const COL = 940;
-
 export default function RailLayout({ ctx }: { ctx: Ctx }) {
   const { c, set, editing } = ctx;
   const tp = tpOf(ctx);
   const hair = "border-black/12";
+  // 본문 폭 — 편집기 "본문 폭" 설정값. 섹션별 wPx 가 우선.
+  const pageW =
+    c.layout.width === "custom"
+      ? Math.max(320, c.layout.customPx || 720)
+      : WIDTH_PX[c.layout.width];
 
   const H2 = (text: string, key: string, cls = "text-[28px] font-medium leading-[1.15] md:text-[40px]") => (
     <Editable
@@ -72,7 +76,7 @@ export default function RailLayout({ ctx }: { ctx: Ctx }) {
     i,
     children,
     center = true,
-    narrow = COL,
+    narrow = pageW,
   }: {
     s: SectionRef;
     i: number;
@@ -350,7 +354,7 @@ export default function RailLayout({ ctx }: { ctx: Ctx }) {
         );
         if (c.detail.mode === "text")
           return (
-            <Text s={s} i={i} center={false} narrow={680}>
+            <Text s={s} i={i} center={false}>
               {text}
             </Text>
           );
@@ -360,7 +364,10 @@ export default function RailLayout({ ctx }: { ctx: Ctx }) {
             className="relative"
             style={{ paddingTop: sectionPad(s), paddingBottom: sectionPad(s) }}
           >
-            <div className="relative mx-auto flex max-w-[1200px] flex-wrap items-center gap-10 px-6 md:flex-nowrap md:gap-0">
+            <div
+              className="relative mx-auto flex flex-wrap items-center gap-10 px-6 md:flex-nowrap md:gap-0"
+              style={{ maxWidth: s.wPx ?? pageW }}
+            >
               <div style={{ flex: `1 1 ${pct}%` }} className="md:pr-12">
                 <SectionImage
                   ctx={ctx}
@@ -382,7 +389,7 @@ export default function RailLayout({ ctx }: { ctx: Ctx }) {
 
       case "specs":
         return (
-          <Text s={s} i={i} center={false} narrow={680}>
+          <Text s={s} i={i} center={false}>
             <div>
               {c.specs.map((sp, si) => (
                 <div
@@ -502,7 +509,7 @@ export default function RailLayout({ ctx }: { ctx: Ctx }) {
 
       case "faq":
         return (
-          <Text s={s} i={i} center={false} narrow={760}>
+          <Text s={s} i={i} center={false}>
             <h2 className="text-center text-[28px] font-medium md:text-[36px]" style={SERIF}>
               자주 묻는 질문
             </h2>
@@ -592,13 +599,13 @@ export default function RailLayout({ ctx }: { ctx: Ctx }) {
         );
         if (b.mode === "text")
           return (
-            <Text s={s} i={i} center={b.align === "center"} narrow={680}>
+            <Text s={s} i={i} center={b.align === "center"}>
               {text}
             </Text>
           );
         return (
           <>
-            <Text s={s} i={i} center={b.align === "center"} narrow={680}>
+            <Text s={s} i={i} center={b.align === "center"}>
               {text}
             </Text>
             <section className="relative">

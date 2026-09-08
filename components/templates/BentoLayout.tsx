@@ -1,6 +1,7 @@
 "use client";
 
 import type { SectionRef } from "@/lib/schema";
+import { WIDTH_PX } from "@/lib/schema";
 import Editable from "@/components/Editable";
 import {
   type Ctx,
@@ -22,11 +23,14 @@ import {
 // 히어로 아래 통계 스트립. 균일한 카드로 정렬. 버튼 없음.
 // ════════════════════════════════════════════════════════════
 
-const GRID = 1120;
-
 export default function BentoLayout({ ctx }: { ctx: Ctx }) {
   const { c, set, editing, primary } = ctx;
   const tp = tpOf(ctx);
+  // 본문 폭 — 편집기 "본문 폭" 설정값. 섹션별 wPx 가 우선.
+  const pageW =
+    c.layout.width === "custom"
+      ? Math.max(320, c.layout.customPx || 720)
+      : WIDTH_PX[c.layout.width];
 
   // 테두리 없음 — 배경 + 부드러운 섀도우만
   const card = "rounded-[28px] bg-white shadow-[0_6px_30px_rgba(0,0,0,0.07)]";
@@ -592,7 +596,10 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
 
   return (
     <div style={{ background: pageBg, color: c.theme.text }}>
-      <div className="mx-auto max-w-[1180px] px-4 py-6 md:px-8 md:py-10">
+      <div
+        className="mx-auto px-4 py-6 md:px-8 md:py-10"
+        style={{ maxWidth: pageW + 40 }}
+      >
         {c.sections.map((s) => {
           if (!s.enabled) return null;
           const i = c.sections.indexOf(s);
@@ -614,7 +621,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
             >
               <SectionBgImage s={s} />
               <div className="relative">
-                <EditFrame ctx={ctx} idx={i} s={s} baseW={GRID}>
+                <EditFrame ctx={ctx} idx={i} s={s} baseW={pageW}>
                   {inner}
                 </EditFrame>
               </div>
