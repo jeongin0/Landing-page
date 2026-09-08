@@ -44,12 +44,13 @@ export async function POST(req: Request) {
   let subId: string | null = null;
 
   if (event === "order_created" && attr.status === "paid") {
-    // order_created 는 구독 첫 결제에도 발생한다.
-    // Lifetime 상품 주문일 때만 lifetime 부여, 구독 주문은 subscription_* 이벤트가 처리.
+    // order_created 는 구독/일회성 결제 모두에서 발생한다.
+    // subscription_* 이벤트가 웹훅에 등록 안 돼 있어도 여기서 플랜을 부여한다.
     const isLifetimeOrder =
       wantedPlan === "lifetime" ||
       (!!lifetimeVariant && orderVariantId === String(lifetimeVariant));
     if (isLifetimeOrder) plan = "lifetime";
+    else if (wantedPlan === "pro") plan = "pro";
   } else if (
     event === "subscription_created" ||
     event === "subscription_updated" ||
@@ -62,6 +63,15 @@ export async function POST(req: Request) {
   } else if (event === "subscription_cancelled" || event === "subscription_expired") {
     plan = "free";
   }
+
+  console.log("[lemon webhook]", {
+    event,
+    status: attr.status,
+    userId,
+    wantedPlan,
+    orderVariantId,
+    resolvedPlan: plan,
+  });
 
   if (plan) {
     // 프로필 행이 없을 수도 있으므로 upsert
