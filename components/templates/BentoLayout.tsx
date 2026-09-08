@@ -259,17 +259,21 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
 
       case "steps":
         return (
-          <div className={card + " p-8 md:p-12"}>
+          <div className={card + " p-8 text-center md:p-12"}>
             {H2(c.steps.heading, "steps.heading", (v) => set({ steps: { ...c.steps, heading: v } }))}
-            <div className="mt-10 grid gap-x-6 gap-y-8 sm:grid-cols-3">
+            <div className="relative mt-10 grid gap-x-6 gap-y-8 sm:grid-cols-3">
+              {c.steps.items.length > 1 && (
+                <div
+                  className="absolute top-5 hidden h-0.5 sm:block"
+                  style={{
+                    left: `${100 / c.steps.items.length / 2}%`,
+                    right: `${100 / c.steps.items.length / 2}%`,
+                    background: alpha(primary, "33"),
+                  }}
+                />
+              )}
               {c.steps.items.map((st, si) => (
-                <div key={si} className="relative">
-                  {si < c.steps.items.length - 1 && (
-                    <div
-                      className="absolute left-12 right-[-24px] top-5 hidden h-0.5 sm:block"
-                      style={{ background: alpha(primary, "33") }}
-                    />
-                  )}
+                <div key={si} className="relative flex flex-col items-center">
                   <div
                     className="relative z-10 grid h-10 w-10 place-items-center rounded-full text-sm font-black text-white"
                     style={{ background: primary }}
@@ -293,7 +297,7 @@ export default function BentoLayout({ ctx }: { ctx: Ctx }) {
                     multiline
                     editing={editing}
                     {...tp("steps.desc")}
-                    className="mt-1.5 text-[13px] leading-relaxed opacity-60"
+                    className="mt-1.5 max-w-[240px] text-[13px] leading-relaxed opacity-60"
                     value={st.desc}
                     onChange={(v) => {
                       const items = [...c.steps.items];

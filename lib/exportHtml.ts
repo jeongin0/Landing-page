@@ -387,13 +387,13 @@ export function exportHtml(c: StoreContent): string {
               <p style="margin:0 auto;max-width:640px;font-size:34px;font-weight:800;line-height:1.3;${sx("callout.text")}">${nl2br(c.callout.text)}</p>
               ${c.callout.sub ? `<p style="margin:16px auto 0;max-width:420px;font-size:14px;opacity:.85;${sx("callout.sub")}">${esc(c.callout.sub)}</p>` : ""}</div>`;
           case "steps":
-            return `<div style="${card};padding:48px"><h2 style="margin:0;font-size:30px;font-weight:800;${sx("steps.heading")}">${esc(c.steps.heading)}</h2>
-              <div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:40px">${c.steps.items
+            return `<div style="${card};padding:48px;text-align:center"><h2 style="margin:0;font-size:30px;font-weight:800;${sx("steps.heading")}">${esc(c.steps.heading)}</h2>
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:24px;margin-top:40px">${c.steps.items
                 .map(
-                  (st, i) => `<div style="flex:1 1 28%">
+                  (st, i) => `<div style="flex:1 1 28%;display:flex;flex-direction:column;align-items:center">
                   <div style="width:40px;height:40px;border-radius:9999px;background:${esc(primary)};color:#fff;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center">${i + 1}</div>
                   <div style="margin:16px 0 0;font-weight:700;${sx("steps.title")}">${esc(st.title)}</div>
-                  <p style="margin:6px 0 0;font-size:13px;line-height:1.6;opacity:.6;${sx("steps.desc")}">${nl2br(st.desc)}</p></div>`,
+                  <p style="margin:6px 0 0;max-width:240px;font-size:13px;line-height:1.6;opacity:.6;${sx("steps.desc")}">${nl2br(st.desc)}</p></div>`,
                 )
                 .join("")}</div></div>`;
           case "detail": {
