@@ -83,7 +83,7 @@ ${features || "(입력 없음)"}
   "highlights": [{ "icon": string(이모지 1개), "title": string, "desc": string }],
   "detail": { "heading": string, "body": string },
   "specs": [{ "label": string, "value": string }],
-  "reviews": [{ "name": string, "text": string, "rating": number(4 또는 5) }],
+  "reviews": [{ "name": string, "text": string, "rating": 5 }],
   "pricing": { "price": string, "compareAt": string, "note": string },
   "faq": [{ "q": string, "a": string }]
 }`;

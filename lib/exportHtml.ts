@@ -36,8 +36,10 @@ export function exportHtml(c: StoreContent): string {
     return parts.length ? parts.join(";") + ";" : "";
   };
   const card = `border:1px solid rgba(0,0,0,.06);border-radius:16px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.04);`;
-  const btn = (big = false) =>
-    c.cta.hidden
+  const heroCtaHidden = c.hero.ctaHidden ?? c.cta.hidden ?? false;
+  const pricingCtaHidden = c.pricing.ctaHidden ?? c.cta.hidden ?? false;
+  const btn = (big = false, hidden = false) =>
+    hidden
       ? ""
       : `<a href="${esc(c.cta.href || "#")}" style="display:inline-block;background:${esc(
           t.primary,
@@ -67,7 +69,7 @@ export function exportHtml(c: StoreContent): string {
     ${badge}
     <h1 style="margin:16px 0 0;font-size:32px;font-weight:800;line-height:1.2;${sx("hero.title")}">${nl2br(c.hero.title)}</h1>
     <p style="margin:16px 0 0;font-size:16px;opacity:.8;${sx("hero.subtitle")}">${nl2br(c.hero.subtitle)}</p>
-    ${btn() ? `<div style="margin-top:24px">${btn()}</div>` : ""}
+    ${btn(false, heroCtaHidden) ? `<div style="margin-top:24px">${btn(false, heroCtaHidden)}</div>` : ""}
   </div>`;
       if (c.hero.mode === "text")
         return `<section style="${wrap}padding:56px 20px">${hText}</section>`;
@@ -120,7 +122,7 @@ export function exportHtml(c: StoreContent): string {
   <div class="lb-grid3 lb-grid-r">${c.reviews
     .map(
       (r) => `<div style="${card}display:flex;flex-direction:column">
-      <div style="color:#f59e0b">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</div>
+      <div style="color:#f59e0b">★★★★★</div>
       <p style="margin:8px 0 0;font-size:14px;flex:1;${sx("reviews.text")}">${nl2br(r.text)}</p>
       <div style="margin:12px 0 0;font-size:12px;font-weight:700;opacity:.6;${sx("reviews.name")}">${esc(r.name)}</div></div>`,
     )
@@ -134,7 +136,7 @@ export function exportHtml(c: StoreContent): string {
       <span style="font-size:18px;text-decoration:line-through;opacity:.4;${sx("pricing.compareAt")}">${esc(c.pricing.compareAt)}</span>
     </div>
     <p style="margin:8px 0 0;font-size:14px;opacity:.7;${sx("pricing.note")}">${esc(c.pricing.note)}</p>
-    ${btn(true) ? `<div style="margin-top:24px">${btn(true)}</div>` : ""}
+    ${btn(true, pricingCtaHidden) ? `<div style="margin-top:24px">${btn(true, pricingCtaHidden)}</div>` : ""}
   </div>
 </section>`,
 

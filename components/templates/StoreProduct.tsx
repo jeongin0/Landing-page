@@ -107,8 +107,11 @@ export default function StoreProduct({
         ? "text-4xl md:text-5xl"
         : "text-3xl md:text-4xl";
 
-  const ctaBtn = (big = false, cls = "mt-6") =>
-    c.cta.hidden ? null : (
+  const heroCtaHidden = c.hero.ctaHidden ?? c.cta.hidden ?? false;
+  const pricingCtaHidden = c.pricing.ctaHidden ?? c.cta.hidden ?? false;
+
+  const ctaBtn = (big = false, cls = "mt-6", hidden = false) =>
+    hidden ? null : (
       <div className={cls}>
         <a
           href={c.cta.href || "#"}
@@ -188,7 +191,7 @@ export default function StoreProduct({
       {badge}
       {heroTitle}
       {heroSub}
-      {ctaBtn()}
+      {ctaBtn(false, "mt-6", heroCtaHidden)}
     </>
   );
 
@@ -204,14 +207,14 @@ export default function StoreProduct({
         {badge}
         {heroTitle}
         {heroSub}
-        {ctaBtn(true, "mt-8")}
+        {ctaBtn(true, "mt-8", heroCtaHidden)}
       </section>
     ) : style === "editorial" ? (
       <section className={wrap + " py-14"}>
         {badge}
         {heroTitle}
         {heroSub}
-        {ctaBtn()}
+        {ctaBtn(false, "mt-6", heroCtaHidden)}
         {heroImg("mt-10", "21/9")}
       </section>
     ) : (
@@ -225,7 +228,7 @@ export default function StoreProduct({
             {badge}
             {heroTitle}
             {heroSub}
-            {ctaBtn()}
+            {ctaBtn(false, "mt-6", heroCtaHidden)}
           </div>
           <div className="relative mt-8 md:mt-0">
             {splitHandle(startHeroSplit, "left")}
@@ -383,7 +386,7 @@ export default function StoreProduct({
       <div className={"grid gap-6 " + rCols}>
         {c.reviews.map((r, i) => (
           <div key={i} className="flex flex-col rounded-2xl border border-black/5 p-6 shadow-sm">
-            <div className="text-amber-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</div>
+            <div className="text-amber-500">★★★★★</div>
             <Editable as="p" multiline editing={editing} className="mt-2 flex-1 text-sm" value={r.text} {...tp("reviews.text")}
               onChange={(v) => {
                 const reviews = [...c.reviews];
@@ -413,7 +416,7 @@ export default function StoreProduct({
         </div>
         <Editable as="p" editing={editing} className="mt-2 text-sm opacity-70" value={c.pricing.note} {...tp("pricing.note")}
           onChange={(v) => set({ pricing: { ...c.pricing, note: v } })} />
-        {ctaBtn(true)}
+        {ctaBtn(true, "mt-6", pricingCtaHidden)}
       </div>
     </section>
   );

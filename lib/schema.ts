@@ -113,7 +113,7 @@ export type StoreContent = {
   cta: {
     text: string; // 버튼 문구
     href: string; // 버튼 링크
-    hidden?: boolean; // true 면 구매 버튼 숨김 (히어로·가격 섹션)
+    hidden?: boolean; // (구버전) 전체 숨김 — 지금은 hero.ctaHidden / pricing.ctaHidden 로 개별 제어
   };
   hero: {
     badge: string;
@@ -126,6 +126,7 @@ export type StoreContent = {
     imageAspect?: number; // 이미지 가로세로 비율 (w/h). 없으면 스타일 기본값
     splitPct?: number; // 클래식 스타일에서 이미지 열이 차지하는 비율 % (30~75). 없으면 50
     mode?: SectionMode; // 영역 구성: 이미지+텍스트 / 텍스트만 / 통이미지
+    ctaHidden?: boolean; // 메인(히어로) 구매 버튼 숨김
   };
   highlights: Highlight[];
   detail: {
@@ -143,6 +144,7 @@ export type StoreContent = {
     price: string;
     compareAt: string;
     note: string;
+    ctaHidden?: boolean; // 가격 섹션 구매 버튼 숨김
   };
   faq: Faq[];
 };
