@@ -90,6 +90,7 @@ export type StoreContent = {
     image: string;
     imageW?: number; // 이미지 폭 % (20~100). 없으면 100
     imageAspect?: number; // 이미지 가로세로 비율 (w/h). 없으면 스타일 기본값
+    splitPct?: number; // 클래식 스타일에서 이미지 열이 차지하는 비율 % (30~75). 없으면 50
   };
   highlights: Highlight[];
   detail: {
@@ -123,6 +124,13 @@ export const clampAspect = (v: unknown): number | undefined => {
   return Math.max(0.3, Math.min(5, Math.round(n * 1000) / 1000));
 };
 
+// 클래식 히어로 이미지 열 비율 % (30~75). 없으면 undefined = 50
+export const clampSplit = (v: unknown): number | undefined => {
+  const n = typeof v === "number" ? v : NaN;
+  if (!Number.isFinite(n)) return undefined;
+  return Math.max(30, Math.min(75, Math.round(n)));
+};
+
 // 예전 데이터 보정 (없는 필드 채우기)
 export function normalizeContent(c: unknown): StoreContent {
   const raw = (c || {}) as Record<string, unknown> & Partial<StoreContent>;
@@ -151,6 +159,7 @@ export function normalizeContent(c: unknown): StoreContent {
       image: raw.hero?.image ?? "",
       imageW: clampImageW(raw.hero?.imageW),
       imageAspect: clampAspect(raw.hero?.imageAspect),
+      splitPct: clampSplit(raw.hero?.splitPct),
     },
     detail: {
       ...(raw.detail as StoreContent["detail"]),

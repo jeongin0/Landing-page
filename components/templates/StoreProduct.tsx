@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import type { StoreContent, SectionType } from "@/lib/schema";
 import { WIDTH_PX } from "@/lib/schema";
 import Editable from "@/components/Editable";
@@ -17,6 +18,28 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
   const c = content;
   const set = (patch: Partial<StoreContent>) => onChange?.({ ...c, ...patch });
   const style = c.style || "classic";
+
+  // 클래식 히어로: 텍스트 / 이미지 열 비율 (이미지 쪽 %)
+  const heroRowRef = useRef<HTMLDivElement>(null);
+  const heroSplit = c.hero.splitPct ?? 50;
+  const startSplitDrag = (e: React.PointerEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const row = heroRowRef.current;
+    if (!row || !onChange) return;
+    const rect = row.getBoundingClientRect();
+    const move = (ev: PointerEvent) => {
+      const rightPct = ((rect.right - ev.clientX) / rect.width) * 100;
+      const next = Math.max(30, Math.min(75, Math.round(rightPct)));
+      set({ hero: { ...c.hero, splitPct: next } });
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
 
   const maxW =
     c.layout.width === "custom"
@@ -124,14 +147,29 @@ export default function StoreProduct({ content, onChange, editing, canResize = f
         {heroImg("mt-10", "21/9")}
       </section>
     ) : (
-      <section className={wrap + " grid items-center gap-10 py-14 md:grid-cols-2"}>
-        <div>
-          {badge}
-          {heroTitle}
-          {heroSub}
-          <div className="mt-6">{ctaBtn()}</div>
+      <section className={wrap + " py-14"}>
+        <div
+          ref={heroRowRef}
+          className="md:grid md:items-center md:gap-10"
+          style={{ gridTemplateColumns: `${100 - heroSplit}fr ${heroSplit}fr` }}
+        >
+          <div>
+            {badge}
+            {heroTitle}
+            {heroSub}
+            <div className="mt-6">{ctaBtn()}</div>
+          </div>
+          <div className="relative mt-8 md:mt-0">
+            {editing && canResize && (
+              <span
+                onPointerDown={startSplitDrag}
+                title="드래그해서 이미지 영역 넓히기 / 좁히기"
+                className="absolute -left-5 top-1/2 z-10 hidden h-16 w-2.5 -translate-y-1/2 cursor-ew-resize touch-none rounded-full bg-gray-900/70 md:block"
+              />
+            )}
+            {heroImg("", "4/3")}
+          </div>
         </div>
-        {heroImg("", "4/3")}
       </section>
     );
 

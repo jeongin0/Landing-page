@@ -42,7 +42,7 @@ export function exportHtml(c: StoreContent): string {
       : `<div style="font-size:30px">${esc(h.icon)}</div>`;
 
   const S: Record<SectionType, () => string> = {
-    hero: () => `<section class="lb-hero" style="${wrap}padding-top:56px;padding-bottom:56px">
+    hero: () => `<section class="lb-hero lb-hero-main" style="${wrap}padding-top:56px;padding-bottom:56px">
   <div class="lb-hero-text">
     ${badge}
     <h1 style="margin:16px 0 0;font-size:32px;font-weight:800;line-height:1.2">${nl2br(c.hero.title)}</h1>
@@ -141,6 +141,7 @@ export function exportHtml(c: StoreContent): string {
   @media(min-width:768px){
     .lb-grid3{grid-template-columns:repeat(3,1fr)}
     .lb-hero{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+    .lb-hero-main{grid-template-columns:${100 - (c.hero.splitPct ?? 50)}fr ${c.hero.splitPct ?? 50}fr}
     .lb-hero-text{margin-top:0}
   }
 </style>

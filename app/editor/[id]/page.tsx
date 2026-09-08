@@ -6,7 +6,6 @@ import { getProject, saveProject, setPublished } from "@/lib/storage";
 import type { Project, StoreContent, SectionType } from "@/lib/schema";
 import { SECTION_LABELS } from "@/lib/schema";
 import type { WidthPreset } from "@/lib/schema";
-import { exportHtml } from "@/lib/exportHtml";
 import StoreProduct from "@/components/templates/StoreProduct";
 import GenerateModal from "@/components/GenerateModal";
 import AuthWidget from "@/components/AuthWidget";
@@ -32,7 +31,6 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const captureRef = useRef<HTMLDivElement>(null);
-  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const { isPaid } = usePlan();
 
   useEffect(() => {
@@ -232,12 +230,6 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           >
             {editing ? "미리보기" : "편집하기"}
           </button>
-          <div className="flex overflow-hidden rounded-lg border border-gray-300 text-sm">
-            <button onClick={() => setDevice("desktop")}
-              className={"px-2.5 py-1.5 " + (device === "desktop" ? "bg-gray-900 text-white" : "")}>💻</button>
-            <button onClick={() => setDevice("mobile")}
-              className={"px-2.5 py-1.5 " + (device === "mobile" ? "bg-gray-900 text-white" : "")}>📱</button>
-          </div>
           <details className="relative">
             <summary className="cursor-pointer list-none rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-semibold">
               {imgBusy ? "저장 중…" : "내보내기 ▾"}
@@ -280,22 +272,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
       <div className="flex flex-1 overflow-hidden">
         {/* 사이드 패널 */}
         {editing && (
-          <aside className="w-64 shrink-0 space-y-5 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4 text-sm">
-            <div>
-              <h3 className="mb-2 font-bold text-gray-700">레이아웃 스타일</h3>
-              <select
-                value={project.content.style}
-                onChange={(e) =>
-                  update({ ...project.content, style: e.target.value as StoreContent["style"] })
-                }
-                className="w-full rounded border border-gray-300 px-2 py-1 text-xs"
-              >
-                <option value="classic">클래식 (좌우 배치)</option>
-                <option value="spotlight">스포트라이트 (큰 이미지·중앙)</option>
-                <option value="editorial">에디토리얼 (매거진형)</option>
-              </select>
-            </div>
-
+          <aside className="w-[340px] shrink-0 space-y-5 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4 text-sm">
             <div>
               <h3 className="mb-2 font-bold text-gray-700">라벨 (뱃지) 색</h3>
               <label className="mb-2 flex items-center justify-between">
@@ -558,22 +535,14 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           </aside>
         )}
 
-        {/* 미리보기 */}
+        {/* 미리보기 (PC 전용) */}
         <div className="flex-1 overflow-y-auto bg-gray-100 py-6">
-          {device === "mobile" ? (
-            <iframe
-              title="모바일 미리보기"
-              srcDoc={exportHtml(project.content)}
-              className="mx-auto h-[780px] w-[390px] rounded-[28px] border-8 border-gray-800 bg-white"
-            />
-          ) : (
-            <div
-              ref={previewRef}
-              className="mx-auto w-full max-w-[1920px] overflow-hidden rounded-lg bg-white shadow-xl"
-            >
-              <StoreProduct content={project.content} onChange={update} editing={editing} canResize={isPaid} />
-            </div>
-          )}
+          <div
+            ref={previewRef}
+            className="mx-auto w-full max-w-[1920px] overflow-hidden rounded-lg bg-white shadow-xl"
+          >
+            <StoreProduct content={project.content} onChange={update} editing={editing} canResize={isPaid} />
+          </div>
         </div>
       </div>
 
