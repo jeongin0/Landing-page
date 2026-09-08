@@ -2,6 +2,11 @@
 
 스토어 단일상품 랜딩페이지를 폼 입력 → AI 카피 생성 → 클릭 편집 → HTML 내보내기로 만드는 툴.
 
+**라이브 데모:** https://landing-page-jeongin2.vercel.app
+**소스:** https://github.com/jeongin0/Landing-page (앱은 `landing-builder/` 하위)
+
+> 결제는 LemonSqueezy 테스트 모드. 결제창에 뜨는 테스트 카드(`4242 4242 4242 4242`, 미래 만료일, 아무 CVC)로 Pro/Lifetime 결제 흐름을 그대로 체험할 수 있음.
+
 ## 실행
 
 ```bash
@@ -73,6 +78,7 @@ app/api/export/route.ts          HTML 내보내기
 - [ ] Settings → Webhooks → URL = `https://<배포도메인>/api/lemon/webhook`, 시크릿이 `LEMONSQUEEZY_WEBHOOK_SECRET` 와 일치, 이벤트 `order_created` · `subscription_created` · `subscription_updated` · `subscription_cancelled` · `subscription_expired` 체크
 - [ ] 테스트 모드로 Pro 1건 결제 → profiles.plan 이 pro 로 바뀌는지 확인
 - [ ] 결제 완료 후 뜨는 "주문해 주셔서 감사합니다" 모달은 LemonSqueezy 화면임 → 문구는 상품 설정 > Confirmation 에서 수정 (우리 사이트에서 뜨는 완료 안내는 `components/UpgradedBanner.tsx`)
+- [ ] 결제창의 테스트 카드 안내는 `app/api/lemon/checkout/route.ts` 의 `product_options.description` 로 주입 → **실제 판매 시 이 description 제거**
 
 #### 테스트 결제 카드 (Store = Test mode 일 때만)
 | 항목 | 값 |

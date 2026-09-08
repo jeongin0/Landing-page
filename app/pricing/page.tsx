@@ -56,21 +56,20 @@ export default function PricingPage() {
                 key={p.key}
                 className={
                   "flex h-full flex-col rounded-2xl border p-6 " +
-                  (p.key === "pro" ? "border-gray-900" : "border-gray-200")
+                  (current
+                    ? "border-2 border-violet-600 ring-2 ring-violet-100"
+                    : p.key === "pro"
+                      ? "border-gray-900"
+                      : "border-gray-200")
                 }
               >
-                <div className="font-bold">{p.name}</div>
-                <div className="mt-1 text-2xl font-extrabold">{p.price}</div>
-                {p.key === "pro" && (
-                  <div className="mt-3 rounded-lg bg-gray-100 p-3 text-[11px] leading-relaxed text-gray-500">
-                    <div className="font-semibold text-gray-600">테스트 결제 (실제 결제 아님)</div>
-                    카드번호 <span className="font-mono">4242 4242 4242 4242</span>
-                    <br />
-                    만료일 미래 아무 날짜 · CVC 아무 3자리
-                    <br />
-                    이름 · 우편번호도 아무 값이면 됩니다.
+                {current && (
+                  <div className="mb-2 inline-block self-start rounded-full bg-violet-600 px-2 py-0.5 text-xs font-semibold text-white">
+                    현재 플랜
                   </div>
                 )}
+                <div className="font-bold">{p.name}</div>
+                <div className="mt-1 text-2xl font-extrabold">{p.price}</div>
                 <ul className="mt-4 space-y-1 text-sm text-gray-600">
                   {p.features.map((f) => (
                     <li key={f}>· {f}</li>

@@ -45,6 +45,15 @@ export async function POST(req: Request) {
           },
           product_options: {
             redirect_url: `${origin}/?upgraded=1`,
+            // 포트폴리오/테스트용: 결제창에 테스트 카드 안내 노출
+            description:
+              "<p><strong>테스트 결제입니다 (실제 결제 아님)</strong><br/>" +
+              "카드번호: 4242 4242 4242 4242<br/>" +
+              "만료일: 미래의 아무 날짜 · CVC: 아무 3자리 숫자<br/>" +
+              "이름 · 주소 · 우편번호도 아무 값이나 입력하면 됩니다.</p>",
+          },
+          checkout_options: {
+            desc: true,
           },
         },
         relationships: {
