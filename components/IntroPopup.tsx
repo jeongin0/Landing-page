@@ -2,9 +2,17 @@
 
 import { useState } from "react";
 
+// 한 번 닫으면 SPA 이동 중에는 다시 뜨지 않고,
+// 새로고침하면 모듈이 다시 로드되며 초기화 → 다시 노출된다.
+let dismissed = false;
+
 export default function IntroPopup() {
-  // index 페이지에 들어올 때마다 노출 (닫기는 ✕ 로만)
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(() => !dismissed);
+
+  const close = () => {
+    dismissed = true;
+    setOpen(false);
+  };
 
   return (
     <>
@@ -35,7 +43,7 @@ export default function IntroPopup() {
               </span>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={close}
                 aria-label="닫기"
                 className="text-gray-400 hover:text-gray-900"
               >
@@ -65,6 +73,11 @@ export default function IntroPopup() {
                 </p>
                 <p>AI를 활용해 기획부터 구현까지 진행했습니다.</p>
               </div>
+
+              <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2 text-sm font-medium text-gray-600">
+                이 사이트는 <b>PC 환경</b>에 맞춰 만들었습니다. 모바일 화면은 별도로
+                대응하지 않았으니 데스크톱에서 봐 주세요.
+              </p>
 
               <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm text-gray-500">
                 <dt className="font-bold tracking-widest text-gray-400">소스</dt>

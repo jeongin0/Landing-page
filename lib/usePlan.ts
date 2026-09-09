@@ -7,6 +7,7 @@ export type Plan = "free" | "pro" | "lifetime";
 
 export function usePlan() {
   const [plan, setPlan] = useState<Plan>("free");
+  const [authed, setAuthed] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export function usePlan() {
         const sb = supabaseBrowser();
         const { data: sess } = await sb.auth.getSession();
         const uid = sess.session?.user?.id;
+        setAuthed(!!uid);
         if (!uid) {
           setPlan("free");
           return;
@@ -33,7 +35,12 @@ export function usePlan() {
     })();
   }, []);
 
-  return { plan, loading, isPaid: plan === "pro" || plan === "lifetime" };
+  return {
+    plan,
+    authed,
+    loading,
+    isPaid: plan === "pro" || plan === "lifetime",
+  };
 }
 
 export async function startCheckout(planWanted: "pro" | "lifetime") {

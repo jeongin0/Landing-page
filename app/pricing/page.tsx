@@ -45,7 +45,7 @@ const plans = [
 ];
 
 export default function PricingPage() {
-  const { plan } = usePlan();
+  const { plan, authed } = usePlan();
 
   return (
     <>
@@ -58,7 +58,8 @@ export default function PricingPage() {
 
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {plans.map((p) => {
-            const current = plan === p.key;
+            // 로그인한 사용자에게만 "현재 플랜" 표시 (비로그인은 플랜 개념 없음)
+            const current = authed && plan === p.key;
             return (
               <div
                 key={p.key}
