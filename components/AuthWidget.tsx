@@ -24,18 +24,16 @@ export default function AuthWidget({ hideSignOut = false }: { hideSignOut?: bool
   if (permanent) {
     return (
       <div className="flex items-center gap-2 text-sm">
-        <Link
-          href="/pricing"
+        <span
           className={
             "rounded-full px-2 py-0.5 text-xs font-semibold " +
             (plan === "free"
               ? "bg-gray-100 text-gray-600"
               : "bg-gray-900 text-white")
           }
-          title="요금제 보기"
         >
           {PLAN_LABEL[plan] ?? "Free"}
-        </Link>
+        </span>
         <span className="hidden text-gray-500 sm:inline">{user!.email}</span>
         {!hideSignOut && (
           <button
