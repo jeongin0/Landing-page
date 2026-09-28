@@ -56,7 +56,7 @@ export default function IntroPopup() {
                 aria-hidden="true"
                 className="text-3xl font-extrabold leading-none tracking-tight text-gray-900"
               >
-                LANDING
+                DETAIL PAGE
                 <br />
                 BUILDER
               </p>

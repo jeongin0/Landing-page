@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://landing-page-jeongin2.vercel.app"),
+  metadataBase: new URL("https://detailpage-jeongin2.vercel.app"),
   title: "상세페이지 빌더",
   description: "스토어 단일상품 상세페이지를 클릭 편집으로 빠르게",
   openGraph: {
     title: "상세페이지 빌더",
     description: "상세페이지 본문을 클릭 편집으로 완성. 코드 몰라도 됩니다.",
-    url: "https://landing-page-jeongin2.vercel.app",
+    url: "https://detailpage-jeongin2.vercel.app",
     siteName: "상세페이지 빌더",
     locale: "ko_KR",
     type: "website",

@@ -2,7 +2,7 @@
 
 스토어 단일상품 랜딩페이지를 폼 입력 → AI 카피 생성 → 클릭 편집 → HTML 내보내기로 만드는 툴.
 
-**라이브 데모:** https://landing-page-jeongin2.vercel.app
+**라이브 데모:** https://detailpage-jeongin2.vercel.app
 **소스:** https://github.com/jeongin0/Landing-page (앱은 `landing-builder/` 하위)
 
 > 결제는 LemonSqueezy 테스트 모드. 결제창에 뜨는 테스트 카드(`4242 4242 4242 4242`, 미래 만료일, 아무 CVC)로 구독 결제 흐름을 그대로 체험할 수 있음.

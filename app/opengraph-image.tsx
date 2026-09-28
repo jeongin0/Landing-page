@@ -99,7 +99,7 @@ export default async function Image() {
             </div>
           </div>
           <div style={{ fontSize: 24, fontWeight: 400, color: "#9ca3af" }}>
-            landing-page-jeongin2.vercel.app
+            detailpage-jeongin2.vercel.app
           </div>
         </div>
       </div>
