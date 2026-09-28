@@ -17,9 +17,7 @@ export default function AuthWidget({ hideSignOut = false }: { hideSignOut?: bool
   const { plan } = usePlan();
   const router = useRouter();
 
-  if (loading) return <span className="text-xs text-gray-400">…</span>;
-
-  const permanent = user && !isAnonymous;
+  const permanent = !loading && user && !isAnonymous;
 
   if (permanent) {
     return (
