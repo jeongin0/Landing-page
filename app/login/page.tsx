@@ -69,7 +69,7 @@ function LoginInner() {
     <main className="mx-auto flex min-h-screen w-full max-w-[560px] flex-col justify-center px-5">
       <Link href="/" className="mb-8 flex items-center gap-2 font-extrabold">
         <span className="grid h-6 w-6 place-items-center rounded-md bg-gray-900 text-xs text-white">
-          L
+          D
         </span>
         상세페이지 빌더
       </Link>

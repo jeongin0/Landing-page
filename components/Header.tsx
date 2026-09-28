@@ -9,7 +9,7 @@ export default function Header() {
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
         <Link href="/" className="flex items-center gap-2 font-extrabold">
           <span className="grid h-6 w-6 place-items-center rounded-md bg-gray-900 text-xs text-white">
-            L
+            D
           </span>
           상세페이지 빌더
         </Link>
