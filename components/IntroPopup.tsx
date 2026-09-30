@@ -71,7 +71,29 @@ export default function IntroPopup() {
                   요금제별 기능 제한 · 결제 웹훅까지 <b>수익화 흐름을 처음부터 끝까지</b>{" "}
                   직접 구현했습니다.
                 </p>
-                <p>AI를 활용해 기획부터 구현까지 진행했습니다.</p>
+              </div>
+
+              <div className="mt-4 space-y-3 rounded-lg border border-gray-100 px-4 py-3 text-sm text-gray-600">
+                <div>
+                  <p className="font-bold tracking-widest text-gray-400">AI에게 맡긴 것</p>
+                  <ul className="mt-1 space-y-0.5">
+                    <li>· 화면·컴포넌트 코드 작성 (에디터, 템플릿 3종)</li>
+                    <li>· API 라우트·웹훅 처리 코드 작성</li>
+                    <li>· 버그 원인 추적과 수정</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-bold tracking-widest text-gray-400">직접 한 것</p>
+                  <ul className="mt-1 space-y-0.5">
+                    <li>· 기능 기획, 요금제·권한 설계</li>
+                    <li>
+                      · Supabase·LemonSqueezy·Vercel 연동 설정 (DB 스키마, 웹훅
+                      시크릿, 환경변수)
+                    </li>
+                    <li>· 결제 흐름 테스트, 요금제별 제한 검수</li>
+                    <li>· 디자인 방향 결정과 결과물 검토·수정 지시</li>
+                  </ul>
+                </div>
               </div>
 
               <p className="mt-4 rounded-lg bg-gray-50 px-3 py-2 text-sm font-medium text-gray-600">
